@@ -24,6 +24,7 @@ public class MenuServiceController {
         return ResponseEntity.ok(CommonDto.builder()
             .message("메뉴 등록 완료")
             .code(200)
-            .data(responseDto));
+            .data(responseDto)
+            .build());
     }
 }

@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 
+//추후에 Security Filter 생성 후, createBy 등 사용자 정보 넣어주기
 public class MenuMapper {
 
     public static Menu toMenu(MenuSaveRequestDto menuSaveRequestDto) {
