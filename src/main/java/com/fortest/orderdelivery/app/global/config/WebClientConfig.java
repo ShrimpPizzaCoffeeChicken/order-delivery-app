@@ -23,11 +23,11 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${app.api.agent.connectionTimeout}")
+    @Value("${app.api.connection-timeout}")
     private int connectionTimeout;
-    @Value("${app.api.agent.readTimeout}")
+    @Value("${app.api.read-timeout}")
     private int readTimeout;
-    @Value("${app.api.agent.max-buffer-size-MB}")
+    @Value("${app.api.max-buffer-size-MB}")
     private int maxBufferSizeMB;
 
     private static final int MB = 1024 * 1024; // MB 의 byte 단위
