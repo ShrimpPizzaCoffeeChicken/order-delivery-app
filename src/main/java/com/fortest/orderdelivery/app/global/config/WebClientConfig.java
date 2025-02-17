@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.LoggingCodecSupport;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
-// @Configuration
+@Configuration
 public class WebClientConfig {
 
     @Value("${app.api.agent.connectionTimeout}")
