@@ -3,10 +3,7 @@ package com.fortest.orderdelivery.app.domain.store.entity;
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
@@ -14,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "p_store")
 @Entity
+@ToString
 public class Store extends BaseDataEntity {
 
     @Id
