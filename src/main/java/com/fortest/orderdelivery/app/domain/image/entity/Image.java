@@ -20,6 +20,9 @@ public class Image extends BaseDataEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(length = 100)
+    private String fileName;
+
     private Integer sequence;
 
     @Column(length = 50)
@@ -27,9 +30,6 @@ public class Image extends BaseDataEntity {
 
     @Column(length = 50)
     private String optionId;
-
-    @Column(length = 200, nullable = false)
-    private String url;
 
     @Column(length = 200, nullable = false)
     private String s3Url;

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
 @Builder
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 public class User extends BaseDataEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(length = 100, nullable = false, unique = true)
@@ -35,4 +37,19 @@ public class User extends BaseDataEntity {
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)  // RoleType과 연결
     private RoleType roleType;
+
+    @Builder
+    public User(String username, String nickname, String email, String password, RoleType roleType, Long createdBy) {
+        this.username = username;
+        this.nickname = nickname;
+        this.email = email;
+        this.password = password;
+        this.roleType = roleType;
+        this.isCreatedBy(createdBy); // 생성자에서 createdBy 설정
+    }
+
+    @Bean
+    public void encodePassword(PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(this.password);
+    }
 }
