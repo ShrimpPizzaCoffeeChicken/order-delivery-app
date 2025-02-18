@@ -1,11 +1,9 @@
 package com.fortest.orderdelivery.app.domain.category.service;
 
-import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveRequestDto;
-import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveResponseDto;
+import com.fortest.orderdelivery.app.domain.category.dto.*;
 import com.fortest.orderdelivery.app.domain.category.entity.Category;
 import com.fortest.orderdelivery.app.domain.category.mapper.CategoryMapper;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryRepository;
-import com.fortest.orderdelivery.app.domain.category.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +64,19 @@ public class CategoryService {
 //                })
 //                .block();
 //    }
+
+    @Transactional
+    public CategoryUpdateResponseDto updateCategory(String categoryId, CategoryUpdateRequestDto categoryUpdateRequestDto){
+
+        String categoryName = categoryUpdateRequestDto.getCategoryName();
+
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()->
+                new BusinessLogicException(messageSource.getMessage( "api.call.client-error",null, Locale.KOREA)));
+
+        category.update(categoryName);
+
+        return CategoryMapper.toCategoryUpdateResponseDto(category);
+    }
 
     private void throwByRespCode(int httpStatusCode) {
         int firstNum = httpStatusCode / 100;
