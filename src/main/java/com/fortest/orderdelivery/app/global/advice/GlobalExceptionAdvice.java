@@ -119,7 +119,7 @@ public class GlobalExceptionAdvice {
 
         return CommonDto.builder()
             .message(message)
-            .code(HttpStatus.METHOD_NOT_ALLOWED.value())
+            .code(HttpStatus.BAD_REQUEST.value())
             .data(null)
             .build();
     }

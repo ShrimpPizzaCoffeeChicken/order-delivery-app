@@ -45,7 +45,8 @@ public class MenuService {
         String storeId = menuSaveRequestDto.getStoreId();
 
 //        가게 DB 존재 여부 확인 API 생성 후 테스트
-//        if(Objects.isNull(getValidStoreFromApp(storeId).getData())) {
+//        CommonDto<StoreValidResponseDto> commonDto = getValidStoreFromApp(storeId);
+//        if(Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
 //            throw new BusinessLogicException("Store is not Valid");
 //        }
 
