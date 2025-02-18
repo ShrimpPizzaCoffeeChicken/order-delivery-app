@@ -1,12 +1,13 @@
 package com.fortest.orderdelivery.app.domain.store.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
+@Builder
 @Getter
-@ToString
-public class StoreRequestDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class StoreSaveResponseDto {
 
     @JsonProperty("store-id")
     private String storeId;

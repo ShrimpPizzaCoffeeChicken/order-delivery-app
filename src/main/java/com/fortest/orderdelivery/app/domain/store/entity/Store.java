@@ -11,7 +11,6 @@ import lombok.*;
 @NoArgsConstructor
 @Table(name = "p_store")
 @Entity
-@ToString
 public class Store extends BaseDataEntity {
 
     @Id

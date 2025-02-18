@@ -2,7 +2,7 @@ package com.fortest.orderdelivery.app.domain.store.service;
 
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
 import com.fortest.orderdelivery.app.domain.area.repository.AreaRepository;
-import com.fortest.orderdelivery.app.domain.store.dto.StoreRequestDto;
+import com.fortest.orderdelivery.app.domain.store.dto.StoreSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
 import com.fortest.orderdelivery.app.domain.store.repository.StoreRepository;
 import com.fortest.orderdelivery.app.domain.store.dto.UserResponseDto;
@@ -24,9 +24,9 @@ public class StoreService {
     private final MessageSource messageSource;
 
     @Transactional
-    public void saveStores(StoreRequestDto storeRequestDto, Long userId) {
+    public Store saveStores(StoreSaveRequestDto storeSaveRequestDto, Long userId) {
 
-        String areaId = storeRequestDto.getAreaId();
+        String areaId = storeSaveRequestDto.getAreaId();
 
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getUserId(userId); // api 요청
@@ -34,16 +34,16 @@ public class StoreService {
         String username = validUserResponse.getData().getUsername();
 
         Area area = areaRepository.findById(areaId)
-                .orElseThrow(() -> new BusinessLogicException("area not found"));
-        
+                .orElseThrow(() -> new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA)));
+
         Store store = Store.builder()
-                .name(storeRequestDto.getStoreName())
+                .name(storeSaveRequestDto.getStoreName())
                 .area(area)
-                .detailAddress(storeRequestDto.getDetailAddress())
-                .ownerName(storeRequestDto.getOwnerName())
+                .detailAddress(storeSaveRequestDto.getDetailAddress())
+                .ownerName(storeSaveRequestDto.getOwnerName())
                 .build();
 
-        storeRepository.save(store);
+        return storeRepository.save(store);
     }
     
     // TODO : 유저 조회 : 하단 코드로 교체 예정
