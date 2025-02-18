@@ -27,6 +27,10 @@ public abstract class BaseDataEntity {
     private Long deletedBy;
     private LocalDateTime deletedAt;
 
+    public void isCreatedBy(Long userId) {
+        this.createdBy = userId;
+    }
+
     public void isUpdatedNow(Long userId) {
         this.updatedAt = LocalDateTime.now();
         this.updatedBy = userId;
