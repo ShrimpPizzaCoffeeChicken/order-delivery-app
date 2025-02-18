@@ -12,10 +12,12 @@ import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,8 +33,9 @@ import reactor.util.retry.Retry;
 public class MenuService {
 
     private final WebClient webClient;
-    private final MenuRepositoryQuery menuRepositoryQuery;
+    private final MessageSource messageSource;
     private final MenuRepository menuRepository;
+    private final MenuRepositoryQuery menuRepositoryQuery;
 
     private static final String STORE_APP_URL = "http://{url}:{port}/api/app/stores/{storeId}";
     private static final String IMAGE_APP_URL = "http://{url}:{port}/api/app/images/menus";
@@ -52,14 +55,16 @@ public class MenuService {
         List<String> imageIdList = menuSaveRequestDto.getImageIdList();
 
         if (!Objects.isNull(imageIdList)) {
-            MenuImageMappingResponseDto menuImageMappingResponseDto = saveMenuIdToImage(
-                MenuImageMappingRequestDto.builder()
+            MenuImageMappingRequestDto menuImageRequestDto = MenuImageMappingRequestDto.builder()
                 .imageIdList(imageIdList)
                 .menuId(savedMenu.getId())
-                .build()).getData();
+                .build();
 
-            if(!menuImageMappingResponseDto.getResult()) {
-                throw new BusinessLogicException("Image - Menu Mapping Fail");
+            CommonDto<MenuImageMappingResponseDto> commonDto = saveMenuIdToImage(menuImageRequestDto);
+            throwByRespCode(commonDto.getCode());
+
+            if(!commonDto.getData().getResult()) {
+                throw new BusinessLogicException(messageSource.getMessage("image.menu.mapping.failure",null,Locale.getDefault()));
             }
         }
 
@@ -116,5 +121,17 @@ public class MenuService {
                 return Mono.empty();
             })
             .block();
+    }
+
+    private void throwByRespCode(int httpStatusCode) {
+        int firstNum = httpStatusCode / 100;
+        switch (firstNum) {
+            case 4 -> {
+                throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.getDefault()));
+            }
+            case 5 -> {
+                throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.getDefault()));
+            }
+        }
     }
 }

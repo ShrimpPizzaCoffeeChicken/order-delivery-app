@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.menu.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,5 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MenuImageMappingResponseDto {
     private Boolean result;
+    @JsonProperty("image-id-list")
     private List<String> imageIdList;
 }

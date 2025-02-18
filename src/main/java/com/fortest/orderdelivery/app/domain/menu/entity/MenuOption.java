@@ -29,7 +29,7 @@ public class MenuOption extends BaseDataEntity {
     private Integer price;
 
     @JoinColumn(name = "menu_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Menu menu;
 
     @Column(length = 30, nullable = false)

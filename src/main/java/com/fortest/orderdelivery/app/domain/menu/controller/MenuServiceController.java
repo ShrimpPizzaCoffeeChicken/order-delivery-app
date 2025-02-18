@@ -5,6 +5,8 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,12 +20,12 @@ public class MenuServiceController {
     private final MenuService menuService;
 
     @PostMapping
-    public ResponseEntity<?> saveMenu(@RequestBody MenuSaveRequestDto menuSaveRequestDto) {
+    public ResponseEntity<CommonDto<MenuSaveResponseDto>> saveMenu(@RequestBody MenuSaveRequestDto menuSaveRequestDto) {
         MenuSaveResponseDto responseDto = menuService.saveMenu(menuSaveRequestDto);
 
-        return ResponseEntity.ok(CommonDto.builder()
+        return ResponseEntity.ok(CommonDto.<MenuSaveResponseDto>builder()
             .message("메뉴 등록 완료")
-            .code(200)
+            .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
     }
