@@ -1,9 +1,11 @@
 package com.fortest.orderdelivery.app.domain.category.service;
 
 import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveRequestDto;
+import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveResponseDto;
 import com.fortest.orderdelivery.app.domain.category.entity.Category;
+import com.fortest.orderdelivery.app.domain.category.mapper.CategoryMapper;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryRepository;
-import com.fortest.orderdelivery.app.domain.store.dto.UserResponseDto;
+import com.fortest.orderdelivery.app.domain.category.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import lombok.RequiredArgsConstructor;
@@ -21,18 +23,20 @@ public class CategoryService {
     private final MessageSource messageSource;
 
     @Transactional
-    public Category saveCategory(CategorySaveRequestDto categorySaveRequestDto, Long userId) {
+    public CategorySaveResponseDto saveCategory(CategorySaveRequestDto categorySaveRequestDto, Long userId) {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getUserId(userId); // api 요청
-        throwByRespCode(validUserResponse.getCode());
-        String username = validUserResponse.getData().getUsername();
+        if (validUserResponse != null && validUserResponse.getData() != null) {
+            throwByRespCode(validUserResponse.getCode());
+            String username = validUserResponse.getData().getUsername();
+        } else {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
+        }
 
-        Category category = Category.builder()
-                .id(categorySaveRequestDto.getCategoryId())
-                .name(categorySaveRequestDto.getCategoryName())
-                .build();
+        Category newCategory = CategoryMapper.toCategory(categorySaveRequestDto);
+        Category savedCategory = categoryRepository.save(newCategory);
 
-        return categoryRepository.save(category);
+        return CategoryMapper.toCategorySaveResponseDto(savedCategory);
     }
 
     // TODO : 유저 조회 : 하단 코드로 교체 예정

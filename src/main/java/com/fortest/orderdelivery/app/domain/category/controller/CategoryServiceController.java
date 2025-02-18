@@ -23,11 +23,7 @@ public class CategoryServiceController {
     @PostMapping("/categories")
     public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@RequestBody CategorySaveRequestDto categorySaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
-        Category category = categoryService.saveCategory(categorySaveRequestDto, 123L);
-        CategorySaveResponseDto categorySaveResponseDto = CategorySaveResponseDto.builder()
-                .categoryId(category.getId())
-                .categoryName(category.getName())
-                .build();
+        CategorySaveResponseDto categorySaveResponseDto = categoryService.saveCategory(categorySaveRequestDto, 123L);
 
         return ResponseEntity.ok(
                 CommonDto.<CategorySaveResponseDto>builder()
@@ -35,7 +31,6 @@ public class CategoryServiceController {
                         .code(HttpStatus.OK.value())
                         .data(categorySaveResponseDto)
                         .build()
-
         );
     }
 
