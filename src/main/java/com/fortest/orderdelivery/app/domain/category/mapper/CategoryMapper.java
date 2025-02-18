@@ -2,6 +2,7 @@ package com.fortest.orderdelivery.app.domain.category.mapper;
 
 import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveRequestDto;
 import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveResponseDto;
+import com.fortest.orderdelivery.app.domain.category.dto.CategoryUpdateResponseDto;
 import com.fortest.orderdelivery.app.domain.category.entity.Category;
 
 public class CategoryMapper {
@@ -18,5 +19,12 @@ public class CategoryMapper {
             .categoryId(category.getId())
             .categoryName(category.getName())
             .build();
+    }
+
+    public static CategoryUpdateResponseDto toCategoryUpdateResponseDto(Category category) {
+        return CategoryUpdateResponseDto.builder()
+                .categoryId(category.getId())
+                .categoryName(category.getName())
+                .build();
     }
 }
