@@ -2,10 +2,10 @@ package com.fortest.orderdelivery.app.domain.store.service;
 
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
 import com.fortest.orderdelivery.app.domain.area.repository.AreaRepository;
-import com.fortest.orderdelivery.app.domain.store.dto.StoreSaveRequestDto;
+import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
+import com.fortest.orderdelivery.app.domain.store.mapper.StoreMapper;
 import com.fortest.orderdelivery.app.domain.store.repository.StoreRepository;
-import com.fortest.orderdelivery.app.domain.store.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import lombok.RequiredArgsConstructor;
@@ -24,26 +24,25 @@ public class StoreService {
     private final MessageSource messageSource;
 
     @Transactional
-    public Store saveStores(StoreSaveRequestDto storeSaveRequestDto, Long userId) {
+    public StoreSaveResponseDto saveStore(StoreSaveRequestDto storeSaveRequestDto, Long userId) {
 
         String areaId = storeSaveRequestDto.getAreaId();
 
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getUserId(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
+        }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
 
         Area area = areaRepository.findById(areaId)
                 .orElseThrow(() -> new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA)));
 
-        Store store = Store.builder()
-                .name(storeSaveRequestDto.getStoreName())
-                .area(area)
-                .detailAddress(storeSaveRequestDto.getDetailAddress())
-                .ownerName(storeSaveRequestDto.getOwnerName())
-                .build();
+        Store newStore = StoreMapper.toStore(storeSaveRequestDto, area);
+        Store savedStore = storeRepository.save(newStore);
 
-        return storeRepository.save(store);
+        return StoreMapper.toStoreSaveResponseDto(savedStore, area);
     }
     
     // TODO : 유저 조회 : 하단 코드로 교체 예정
@@ -73,6 +72,26 @@ public class StoreService {
 //                })
 //                .block();
 //    }
+
+    @Transactional
+    public StoreUpdateResponseDto updateStore(String storeId, StoreUpdateRequestDto storeUpdateRequestDto){
+
+        String storeName = storeUpdateRequestDto.getStoreName();
+        String areaId = storeUpdateRequestDto.getAreaId();
+        String detailAddress = storeUpdateRequestDto.getDetailAddress();
+        String ownerName = storeUpdateRequestDto.getOwnerName();
+
+        Area area = areaRepository.findById(areaId)
+                .orElseThrow(() -> new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA)));
+
+        Store store = storeRepository.findById(storeId).orElseThrow(()->
+                new BusinessLogicException(messageSource.getMessage( "api.call.client-error",null, Locale.KOREA)));
+
+        store.update(storeName, area, detailAddress, ownerName);
+
+        return StoreMapper.toStoreUpdateResponseDto(store, area);
+    }
+
 
     private void throwByRespCode(int httpStatusCode) {
         int firstNum = httpStatusCode / 100;
