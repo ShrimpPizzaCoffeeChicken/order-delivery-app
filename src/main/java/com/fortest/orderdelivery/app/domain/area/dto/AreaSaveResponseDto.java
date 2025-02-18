@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AreaSaveResponseDto {
-    private String id;
     private String city;
     private String district;
     private String street;

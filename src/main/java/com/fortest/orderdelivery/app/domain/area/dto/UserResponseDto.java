@@ -1,4 +1,4 @@
-package com.fortest.orderdelivery.app.domain.order.dto;
+package com.fortest.orderdelivery.app.domain.area.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
