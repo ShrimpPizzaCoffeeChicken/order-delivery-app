@@ -21,14 +21,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    /*
-    @PostMapping("/users/login")
-    public ResponseEntity<CommonDto<LoginResponseDto>> login(@RequestBody LoginRequestDto requestDto, HttpServletResponse response) {
-        return ResponseEntity.ok(userService.login(requestDto, response));
-    }
-    */
-
-
     @PostMapping("/users/refresh")
     public ResponseEntity<CommonDto<LoginResponseDto>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok(userService.refreshToken(request, response));

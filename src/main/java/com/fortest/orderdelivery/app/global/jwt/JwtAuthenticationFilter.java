@@ -56,18 +56,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         RoleType roleType = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRoleType();
 
-        // 응답 DTO 생성
-        LoginResponseDto responseDto = new LoginResponseDto("로그인 성공", authResult.getName());
+        String accessToken = jwtUtil.createAccessToken(username, roleType.getName());
+        String refreshToken = jwtUtil.createRefreshToken(username);
+
+        LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
         CommonDto<LoginResponseDto> success = new CommonDto<>("success", HttpStatus.OK.value(), responseDto);
 
-        // ObjectMapper로 JSON 변환
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResponse = objectMapper.writeValueAsString(success);
 
-
-        String token = jwtUtil.createAccessToken(username, roleType.getName());
-        jwtUtil.addRefreshTokenToCookie(token, response);
-        // 응답 설정
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(jsonResponse);

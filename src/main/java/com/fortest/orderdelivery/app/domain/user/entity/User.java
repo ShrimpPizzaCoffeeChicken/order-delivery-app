@@ -32,7 +32,6 @@ public class User extends BaseDataEntity {
 
     private Boolean isPublic = true;
 
-    // private RoleType roleType;
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)  // RoleType과 연결
     private RoleType roleType;

@@ -30,12 +30,11 @@ public class JwtUtil {
     private final long ACCESS_TOKEN_TIME  = 60 * 60 * 1000L;
     private final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L;
 
-    @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
+    @Value("${app.jwt.secret.key}")
     private String secretKey;
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
-    // 로그 설정
     public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
 
     @PostConstruct
@@ -44,8 +43,6 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    //JWT 생성
-    // 토큰 생성
     public String createAccessToken(String username, String roleName) {
         Date date = new Date();
 
@@ -59,8 +56,6 @@ public class JwtUtil {
                         .compact();
     }
 
-    // Refresh Token 생성
-
     public String createRefreshToken(String username) {
         Date now = new Date();
         return Jwts.builder()
@@ -71,30 +66,10 @@ public class JwtUtil {
                 .compact();
     }
 
-
-
-//    // JWT Cookie 에 저장
-//    public void addJwtToCookie(String token, HttpServletResponse res) {
-//        try {
-//            //쿠키에 넣기 위해 token 인코딩 진행. 공백 불가
-//            token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20"); // Cookie Value 에는 공백이 불가능해서 encoding 진행
-//
-//            Cookie cookie = new Cookie(AUTHORIZATION_HEADER, token); // Name-Value
-//            cookie.setPath("/");
-//
-//            // Response 객체에 Cookie 추가
-//            res.addCookie(cookie);
-//        } catch (UnsupportedEncodingException e) {
-//            logger.error(e.getMessage());
-//        }
-//    }
-
-    // Access Token을 Header에 저장
     public void addAccessTokenToHeader(String token, HttpServletResponse response) {
         response.setHeader(AUTHORIZATION_HEADER, token);
     }
 
-    // Refresh Token을 Cookie에 저장
     public void addRefreshTokenToCookie(String refreshToken, HttpServletResponse response) {
         try {
             refreshToken = URLEncoder.encode(refreshToken, "utf-8").replaceAll("\\+", "%20");
@@ -135,29 +110,10 @@ public class JwtUtil {
         return false;
     }
 
-    // 토큰에서 사용자 정보 가져오기
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-//    // HttpServletRequest 에서 Cookie Value : JWT 가져오기
-//    public String getTokenFromRequest(HttpServletRequest req) {
-//        Cookie[] cookies = req.getCookies();
-//        if(cookies != null) {
-//            for (Cookie cookie : cookies) {
-//                if (cookie.getName().equals(AUTHORIZATION_HEADER)) {
-//                    try {
-//                        return URLDecoder.decode(cookie.getValue(), "UTF-8"); // Encode 되어 넘어간 Value 다시 Decode
-//                    } catch (UnsupportedEncodingException e) {
-//                        return null;
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
-
-    // HttpServletRequest 에서 Access Token 가져오기
     public String getAccessTokenFromHeader(HttpServletRequest req) {
         String bearerToken = req.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
@@ -166,7 +122,6 @@ public class JwtUtil {
         return null;
     }
 
-    // HttpServletRequest 에서 Refresh Token 가져오기
     public String getRefreshTokenFromCookie(HttpServletRequest req) {
         Cookie[] cookies = req.getCookies();
         if (cookies != null) {

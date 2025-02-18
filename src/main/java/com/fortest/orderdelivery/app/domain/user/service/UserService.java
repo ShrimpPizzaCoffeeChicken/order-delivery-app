@@ -28,43 +28,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-//    private final RefreshTokenRepository refreshTokenRepository;
-//    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-//    private final AuthenticationManager authenticationManager;
-
-
-//    @Transactional
-//    public CommonDto<LoginResponseDto> login(LoginRequestDto requestDto, HttpServletResponse response) {
-//        Authentication authentication = authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(requestDto.getUsername(), requestDto.getPassword())
-//        );
-//
-//        log.info("로그인 서비스 진입");
-//        User user = userRepository.findByUsername(requestDto.getUsername())
-//                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
-//
-//        // Access Token & Refresh Token 생성
-//        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRoleType().getName());
-//        String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
-//
-//        // 기존 Refresh Token 삭제 후 새로운 Token 저장
-//        refreshTokenRepository.deleteByUsername(user.getUsername());
-//        RefreshToken refreshTokenEntity = new RefreshToken(user.getUsername(), refreshToken);
-//        refreshTokenRepository.save(refreshTokenEntity);
-//
-//        // Access Token은 Header에, Refresh Token은 Cookie에 추가
-//        jwtUtil.addAccessTokenToHeader(accessToken, response);
-//        jwtUtil.addRefreshTokenToCookie(refreshToken, response);
-//
-//        return CommonDto.<LoginResponseDto>builder()
-//                .message("로그인 성공")
-//                .code(200)
-//                .data(new LoginResponseDto(accessToken, refreshToken))
-//                .build();
-//    }
-
-
 
     @Transactional
     public CommonDto<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
