@@ -42,6 +42,7 @@ public class ImageService {
     private final MessageSource messageSource;
     private final AmazonS3 amazonS3;
 
+    // TODO : multipart upload로 업로드 중간에 실패할 때의 데이터 불일치 문제 해결하기
     @Transactional
     public MenuImageResponseDto updateImageToS3(List<MultipartFile> multipartFileList) {
         List<String> imageIdList = new ArrayList<>();
