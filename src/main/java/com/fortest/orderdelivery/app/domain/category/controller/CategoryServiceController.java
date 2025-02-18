@@ -20,7 +20,7 @@ public class CategoryServiceController {
 
     private final CategoryService categoryService;
 
-    @PostMapping("/categorys")
+    @PostMapping("/categories")
     public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@RequestBody CategorySaveRequestDto categorySaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
         Category category = categoryService.saveCategory(categorySaveRequestDto, 123L);
