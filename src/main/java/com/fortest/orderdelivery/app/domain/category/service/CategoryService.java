@@ -24,12 +24,11 @@ public class CategoryService {
     public CategorySaveResponseDto saveCategory(CategorySaveRequestDto categorySaveRequestDto, Long userId) {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getUserId(userId); // api 요청
-        if (validUserResponse != null && validUserResponse.getData() != null) {
-            throwByRespCode(validUserResponse.getCode());
-            String username = validUserResponse.getData().getUsername();
-        } else {
+        if (validUserResponse == null || validUserResponse.getData() == null) {
             throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
         }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
 
         Category newCategory = CategoryMapper.toCategory(categorySaveRequestDto);
         Category savedCategory = categoryRepository.save(newCategory);
