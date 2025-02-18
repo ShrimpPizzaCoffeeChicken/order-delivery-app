@@ -36,42 +36,36 @@ public class ImageService {
     private final MessageSource messageSource;
     private final AmazonS3 amazonS3;
 
-    public static final String DEFAULT_IMAGE_FILE_NAME = "default-image.jpg";
-
     @Transactional
     public MenuImageSaveResponseDto updateImageToS3(List<MultipartFile> multipartFileList) {
         List<String> imageIdList = new ArrayList<>();
 
-        if (Objects.isNull(multipartFileList) || multipartFileList.isEmpty()) {
-            imageIdList.add(saveImage(0, DEFAULT_IMAGE_FILE_NAME));
+        if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
+            AtomicInteger sequence = new AtomicInteger(10);
 
-            return ImageMapper.toMenuImageSaveResponseDto(imageIdList);
+            multipartFileList.forEach(file -> {
+
+                String originalFileName = file.getOriginalFilename();
+                validateFileExtension(originalFileName);
+                String fileName = createFileName(originalFileName);
+
+                ObjectMetadata objectMetadata = new ObjectMetadata();
+                objectMetadata.setContentLength(file.getSize());
+                objectMetadata.setContentType(file.getContentType());
+
+                try (InputStream inputStream = file.getInputStream()) {
+                    amazonS3.putObject(
+                        new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+                            .withCannedAcl(CannedAccessControlList.PublicRead));
+                } catch (IOException e) {
+                    throw new BusinessLogicException(messageSource.getMessage(
+                        "s3.image.upload.failure", null, Locale.getDefault()));
+                }
+
+                imageIdList.add(saveImage(sequence.get(), fileName));
+                sequence.addAndGet(10);
+            });
         }
-
-        AtomicInteger sequence = new AtomicInteger(10);
-
-        multipartFileList.forEach(file -> {
-
-            String originalFileName = file.getOriginalFilename();
-            validateFileExtension(originalFileName);
-            String fileName = createFileName(originalFileName);
-
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(file.getSize());
-            objectMetadata.setContentType(file.getContentType());
-
-            try (InputStream inputStream = file.getInputStream()) {
-                amazonS3.putObject(
-                    new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead));
-            } catch (IOException e) {
-                throw new BusinessLogicException(messageSource.getMessage(
-                    "s3.image.upload.failure", null, Locale.getDefault()));
-            }
-
-            imageIdList.add(saveImage(sequence.get(), fileName));
-            sequence.addAndGet(10);
-        });
 
         return ImageMapper.toMenuImageSaveResponseDto(imageIdList);
     }
