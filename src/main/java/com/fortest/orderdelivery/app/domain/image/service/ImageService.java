@@ -1,8 +1,11 @@
 package com.fortest.orderdelivery.app.domain.image.service;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fortest.orderdelivery.app.domain.image.dto.MenuImageDeleteRequestDto;
@@ -20,6 +23,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -59,7 +63,7 @@ public class ImageService {
                     amazonS3.putObject(
                         new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
                             .withCannedAcl(CannedAccessControlList.PublicRead));
-                } catch (IOException e) {
+                } catch (IOException | AmazonServiceException e) {
                     throw new BusinessLogicException(messageSource.getMessage(
                         "s3.image.upload.failure", null, Locale.getDefault()));
                 }
@@ -77,16 +81,23 @@ public class ImageService {
         List<String> imageIdList = requestDto.getImageIdList();
         List<String> deleteImageIdList = new ArrayList<>();
 
-        if(!Objects.isNull(imageIdList) && !imageIdList.isEmpty()) {
-            imageIdList.forEach( id -> {
-                try {
-                    amazonS3.deleteObject(new DeleteObjectRequest(bucket, getImageFileName(id)));
-                } catch (Exception e) {
-                    throw new BusinessLogicException(messageSource.getMessage("s3.image.delete.failure", null, Locale.getDefault()));
-                }
+        if (!Objects.isNull(imageIdList) && !imageIdList.isEmpty()) {
+            List<DeleteObjectsRequest.KeyVersion> keysToDelete = imageIdList.stream()
+                .map(id -> new DeleteObjectsRequest.KeyVersion(getImageFileName(id)))
+                .collect(Collectors.toList());
 
-                deleteImageIdList.add(deleteImage(id));
-            });
+            try {
+                amazonS3.deleteObjects(new DeleteObjectsRequest(bucket)
+                    .withKeys(keysToDelete)
+                    .withQuiet(false));
+
+                imageIdList.forEach(id -> deleteImageIdList.add(deleteImage(id)));
+
+            } catch (AmazonServiceException e) {
+                throw new BusinessLogicException(
+                    messageSource.getMessage("s3.image.delete.failure", null, Locale.getDefault())
+                );
+            }
         }
 
         return ImageMapper.toMenuImageSaveResponseDto(deleteImageIdList);
