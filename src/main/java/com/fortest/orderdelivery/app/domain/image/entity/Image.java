@@ -29,9 +29,6 @@ public class Image extends BaseDataEntity {
     private String optionId;
 
     @Column(length = 200, nullable = false)
-    private String url;
-
-    @Column(length = 200, nullable = false)
     private String s3Url;
 
 }
