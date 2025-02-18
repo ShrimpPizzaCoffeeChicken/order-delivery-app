@@ -28,7 +28,7 @@ public class UserServiceController {
         User user = userService.signup(requestDto);
         String successMessage = user.getNickname() + "님의 회원가입이 완료되었습니다.";
 
-        userService.iscreatedBy(user);
+        userService.isCreatedBy(user);
 
         return ResponseEntity.ok(
                 CommonDto.<Void> builder()

@@ -45,7 +45,7 @@ public class UserService {
     }
 
     @Transactional
-    public void iscreatedBy(User user){
+    public void isCreatedBy(User user){
         User findUser = userRepository.findById(user.getId()).get();
         findUser.isCreatedBy(findUser.getId());
         userRepository.save(findUser);
