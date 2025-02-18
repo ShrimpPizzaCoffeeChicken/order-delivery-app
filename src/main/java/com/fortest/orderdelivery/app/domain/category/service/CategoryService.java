@@ -77,6 +77,17 @@ public class CategoryService {
         return CategoryMapper.toCategoryUpdateResponseDto(category);
     }
 
+    @Transactional
+    public CategoryDeleteResponseDto deleteCategory(String categoryId, Long userId){
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()->
+                new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+
+        category.delete(userId);
+
+        return CategoryMapper.toCategoryDeleteResponseDto(category);
+    }
+
+
     private void throwByRespCode(int httpStatusCode) {
         int firstNum = httpStatusCode / 100;
         switch (firstNum) {
