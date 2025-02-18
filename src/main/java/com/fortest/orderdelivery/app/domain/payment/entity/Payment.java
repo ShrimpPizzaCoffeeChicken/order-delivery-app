@@ -38,8 +38,13 @@ public class Payment extends BaseDataEntity {
     public enum Status {
 
         COMPLETE("완료"),
-        CANCELED("취소");
+        CANCELED("취소"),
+        FAIL("실패");
 
         private String message;
+    }
+
+    public static Status getStatusByString (String statusString) {
+        return Status.valueOf(statusString);
     }
 }
