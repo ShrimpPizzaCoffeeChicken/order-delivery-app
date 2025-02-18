@@ -5,7 +5,6 @@ import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
 import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
-import com.fortest.orderdelivery.app.domain.payment.entity.PaymentAgent;
 import com.fortest.orderdelivery.app.domain.payment.mapper.PaymentMapper;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentAgentRepository;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentRepository;
@@ -14,16 +13,11 @@ import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
-import java.time.Duration;
 import java.util.Locale;
 
 @Slf4j
@@ -47,24 +41,24 @@ public class PaymentService {
             // TODO : 결제 실패 처리
             // TODO : 주문 실패 상태 업데이트 요청
             log.error("", e);
-            throw new BusinessLogicException(messageSource.getMessage("app.payment.payment-fail", null, Locale.KOREA));
+            throw new BusinessLogicException(messageSource.getMessage("app.payment.payment-save-fail", null, Locale.KOREA));
         }
     }
 
     public PaymentSaveResponseDto savePayment(PaymentSaveRequestDto saveRequestDto) {
 
         // TODO : 주문 정보 요청 : 외부 요청으로 교체 예정
-        CommonDto<OrderValidResponseDto> validStoreMenuFromApp = getValidStoreMenuFromApp(saveRequestDto.getOrderId());
-        if (validStoreMenuFromApp == null || validStoreMenuFromApp.getData() == null) {
+        CommonDto<OrderValidResponseDto> validOrderFromApp = getValidOrderFromApp(saveRequestDto.getOrderId());
+        if (validOrderFromApp == null || validOrderFromApp.getData() == null) {
             throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
         }
-        throwByRespCode(validStoreMenuFromApp.getCode());
+        throwByRespCode(validOrderFromApp.getCode());
 
         paymentAgentRepository.findByName(saveRequestDto.getPaymentAgent())
                 .orElseThrow(() -> new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA)));
 
         // 주문 유효성 검사
-        if ( ! Order.OrderStatus.WAIT.name().equals(validStoreMenuFromApp.getData().getOrderStatus()) ) {
+        if ( ! Order.OrderStatus.WAIT.name().equals(validOrderFromApp.getData().getOrderStatus()) ) {
             throw new BusinessLogicException(messageSource.getMessage("app.payment.invalid-order", null, Locale.KOREA));
         }
 
@@ -75,7 +69,7 @@ public class PaymentService {
     }
 
     // TODO : 하단 외부요청 코드로 교체 예정
-    private CommonDto<OrderValidResponseDto> getValidStoreMenuFromApp(String orderId) {
+    private CommonDto<OrderValidResponseDto> getValidOrderFromApp(String orderId) {
         OrderValidResponseDto data = OrderValidResponseDto.builder()
                 .orderId(orderId)
                 .orderStatus("WAIT")
@@ -88,7 +82,7 @@ public class PaymentService {
                 .build();
     }
 
-//    private CommonDto<OrderValidResponseDto> getValidStoreMenuFromApp(String orderId) {
+//    private CommonDto<OrderValidResponseDto> getValidOrderFromApp(String orderId) {
 //        String targetUrl = ORDER_APP_URL
 //                .replace("{host}", "localhost")
 //                .replace("{port}", "8082")
