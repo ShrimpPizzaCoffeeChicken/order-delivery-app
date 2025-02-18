@@ -30,4 +30,11 @@ public class Store extends BaseDataEntity {
 
     @Column(length = 100)
     private String ownerName;
+
+    public void update(String storeName, Area area, String detailAddress, String ownerName) {
+        this.name = storeName;
+        this.area = area;
+        this.detailAddress = detailAddress;
+        this.ownerName = ownerName;
+    }
 }
