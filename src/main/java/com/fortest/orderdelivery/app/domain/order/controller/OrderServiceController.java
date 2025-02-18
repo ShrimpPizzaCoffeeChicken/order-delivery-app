@@ -23,7 +23,7 @@ public class OrderServiceController {
 
     private final OrderService orderService;
 
-    @PostMapping("/api/service/orders")
+    @PostMapping("/orders")
     public ResponseEntity<CommonDto<Map<String, String>>> saveOrder(@RequestBody OrderSaveRequestDto orderSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
         String orderId = orderService.saveOrder(orderSaveRequestDto, 123L);
