@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AreaCreateRequestDto {
+public class AreaSaveResponseDto {
+    private String id;
     private String city;
     private String district;
     private String street;
