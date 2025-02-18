@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.category.mapper;
 
+import com.fortest.orderdelivery.app.domain.category.dto.CategoryDeleteResponseDto;
 import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveRequestDto;
 import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveResponseDto;
 import com.fortest.orderdelivery.app.domain.category.dto.CategoryUpdateResponseDto;
@@ -25,6 +26,12 @@ public class CategoryMapper {
         return CategoryUpdateResponseDto.builder()
                 .categoryId(category.getId())
                 .categoryName(category.getName())
+                .build();
+    }
+
+    public static CategoryDeleteResponseDto toCategoryDeleteResponseDto(Category category) {
+        return CategoryDeleteResponseDto.builder()
+                .categoryId(category.getId())
                 .build();
     }
 }

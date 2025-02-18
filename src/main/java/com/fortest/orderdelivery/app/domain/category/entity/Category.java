@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -26,4 +28,11 @@ public class Category extends BaseDataEntity {
     public void update(String categoryName) {
         this.name = categoryName;
     }
+
+    public void delete(Long userId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = userId;
+    }
+
+
 }
