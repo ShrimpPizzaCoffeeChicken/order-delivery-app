@@ -22,4 +22,5 @@ public class Category extends BaseDataEntity {
 
     @Column(length = 100, unique = true, nullable = false)
     private String name;
+
 }
