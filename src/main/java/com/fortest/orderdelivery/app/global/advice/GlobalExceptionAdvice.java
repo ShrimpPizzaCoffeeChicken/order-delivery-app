@@ -110,4 +110,17 @@ public class GlobalExceptionAdvice {
                 .data(null)
                 .build();
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CommonDto<Object> handleIllegalArgumentException(IllegalArgumentException e) {
+
+        String message = e.getMessage();
+
+        return CommonDto.builder()
+            .message(message)
+            .code(HttpStatus.BAD_REQUEST.value())
+            .data(null)
+            .build();
+    }
 }
