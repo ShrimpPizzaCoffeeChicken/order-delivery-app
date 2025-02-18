@@ -12,9 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/app")
+@RequestMapping("/api/service")
 @RequiredArgsConstructor
-public class UserController {
+public class UserServiceController {
 
     private final UserService userService;
 
