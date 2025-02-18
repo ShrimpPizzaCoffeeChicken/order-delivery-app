@@ -25,6 +25,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
+    private static final String SUCCESS_MESSAGE = "로그인 성공 및 JWT 생성";
+    private static final String FAILURE_MESSAGE = "로그인 실패";
+    private static final String RESPONSE_TYPE = "application/json";
+    private static final String CHARSET_UTF8 = "UTF-8";
+    private static final String STATUS_SUCCESS = "success";
+
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
@@ -52,21 +58,26 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.info("로그인 성공 및 JWT 생성");
+        log.info(SUCCESS_MESSAGE);
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         RoleType roleType = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRoleType();
 
         String accessToken = jwtUtil.createAccessToken(username, roleType.getName());
         String refreshToken = jwtUtil.createRefreshToken(username);
 
-        LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
-        CommonDto<LoginResponseDto> success = new CommonDto<>("success", HttpStatus.OK.value(), responseDto);
+        jwtUtil.addAccessTokenToHeader(accessToken, response);
+        jwtUtil.addRefreshTokenToCookie(refreshToken, response);
+
+//        LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
+//        CommonDto<LoginResponseDto> success = new CommonDto<>(STATUS_SUCCESS, HttpStatus.OK.value(), responseDto);
+
+        CommonDto<String> success = new CommonDto<>(STATUS_SUCCESS, HttpStatus.OK.value(), "로그인 성공");
 
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResponse = objectMapper.writeValueAsString(success);
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        response.setContentType(RESPONSE_TYPE);
+        response.setCharacterEncoding(CHARSET_UTF8);
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();
     }

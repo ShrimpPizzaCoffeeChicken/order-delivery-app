@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.global.jwt.JwtAuthenticationFilter;
 import com.fortest.orderdelivery.app.global.jwt.JwtAuthorizationFilter;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import com.fortest.orderdelivery.app.global.security.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +21,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity // Spring Security 지원을 가능하게 함
+@EnableWebSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
 
     private final JwtUtil jwtUtil;
@@ -30,15 +32,7 @@ public class WebSecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
-    }
-
-    public WebSecurityConfig(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, AuthenticationConfiguration authenticationConfiguration, UserService userService) {
-        this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
-        this.authenticationConfiguration = authenticationConfiguration;
-        this.userService = userService;
     }
 
     @Bean
