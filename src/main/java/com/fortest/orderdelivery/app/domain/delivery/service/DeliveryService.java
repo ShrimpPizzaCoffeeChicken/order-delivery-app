@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.delivery.service;
 
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetDetailResponseDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListReponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveRequestDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveResponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.entity.Delivery;
@@ -12,6 +13,7 @@ import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +39,9 @@ public class DeliveryService {
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String ORDER_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
 
-    public DeliverySaveResponseDto saveEntry(DeliverySaveRequestDto saveRequestDto) {
+    public DeliverySaveResponseDto saveEntry(DeliverySaveRequestDto saveRequestDto, Long userId) {
         try {
-            return saveDelivery(saveRequestDto);
+            return saveDelivery(saveRequestDto, userId);
         } catch (Exception e) {
             // TODO : 배달 등록 실패 처리
             // TODO : 주문 실패 상태 업데이트 요청
@@ -49,7 +51,15 @@ public class DeliveryService {
     }
 
     @Transactional
-    public DeliverySaveResponseDto saveDelivery(DeliverySaveRequestDto saveRequestDto) {
+    public DeliverySaveResponseDto saveDelivery(DeliverySaveRequestDto saveRequestDto, Long userId) {
+
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
 
         // TODO : 주문 검증 : 추후 외부 요청으로 교체 예정
         CommonDto<OrderValidResponseDto> validOrderFromApp = getValidOrderFromApp(saveRequestDto.getOrderId());
@@ -63,10 +73,33 @@ public class DeliveryService {
             throw new BusinessLogicException(messageUtil.getMessage("app.delivery.invalid-order"));
         }
 
-        Delivery delivery = DeliveryMapper.saveDtoToEntity(saveRequestDto);
+        Delivery delivery = DeliveryMapper.saveDtoToEntity(saveRequestDto, username);
         deliveryRepository.save(delivery);
 
         return DeliveryMapper.entityToSaveResponseDto(delivery);
+    }
+
+    @Transactional
+    public DeliveryGetDetailResponseDto getDeliveryDetail(String deliveryId, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        Delivery delivery = deliveryQueryRepository.findDeliveryDetail(deliveryId, username)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
+
+        // TODO : 주문 검증 : 추후 외부 요청으로 교체 예정
+        CommonDto<OrderValidResponseDto> validOrderFromApp = getValidOrderFromApp(delivery.getOrderId());
+        if (validOrderFromApp == null || validOrderFromApp.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validOrderFromApp.getCode());
+
+        return DeliveryMapper.entityToGetDetailDto(delivery, validOrderFromApp.getData());
     }
 
     /**
@@ -80,7 +113,7 @@ public class DeliveryService {
      * @return
      */
     @Transactional
-    public DeliveryGetListDto getDeliveryList (Integer page, Integer size, String orderby, String sort, String search, Long userId) {
+    public DeliveryGetListReponseDto getDeliveryList (Integer page, Integer size, String orderby, String sort, String search, Long userId) {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
         if (validUserResponse == null || validUserResponse.getData() == null) {

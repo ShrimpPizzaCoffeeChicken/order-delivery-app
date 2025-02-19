@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeliveryGetListDto {
+public class DeliveryGetListReponseDto {
 
     @JsonProperty("total-contents")
     private Long totalContents;

@@ -1,17 +1,20 @@
 package com.fortest.orderdelivery.app.domain.delivery.mapper;
 
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetDetailResponseDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListReponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveRequestDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveResponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.entity.Delivery;
+import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.util.ArrayList;
 
 public class DeliveryMapper {
 
-    public static Delivery saveDtoToEntity(DeliverySaveRequestDto saveRequestDto) {
+    public static Delivery saveDtoToEntity(DeliverySaveRequestDto saveRequestDto, String username) {
         return Delivery.builder()
+                .customerName(username)
                 .orderId(saveRequestDto.getOrderId())
                 .address(saveRequestDto.getAddress())
                 .status(Delivery.Status.END) // 미구현으로 인한 END 등록
@@ -25,17 +28,17 @@ public class DeliveryMapper {
                 .build();
     }
 
-    public static DeliveryGetListDto entityToGetListDto (Page<Delivery> page, String search) {
-        DeliveryGetListDto.DeliveryGetListDtoBuilder builder = DeliveryGetListDto.builder();
+    public static DeliveryGetListReponseDto entityToGetListDto (Page<Delivery> page, String search) {
+        DeliveryGetListReponseDto.DeliveryGetListReponseDtoBuilder builder = DeliveryGetListReponseDto.builder();
         builder = builder
                 .search(search == null ? "" : search)
                 .totalContents(page.getTotalElements())
                 .size(page.getSize())
                 .currentPage(page.getNumber() + 1);
-        ArrayList<DeliveryGetListDto.DeliveryDto> deliveryDtos = new ArrayList<>();
+        ArrayList<DeliveryGetListReponseDto.DeliveryDto> deliveryDtos = new ArrayList<>();
         for (Delivery delivery : page.getContent()) {
             deliveryDtos.add(
-                    DeliveryGetListDto.DeliveryDto.builder()
+                    DeliveryGetListReponseDto.DeliveryDto.builder()
                             .deliveryId(delivery.getId())
                             .address(delivery.getAddress())
                             .status(delivery.getStatus().name())
@@ -43,5 +46,14 @@ public class DeliveryMapper {
             );
         }
         return builder.deliveryList(deliveryDtos).build();
+    }
+
+    public static DeliveryGetDetailResponseDto entityToGetDetailDto(Delivery delivery, OrderValidResponseDto orderData) {
+        return DeliveryGetDetailResponseDto.builder()
+                .address(delivery.getAddress())
+                .status(delivery.getStatus().name())
+                .orderId(orderData.getOrderId())
+                .storeName(orderData.getStoreName())
+                .build();
     }
 }
