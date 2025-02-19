@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
 @RestController
@@ -40,6 +42,7 @@ public class DeliveryServiceController {
             @RequestParam("sort") String sort,
             @RequestParam("search") String search
     ) {
+        // TODO : 유저 id 획득
         DeliveryGetListReponseDto deliveryList = deliveryService.getDeliveryList(page, size, orderby, sort, search, 123L);
 
         return ResponseEntity.ok(
@@ -53,13 +56,28 @@ public class DeliveryServiceController {
 
     @GetMapping("/deliveries/{deliveryId}")
     public ResponseEntity<CommonDto<DeliveryGetDetailResponseDto>> getDeliveryDetail (@PathVariable("deliveryId") String deliveryId) {
+        // TODO : 유저 id 획득
         DeliveryGetDetailResponseDto deliveryDetail = deliveryService.getDeliveryDetail(deliveryId, 123L);
-
         return ResponseEntity.ok(
                 CommonDto.<DeliveryGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(deliveryDetail)
+                        .build()
+        );
+    }
+
+    @DeleteMapping("/deliveries/{deliveryId}")
+    public ResponseEntity<CommonDto<Map<String, String>>> deleteDelivery (@PathVariable("deliveryId") String deliveryId) {
+        // TODO : 유저 id 획득
+        String deleteDeliveryId = deliveryService.deleteDelivery(deliveryId, 123L);
+        Map<String, String> data = Map.of("delivery-id", deleteDeliveryId);
+
+        return ResponseEntity.ok(
+                CommonDto.<Map<String, String>> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(data)
                         .build()
         );
     }
