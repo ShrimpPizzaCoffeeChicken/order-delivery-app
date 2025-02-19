@@ -27,54 +27,51 @@ public class WebSecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final UserService userService;
+//    private final UserService userService;
 
-    // 🔹 비밀번호 암호화 설정 (BCrypt 사용)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 🔹 인증 매니저 설정
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
-    // 🔹 JWT 인증 필터 설정
+//    @Bean
+//    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
+//        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userService);
+//        filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
+//        return filter;
+//    }
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(UserService userService) throws Exception { // ✅ 메서드에서 주입
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userService);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
 
-    // 🔹 JWT 권한 필터 설정
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
         return new JwtAuthorizationFilter(jwtUtil, userDetailsService);
     }
 
-    // 🔹 Spring Security 설정
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // CSRF 설정 비활성화 (JWT 기반이므로 불필요)
         http.csrf(csrf -> csrf.disable());
 
-        // 기본 세션 관리 방식 비활성화 (JWT 기반)
         http.sessionManagement(sessionManagement ->
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
 
-        // 🔹 요청에 대한 접근 제어
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // 정적 리소스 허용
-                        .requestMatchers("/api/user/**").permitAll() // 회원 관련 API는 인증 없이 접근 가능
+                        .requestMatchers("/api/service/users/**").permitAll() // 회원 관련 API는 인증 없이 접근 가능
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
         );
 
-        // 폼 로그인 비활성화
         http.formLogin(form -> form.disable());
 
         return http.build();

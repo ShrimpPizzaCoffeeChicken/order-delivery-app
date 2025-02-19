@@ -37,7 +37,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    // 🔹 로그인 관련 기능 (토큰 재발급)
+    // 로그인 관련 기능 (토큰 재발급)
     @Transactional
     public CommonDto<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
@@ -61,7 +61,7 @@ public class UserService {
                 .build();
     }
 
-    // 🔹 회원가입 관련 기능
+    // 회원가입 관련 기능
     @Transactional
     public User signup(SignupRequestDto requestDto) {
         RoleType roleType = roleTypeRepository.findByName("CUSTOMER")
@@ -79,10 +79,10 @@ public class UserService {
         return user;
     }
 
-    // 🔹 유저 생성자 설정
+    // 유저 생성자 설정
     @Transactional
-    public void isCreatedBy(User user) {
-        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new BusinessLogicException("사용자를 찾을 수 없습니다."));
+    public void isCreatedBy(User user){
+        User findUser = userRepository.findById(user.getId()).get();
         findUser.isCreatedBy(findUser.getId());
         userRepository.save(findUser);
     }
