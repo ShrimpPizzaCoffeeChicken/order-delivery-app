@@ -35,7 +35,7 @@ public class User extends BaseDataEntity {
     private Boolean isPublic = true;
 
     @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id", nullable = false)  // RoleType과 연결
     private RoleType roleType;
 
     @Builder
@@ -52,5 +52,4 @@ public class User extends BaseDataEntity {
     public void encodePassword(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);
     }
-
 }
