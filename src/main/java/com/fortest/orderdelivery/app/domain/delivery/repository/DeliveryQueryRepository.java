@@ -12,6 +12,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.fortest.orderdelivery.app.domain.delivery.entity.QDelivery.*;
 
@@ -75,5 +76,17 @@ public class DeliveryQueryRepository {
                 );
 
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
+    }
+
+    public Optional<Delivery> findDeliveryDetail (String deliveryId, String userName) {
+        return Optional.ofNullable(
+                jpaQueryFactory
+                        .selectFrom(delivery)
+                        .where(
+                                delivery.deletedAt.isNull(),
+                                delivery.customerName.eq(userName)
+                        )
+                        .fetchOne()
+        );
     }
 }
