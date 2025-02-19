@@ -10,6 +10,7 @@ import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -20,9 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 
+@Data
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -33,6 +37,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderQueryRepository orderQueryRepository;
 
+    private static final int REMOVE_ABLE_TIME = 5 * 60; // 60초
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String USER_APP_URL = "http://{host}:{port}/api/app/user/{userId}";
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/store/{storeId}/valid";
@@ -113,8 +118,6 @@ public class OrderService {
         }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
-        // TODO : TEST
-        log.info("username = {}", username);
 
         Order order = orderQueryRepository.findOrderDetail(orderId)
                 .orElseThrow(() -> new NotFoundException(messageSource.getMessage("not-found.order", null, Locale.KOREA)));
@@ -123,6 +126,31 @@ public class OrderService {
         }
 
         return OrderMapper.entityToGetDetailDto(order);
+    }
+
+    @Transactional
+    public String deleteOrder(String orderId, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(messageSource.getMessage("not-found.order", null, Locale.KOREA)));
+        if (!order.getCustomerName().equals(username)) {
+            throw new NotValidRequestException(messageSource.getMessage("app.order.not-valid-user", null, Locale.KOREA));
+        }
+
+        Duration between = Duration.between(order.getCreatedAt(), LocalDateTime.now());
+        if (between.getSeconds() > REMOVE_ABLE_TIME) {
+            throw new BusinessLogicException(messageSource.getMessage("app.order.inable-delete", null, Locale.KOREA));
+        }
+
+        order.isDeletedNow(userId);
+        return order.getId();
     }
 
     // TODO : 하단 코드로 교체 예정
