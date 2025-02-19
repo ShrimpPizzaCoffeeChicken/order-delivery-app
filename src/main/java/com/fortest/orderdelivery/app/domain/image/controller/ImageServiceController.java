@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,12 +25,25 @@ public class ImageServiceController {
     private final ImageService imageService;
 
     @PostMapping("/menus")
-    public ResponseEntity<CommonDto<MenuImageResponseDto>> updateImageToS3(@RequestParam(value = "image-list", required = false)
+    public ResponseEntity<CommonDto<MenuImageResponseDto>> registerMenuImage(@RequestParam(value = "image-list", required = false)
     List<MultipartFile> multipartFileList) {
-        MenuImageResponseDto responseDto = imageService.updateImageToS3(multipartFileList);
+        MenuImageResponseDto responseDto = imageService.registerMenuImage(multipartFileList);
 
         return ResponseEntity.ok(CommonDto.<MenuImageResponseDto>builder()
             .message("사진 저장 완료")
+            .code(HttpStatus.OK.value())
+            .data(responseDto)
+            .build());
+    }
+
+    @PostMapping("/menus/{menuId}")
+    public ResponseEntity<CommonDto<MenuImageResponseDto>> updateMenuImage(
+        @RequestParam(value = "image-list", required = false) List<MultipartFile> multipartFileList,
+        @PathVariable String menuId) {
+        MenuImageResponseDto responseDto = imageService.updateMenuImage(multipartFileList,menuId);
+
+        return ResponseEntity.ok(CommonDto.<MenuImageResponseDto>builder()
+            .message("사진 추가 저장 완료")
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());

@@ -10,6 +10,7 @@ import com.fortest.orderdelivery.app.domain.image.dto.MenuImageRequestDto;
 import com.fortest.orderdelivery.app.domain.image.dto.MenuImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
+import com.fortest.orderdelivery.app.domain.image.repository.ImageQueryRepository;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageRepository;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import java.io.IOException;
@@ -36,43 +37,64 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    private final ImageRepository imageRepository;
-    private final MessageSource messageSource;
     private final AmazonS3 amazonS3;
+    private final MessageSource messageSource;
+    private final ImageRepository imageRepository;
+    private final ImageQueryRepository imageQueryRepository;
 
     // TODO : multipart upload로 업로드 중간에 실패할 때의 데이터 불일치 문제 해결하기
     @Transactional
-    public MenuImageResponseDto updateImageToS3(List<MultipartFile> multipartFileList) {
+    public MenuImageResponseDto registerMenuImage(List<MultipartFile> multipartFileList) {
         List<String> imageIdList = new ArrayList<>();
 
         if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
             AtomicInteger sequence = new AtomicInteger(10);
 
-            multipartFileList.forEach(file -> {
-
-                String originalFileName = file.getOriginalFilename();
-                validateFileExtension(originalFileName);
-                String fileName = createFileName(originalFileName);
-
-                ObjectMetadata objectMetadata = new ObjectMetadata();
-                objectMetadata.setContentLength(file.getSize());
-                objectMetadata.setContentType(file.getContentType());
-
-                try (InputStream inputStream = file.getInputStream()) {
-                    amazonS3.putObject(
-                        new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
-                            .withCannedAcl(CannedAccessControlList.PublicRead));
-                } catch (IOException | AmazonServiceException e) {
-                    throw new BusinessLogicException(messageSource.getMessage(
-                        "s3.image.upload.failure", null, Locale.getDefault()));
-                }
-
-                imageIdList.add(saveImage(sequence.get(), fileName));
-                sequence.addAndGet(10);
-            });
+            uploadImageToS3(multipartFileList, imageIdList, sequence);
         }
 
         return ImageMapper.toMenuImageResponseDto(imageIdList);
+    }
+
+    @Transactional
+    public MenuImageResponseDto updateMenuImage(List<MultipartFile> multipartFileList, String menuId) {
+        List<String> imageIdList = new ArrayList<>();
+
+        if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
+            int maxImageSequence = imageQueryRepository.getMaxImageSequence(menuId);
+            AtomicInteger sequence = new AtomicInteger(maxImageSequence);
+
+            uploadImageToS3(multipartFileList, imageIdList, sequence);
+        }
+
+        return ImageMapper.toMenuImageResponseDto(imageIdList);
+    }
+
+    @Transactional
+    protected void uploadImageToS3(List<MultipartFile> multipartFileList, List<String> imageIdList,
+        AtomicInteger sequence) {
+        multipartFileList.forEach(file -> {
+
+            String originalFileName = file.getOriginalFilename();
+            validateFileExtension(originalFileName);
+            String fileName = createFileName(originalFileName);
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentLength(file.getSize());
+            objectMetadata.setContentType(file.getContentType());
+
+            try (InputStream inputStream = file.getInputStream()) {
+                amazonS3.putObject(
+                    new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+            } catch (IOException | AmazonServiceException e) {
+                throw new BusinessLogicException(messageSource.getMessage(
+                    "s3.image.upload.failure", null, Locale.getDefault()));
+            }
+
+            imageIdList.add(saveImage(sequence.get(), fileName));
+            sequence.addAndGet(10);
+        });
     }
 
     @Transactional
