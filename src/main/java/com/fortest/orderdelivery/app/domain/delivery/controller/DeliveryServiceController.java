@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.delivery.controller;
 
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetDetailResponseDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListReponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveRequestDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveResponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.service.DeliveryService;
@@ -19,7 +20,8 @@ public class DeliveryServiceController {
 
     @PostMapping("/deliveries")
     public ResponseEntity<CommonDto<DeliverySaveResponseDto>> saveDelivery(@RequestBody DeliverySaveRequestDto requestDto) {
-        DeliverySaveResponseDto responseDto = deliveryService.saveEntry(requestDto);
+        // TODO : 유저 id 획득
+        DeliverySaveResponseDto responseDto = deliveryService.saveEntry(requestDto, 123L);
 
         return ResponseEntity.ok(
                 CommonDto.<DeliverySaveResponseDto> builder()
@@ -31,20 +33,33 @@ public class DeliveryServiceController {
     }
 
     @GetMapping("/deliveries")
-    public ResponseEntity<CommonDto<DeliveryGetListDto>> getDeliveryList(
+    public ResponseEntity<CommonDto<DeliveryGetListReponseDto>> getDeliveryList(
             @RequestParam("page") Integer page,
             @RequestParam("size") Integer size,
             @RequestParam("orderby") String orderby,
             @RequestParam("sort") String sort,
             @RequestParam("search") String search
     ) {
-        DeliveryGetListDto deliveryList = deliveryService.getDeliveryList(page, size, orderby, sort, search, 123L);
+        DeliveryGetListReponseDto deliveryList = deliveryService.getDeliveryList(page, size, orderby, sort, search, 123L);
 
         return ResponseEntity.ok(
-                CommonDto.<DeliveryGetListDto> builder()
+                CommonDto.<DeliveryGetListReponseDto> builder()
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(deliveryList)
+                        .build()
+        );
+    }
+
+    @GetMapping("/deliveries/{deliveryId}")
+    public ResponseEntity<CommonDto<DeliveryGetDetailResponseDto>> getDeliveryDetail (@PathVariable("deliveryId") String deliveryId) {
+        DeliveryGetDetailResponseDto deliveryDetail = deliveryService.getDeliveryDetail(deliveryId, 123L);
+
+        return ResponseEntity.ok(
+                CommonDto.<DeliveryGetDetailResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(deliveryDetail)
                         .build()
         );
     }

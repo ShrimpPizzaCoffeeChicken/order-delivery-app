@@ -81,13 +81,13 @@ public class OrderQueryRepository {
     public Optional<Order> findOrderDetail (String orderId) {
         return Optional.ofNullable(
                 jpaQueryFactory
-                .selectFrom(order)
-                .join(order.menuOrderList, menuOrder)
-                .where(
-                        order.id.eq(orderId),
-                        order.deletedAt.isNull()
-                )
-                .fetchOne()
+                    .selectFrom(order)
+                    .join(order.menuOrderList, menuOrder)
+                    .where(
+                            order.id.eq(orderId),
+                            order.deletedAt.isNull()
+                    )
+                    .fetchOne()
         );
     }
 }

@@ -27,7 +27,7 @@ class DeliveryServiceTest {
                 .address("서울시 청와대")
                 .build();
 
-        DeliverySaveResponseDto deliverySaveResponseDto = deliveryService.saveDelivery(requestDto);
+        DeliverySaveResponseDto deliverySaveResponseDto = deliveryService.saveDelivery(requestDto, 123L);
         log.info("result = {}", deliverySaveResponseDto);
     }
 }
