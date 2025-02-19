@@ -5,6 +5,8 @@ import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -36,5 +38,10 @@ public class Store extends BaseDataEntity {
         this.area = area;
         this.detailAddress = detailAddress;
         this.ownerName = ownerName;
+    }
+
+    public void delete(Long userId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = userId;
     }
 }

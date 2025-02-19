@@ -1,9 +1,6 @@
 package com.fortest.orderdelivery.app.domain.store.controller;
 
-import com.fortest.orderdelivery.app.domain.store.dto.StoreSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.store.dto.StoreSaveResponseDto;
-import com.fortest.orderdelivery.app.domain.store.dto.StoreUpdateRequestDto;
-import com.fortest.orderdelivery.app.domain.store.dto.StoreUpdateResponseDto;
+import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.service.StoreService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +31,7 @@ public class StoreServiceController {
     }
 
     @PatchMapping("/stores/{storeId}")
-    public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateCategory(@PathVariable String storeId, @RequestBody StoreUpdateRequestDto storeUpdateRequestDto){
+    public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateStore(@PathVariable String storeId, @RequestBody StoreUpdateRequestDto storeUpdateRequestDto){
         StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto);
 
         return ResponseEntity.ok(
@@ -42,6 +39,19 @@ public class StoreServiceController {
                         .message("SUCCESS")
                         .code(HttpStatus.OK.value())
                         .data(storeUpdateResponseDto)
+                        .build()
+        );
+    }
+
+    @DeleteMapping("/stores/{storeId}")
+    public ResponseEntity<CommonDto<StoreDeleteResponseDto>> deleteStore(@PathVariable String storeId){
+        StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, 123L);
+
+        return ResponseEntity.ok(
+                CommonDto.<StoreDeleteResponseDto>builder()
+                        .message("SUCCESS")
+                        .code(HttpStatus.OK.value())
+                        .data(storeDeleteResponseDto)
                         .build()
         );
     }

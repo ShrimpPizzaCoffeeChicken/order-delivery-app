@@ -2,13 +2,11 @@ package com.fortest.orderdelivery.app.domain.image.service;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.fortest.orderdelivery.app.domain.image.dto.MenuImageDeleteRequestDto;
+import com.fortest.orderdelivery.app.domain.image.dto.MenuImageRequestDto;
 import com.fortest.orderdelivery.app.domain.image.dto.MenuImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
@@ -74,11 +72,11 @@ public class ImageService {
             });
         }
 
-        return ImageMapper.toMenuImageSaveResponseDto(imageIdList);
+        return ImageMapper.toMenuImageResponseDto(imageIdList);
     }
 
     @Transactional
-    public MenuImageResponseDto deleteImageFromS3(MenuImageDeleteRequestDto requestDto) {
+    public MenuImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
         List<String> imageIdList = requestDto.getImageIdList();
         List<String> deleteImageIdList = new ArrayList<>();
 
@@ -101,7 +99,7 @@ public class ImageService {
             }
         }
 
-        return ImageMapper.toMenuImageSaveResponseDto(deleteImageIdList);
+        return ImageMapper.toMenuImageResponseDto(deleteImageIdList);
     }
 
 
@@ -138,7 +136,7 @@ public class ImageService {
         return savedImage.getId();
     }
 
-    private Image getImage(String id) {
+    public Image getImage(String id) {
         return imageRepository.findById(id).orElseThrow(
             () -> new BusinessLogicException(messageSource.getMessage(
                 "image.get.failure", null, Locale.getDefault())));

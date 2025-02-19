@@ -62,6 +62,11 @@ public class MenuService {
                 .build();
 
             CommonDto<MenuImageMappingResponseDto> commonDto = saveMenuIdToImage(menuImageRequestDto);
+
+            if(Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
+                throw new BusinessLogicException(messageSource.getMessage("image.menu.mapping.failure",null,Locale.getDefault()));
+            }
+
             throwByRespCode(commonDto.getCode());
 
             if(!commonDto.getData().getResult()) {
