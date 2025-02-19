@@ -1,6 +1,6 @@
 package com.fortest.orderdelivery.app.domain.image.controller;
 
-import com.fortest.orderdelivery.app.domain.image.dto.MenuImageDeleteRequestDto;
+import com.fortest.orderdelivery.app.domain.image.dto.MenuImageRequestDto;
 import com.fortest.orderdelivery.app.domain.image.dto.MenuImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.service.ImageService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -8,8 +8,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,8 +37,8 @@ public class ImageServiceController {
 
     @PatchMapping("/menus")
     public ResponseEntity<CommonDto<MenuImageResponseDto>> deleteImageFromS3(@RequestBody
-        MenuImageDeleteRequestDto menuImageDeleteRequestDto) {
-        MenuImageResponseDto responseDto = imageService.deleteImageFromS3(menuImageDeleteRequestDto);
+    MenuImageRequestDto menuImageRequestDto) {
+        MenuImageResponseDto responseDto = imageService.deleteImageFromS3(menuImageRequestDto);
 
         return ResponseEntity.ok(CommonDto.<MenuImageResponseDto>builder()
             .message("사진 삭제 완료")
