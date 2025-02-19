@@ -68,7 +68,7 @@ public class WebSecurityConfig {
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // 정적 리소스 허용
                         .requestMatchers("/api/service/users/**").permitAll() // 회원 관련 API는 인증 없이 접근 가능
-                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
+                        .anyRequest().permitAll() // 그 외 요청은 인증 필요
         );
 
         http.formLogin(form -> form.disable());

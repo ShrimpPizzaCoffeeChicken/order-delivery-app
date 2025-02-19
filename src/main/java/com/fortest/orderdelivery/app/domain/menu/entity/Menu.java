@@ -34,4 +34,11 @@ public class Menu extends BaseDataEntity {
     @Column(length = 30, nullable = false)
     @Enumerated(value = EnumType.STRING)
     private ExposeStatus exposeStatus = ExposeStatus.ONSALE;
+
+    public void updateMenu(String name, String description, Integer price, ExposeStatus exposeStatus) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.exposeStatus = exposeStatus;
+    }
 }
