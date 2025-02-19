@@ -3,6 +3,8 @@ package com.fortest.orderdelivery.app.domain.image.controller;
 import com.fortest.orderdelivery.app.domain.image.service.ImageAppService;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingRequestDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingResponseDto;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,6 +32,20 @@ public class ImageAppController {
             .message("메뉴 Id update 완료")
             .code(HttpStatus.OK.value())
             .data(menuImageMappingResponseDto)
+            .build());
+    }
+
+    @PatchMapping("/menus/options")
+    public ResponseEntity<CommonDto<MenuOptionImageMappingResponseDto>> updateMenuOptionId(@RequestBody
+    MenuOptionImageMappingRequestDto menuOptionImageRequestDto) {
+
+        MenuOptionImageMappingResponseDto menuOptionImageMappingResponseDto = imageAppService.updateMenuOptionId(
+            menuOptionImageRequestDto);
+
+        return ResponseEntity.ok(CommonDto.<MenuOptionImageMappingResponseDto>builder()
+            .message("메뉴 옵션 Id update 완료")
+            .code(HttpStatus.OK.value())
+            .data(menuOptionImageMappingResponseDto)
             .build());
     }
 }
