@@ -82,7 +82,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(()->
                 new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
 
-        category.delete(userId);
+        category.isDeletedNow(userId);
 
         return CategoryMapper.toCategoryDeleteResponseDto(category);
     }

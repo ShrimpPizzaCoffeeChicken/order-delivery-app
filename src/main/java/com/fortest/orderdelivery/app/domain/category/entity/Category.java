@@ -29,10 +29,4 @@ public class Category extends BaseDataEntity {
         this.name = categoryName;
     }
 
-    public void delete(Long userId) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = userId;
-    }
-
-
 }
