@@ -21,7 +21,7 @@ public class StoreMapper {
         return StoreSaveResponseDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
-                .areaId(area.getAreaId())
+                .areaId(area.getId())
                 .detailAddress(store.getDetailAddress())
                 .ownerName(store.getOwnerName())
                 .build();
@@ -31,7 +31,7 @@ public class StoreMapper {
         return StoreUpdateResponseDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
-                .areaId(area.getAreaId())
+                .areaId(area.getId())
                 .detailAddress(store.getDetailAddress())
                 .ownerName(store.getOwnerName())
                 .build();
