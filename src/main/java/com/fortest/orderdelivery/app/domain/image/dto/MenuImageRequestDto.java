@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MenuImageDeleteRequestDto {
+public class MenuImageRequestDto {
     @JsonProperty("image-id-list")
     List<String> imageIdList;
 }

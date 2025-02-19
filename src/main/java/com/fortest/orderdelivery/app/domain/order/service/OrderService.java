@@ -1,25 +1,32 @@
 package com.fortest.orderdelivery.app.domain.order.service;
 
-import com.fortest.orderdelivery.app.domain.order.dto.OrderSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidRequestDto;
-import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidResponseDto;
-import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
+import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.order.mapper.OrderMapper;
+import com.fortest.orderdelivery.app.domain.order.repository.OrderQueryRepository;
 import com.fortest.orderdelivery.app.domain.order.repository.OrderRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 
+@Data
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -28,7 +35,9 @@ public class OrderService {
     private final WebClient webClient;
     private final MessageSource messageSource;
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
+    private static final int REMOVE_ABLE_TIME = 5 * 60; // 60초
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String USER_APP_URL = "http://{host}:{port}/api/app/user/{userId}";
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/store/{storeId}/valid";
@@ -40,6 +49,9 @@ public class OrderService {
 
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
 
@@ -68,9 +80,82 @@ public class OrderService {
         return order.getId();
     }
 
+    /**
+     * 검색을 시도한 유저의 주문 목록을 검색
+     * @param page
+     * @param size
+     * @param orderby : 정렬 기준 필드 명
+     * @param sort : DESC or ASC
+     * @param search : 가게 이름 검색 키워드건 (포함 조건)
+     * @param userId : 접속한 유저 ID
+     * @return
+     */
+    public OrderGetListResponseDto getOrderList(Integer page, Integer size, String orderby, String sort, String search, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<Order> orderPage;
+        if (search == null || search.isBlank() || search.isEmpty()) {
+            orderPage = orderQueryRepository.findOrderList(pageable, username);
+        } else {
+            orderPage = orderQueryRepository.findOrderListUsingSearch(pageable, search, username);
+        }
+        return OrderMapper.pageToGetOrderListDto(orderPage, search);
+    }
+
+    @Transactional
+    public OrderGetDetailResponseDto getOrderDetail (String orderId, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        Order order = orderQueryRepository.findOrderDetail(orderId)
+                .orElseThrow(() -> new NotFoundException(messageSource.getMessage("not-found.order", null, Locale.KOREA)));
+        if (!order.getCustomerName().equals(username)) {
+            throw new NotValidRequestException(messageSource.getMessage("app.order.not-valid-user", null, Locale.KOREA));
+        }
+
+        return OrderMapper.entityToGetDetailDto(order);
+    }
+
+    @Transactional
+    public String deleteOrder(String orderId, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(messageSource.getMessage("not-found.order", null, Locale.KOREA)));
+        if (!order.getCustomerName().equals(username)) {
+            throw new NotValidRequestException(messageSource.getMessage("app.order.not-valid-user", null, Locale.KOREA));
+        }
+
+        Duration between = Duration.between(order.getCreatedAt(), LocalDateTime.now());
+        if (between.getSeconds() > REMOVE_ABLE_TIME) {
+            throw new BusinessLogicException(messageSource.getMessage("app.order.inable-delete", null, Locale.KOREA));
+        }
+
+        order.isDeletedNow(userId);
+        return order.getId();
+    }
+
     // TODO : 하단 코드로 교체 예정
     private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-        String userName = "testUser";
+        String userName = "user" + userId;
 
         UserResponseDto userDto = UserResponseDto.builder()
                 .username(userName)

@@ -5,6 +5,8 @@ import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor

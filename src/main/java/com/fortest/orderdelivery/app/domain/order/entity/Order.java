@@ -63,12 +63,17 @@ public class Order extends BaseDataEntity {
         private String message;
     }
 
+    public void updateTotalPrice (Integer totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
     public void updateStatus(OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
     }
 
     public void addMenuOrder (MenuOrder menuOrder) {
         this.menuOrderList.add(menuOrder);
+        menuOrder.bindOrder(this);
     }
 
     public void addMenuOrderList (List<MenuOrder> menuOrderList) {

@@ -31,4 +31,8 @@ public class MenuOptionMenuOrder {
     @ManyToOne
     @JoinColumn(name = "menu_order_id")
     private MenuOrder menuOrder;
+
+    public void bindMenuOrder (MenuOrder menuOrder) {
+        this.menuOrder = menuOrder;
+    }
 }
