@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.delivery.controller;
 
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveRequestDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveResponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.service.DeliveryService;
@@ -7,10 +8,7 @@ import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
@@ -19,7 +17,7 @@ public class DeliveryServiceController {
 
     private final DeliveryService deliveryService;
 
-    @PostMapping("deliveries")
+    @PostMapping("/deliveries")
     public ResponseEntity<CommonDto<DeliverySaveResponseDto>> saveDelivery(@RequestBody DeliverySaveRequestDto requestDto) {
         DeliverySaveResponseDto responseDto = deliveryService.saveEntry(requestDto);
 
@@ -28,6 +26,25 @@ public class DeliveryServiceController {
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(responseDto)
+                        .build()
+        );
+    }
+
+    @GetMapping("/deliveries")
+    public ResponseEntity<CommonDto<DeliveryGetListDto>> getDeliveryList(
+            @RequestParam("page") Integer page,
+            @RequestParam("size") Integer size,
+            @RequestParam("orderby") String orderby,
+            @RequestParam("sort") String sort,
+            @RequestParam("search") String search
+    ) {
+        DeliveryGetListDto deliveryList = deliveryService.getDeliveryList(page, size, orderby, sort, search, 123L);
+
+        return ResponseEntity.ok(
+                CommonDto.<DeliveryGetListDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(deliveryList)
                         .build()
         );
     }
