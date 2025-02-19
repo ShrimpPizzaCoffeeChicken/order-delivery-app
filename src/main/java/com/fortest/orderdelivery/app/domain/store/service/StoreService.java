@@ -97,7 +97,7 @@ public class StoreService {
         Store store = storeRepository.findById(storeId).orElseThrow(()->
                 new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
 
-        store.delete(userId);
+        store.isDeletedNow(userId);
 
         return StoreMapper.toCategoryDeleteResponseDto(store);
     }
