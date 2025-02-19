@@ -1,6 +1,9 @@
 package com.fortest.orderdelivery.app.domain.order.service;
 
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailResponseDto;
 import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListResponseDto;
+import com.fortest.orderdelivery.app.domain.order.entity.MenuOptionMenuOrder;
+import com.fortest.orderdelivery.app.domain.order.entity.MenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.order.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -75,6 +80,65 @@ class OrderServiceTest {
         );
         JSONObject jsonObject = new JSONObject(result);
         log.info("{}", jsonObject.toString());
+    }
+
+    @Test
+    @DisplayName("order detail 조회 테스트")
+    @Transactional
+    void getOrderDetailTest () {
+        // given
+        ArrayList<Order> orders = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            int totalPrice = 0;
+            // 주문 생성
+            Order order = Order.builder()
+                    .storeId(UUID.randomUUID().toString())
+                    .storeName("가게이름 " + i)
+                    .customerName("user" + i)
+                    .orderStatus(Order.OrderStatus.WAIT)
+                    .orderType(Order.OrderType.INSTORE)
+                    .menuOrderList(new ArrayList<>())
+                    .build();
+            // 메뉴 생성
+            for (int j = 1; j <= 3; j++) {
+                int menuPrice = i * 1000;
+                MenuOrder menuOrder = MenuOrder.builder()
+                        .menuId(UUID.randomUUID().toString())
+                        .menuName("햄버거" + j)
+                        .count(j)
+                        .price(menuPrice)
+                        .menuOptionMenuOrderList(new ArrayList<>())
+                        .build();
+                totalPrice += menuPrice;
+                order.addMenuOrder(menuOrder);
+                // 옵션 생성
+                for (int k = 1; k <= 3; k++) {
+                    int menuOptionPrice = k * 10;
+                    MenuOptionMenuOrder menuOptionMenuOrder = MenuOptionMenuOrder.builder()
+                            .menuOptionId(UUID.randomUUID().toString())
+                            .menuOptionName("옵션" + k)
+                            .menuOptionCount(k)
+                            .menuOptionPrice(menuOptionPrice)
+                            .build();
+                    totalPrice += menuOptionPrice;
+                    menuOrder.addMenuOptionMenuOrder(menuOptionMenuOrder);
+                }
+            }
+            order.updateTotalPrice(totalPrice);
+            orders.add(order);
+        }
+        orderRepository.saveAll(orders);
+        Order order = orders.get(0);
+        log.info("order = {}", order);
+        log.info("order.getDeletedAt = {}", order.getDeletedAt());
+        String targetIdOwner = order.getId(); // 소유주 일치 케이스
+        // String targetIdNotOwner = orders.get(1).getId(); // 소유주 불일치 케이스
+        log.info("targetId = {}", targetIdOwner);
+
+        // when
+        OrderGetDetailResponseDto result01 = orderService.getOrderDetail(targetIdOwner, 1L);
+        JSONObject jsonObject = new JSONObject(result01);
+        log.info("result = {}", jsonObject);
     }
 
 
