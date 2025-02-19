@@ -26,6 +26,7 @@ public class UserServiceController {
     // 토큰 재발급
     @PostMapping("/users/refresh")
     public ResponseEntity<CommonDto<LoginResponseDto>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        log.info("컨트롤러----------------==========================");
         return ResponseEntity.ok(userService.refreshToken(request, response));
     }
 
@@ -51,4 +52,5 @@ public class UserServiceController {
     public ResponseEntity<CommonDto<Map<String, Object>>> checkUsername(@RequestParam(name = "username") String username) {
         return ResponseEntity.ok(userService.checkUsernameAvailability(username));
     }
+
 }

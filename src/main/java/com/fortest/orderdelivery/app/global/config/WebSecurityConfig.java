@@ -67,11 +67,16 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // 정적 리소스 허용
-                        .requestMatchers("/api/service/users/**").permitAll() // 회원 관련 API는 인증 없이 접근 가능
+                        .requestMatchers("/api/service/users/login", "/api/service/users/signup","/api/service/users/logout").permitAll() // 로그인 & 회원가입만 인증 없이 허용
+                        .requestMatchers("/api/service/users/protected-resource").authenticated()
+                        .requestMatchers("/api/service/users/refresh").permitAll() // Refresh Token 사용 시 인증 필요
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
         );
 
         http.formLogin(form -> form.disable());
+
+        http.addFilterBefore(new JwtAuthorizationFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
