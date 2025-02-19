@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.order.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,9 +15,12 @@ import java.util.List;
 @NoArgsConstructor
 public class StoreMenuValidResponseDto {
 
+    @JsonProperty("store-id")
     private String storeId;
+    @JsonProperty("store-name")
     private String storeName;
     private Boolean result;
+    @JsonProperty("menu-list")
     private List<MenuDto> menuList = new ArrayList<>();
 
     @Getter
@@ -27,6 +31,7 @@ public class StoreMenuValidResponseDto {
         private String id;
         private String name;
         private Integer price;
+        @JsonProperty("option-list")
         private List<OptionDto> optionList = new ArrayList<>();
     }
 

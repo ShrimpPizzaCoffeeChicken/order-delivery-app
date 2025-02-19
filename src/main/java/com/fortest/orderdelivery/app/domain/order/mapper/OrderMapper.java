@@ -85,26 +85,12 @@ public class OrderMapper {
         return order;
     }
 
-    public static OrderGetListResponseDto pageToGetOrderListDto(Page<Order> page) {
-        OrderGetListResponseDto.OrderGetListResponseDtoBuilder builder = OrderGetListResponseDto.builder();
-        builder = builder
-                .search(null)
-                .totalContents(page.getTotalElements())
-                .size(page.getSize() + 1)
-                .currentPage(page.getNumber() + 1);
-        List<OrderGetListResponseDto.OrderDto> orderDtoList = page.getContent().stream()
-                .map(OrderMapper::entityToOrderListDtoElement)
-                .collect(Collectors.toList());
-        builder = builder.orderList(orderDtoList);
-        return builder.build();
-    }
-
     public static OrderGetListResponseDto pageToGetOrderListDto(Page<Order> page, String search) {
         OrderGetListResponseDto.OrderGetListResponseDtoBuilder builder = OrderGetListResponseDto.builder();
         builder = builder
-                .search(search)
+                .search(search == null ? "" : search)
                 .totalContents(page.getTotalElements())
-                .size(page.getSize() + 1)
+                .size(page.getSize())
                 .currentPage(page.getNumber() + 1);
         List<OrderGetListResponseDto.OrderDto> orderDtoList = page.getContent().stream()
                 .map(OrderMapper::entityToOrderListDtoElement)
@@ -123,6 +109,4 @@ public class OrderMapper {
                 .updatedAt(CommonUtil.LDTToString(order.getUpdatedAt()))
                 .build();
     }
-
-
 }
