@@ -1,17 +1,18 @@
 package com.fortest.orderdelivery.app.domain.order.service;
 
-import com.fortest.orderdelivery.app.domain.order.dto.OrderSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidRequestDto;
-import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidResponseDto;
-import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
+import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.order.mapper.OrderMapper;
+import com.fortest.orderdelivery.app.domain.order.repository.OrderQueryRepository;
 import com.fortest.orderdelivery.app.domain.order.repository.OrderRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class OrderService {
     private final WebClient webClient;
     private final MessageSource messageSource;
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String USER_APP_URL = "http://{host}:{port}/api/app/user/{userId}";
@@ -40,6 +42,9 @@ public class OrderService {
 
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
 
@@ -68,9 +73,39 @@ public class OrderService {
         return order.getId();
     }
 
+    /**
+     * 검색을 시도한 유저의 주문 목록을 검색
+     * @param page
+     * @param size
+     * @param orderby : 정렬 기준 필드 명
+     * @param sort : DESC or ASC
+     * @param search : 가게 이름 검색 키워드
+     * @param userId : 접속한 유저 ID
+     * @return
+     */
+    public OrderGetListResponseDto getOrderList(Integer page, Integer size, String orderby, String sort, String search, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<Order> orderList;
+        if (search == null || search.isBlank() || search.isEmpty()) {
+            orderList = orderQueryRepository.findOrderList(pageable, username);
+            return OrderMapper.pageToGetOrderListDto(orderList);
+        } else {
+            orderList = orderQueryRepository.findOrderListUsingSearch(pageable, search, username);
+            return OrderMapper.pageToGetOrderListDto(orderList, search);
+        }
+    }
+
     // TODO : 하단 코드로 교체 예정
     private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-        String userName = "testUser";
+        String userName = "testUser123";
 
         UserResponseDto userDto = UserResponseDto.builder()
                 .username(userName)
