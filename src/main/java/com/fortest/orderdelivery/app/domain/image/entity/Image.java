@@ -34,4 +34,11 @@ public class Image extends BaseDataEntity {
     @Column(length = 200, nullable = false)
     private String s3Url;
 
+    public void updateMenuId(String menuId) {
+        this.menuId = menuId;
+    }
+
+    public void updateOptionId(String optionId) {
+        this.optionId = optionId;
+    }
 }
