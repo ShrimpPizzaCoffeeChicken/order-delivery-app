@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 
 @RequiredArgsConstructor
 @RequestMapping("/api/service")
@@ -46,6 +48,20 @@ public class PaymentServiceController {
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(paymentList)
+                        .build()
+        );
+    }
+
+    @DeleteMapping("/payment/{paymentId}")
+    public ResponseEntity<CommonDto<Map<String, String>>> deletePayment(@PathVariable("paymentId") String paymentId) {
+        String deletePaymentId = paymentService.deletePayment(paymentId, 123L);
+        Map<String, String> data = Map.of("payment-id", deletePaymentId);
+
+        return ResponseEntity.ok(
+                CommonDto.<Map<String, String>> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(data)
                         .build()
         );
     }

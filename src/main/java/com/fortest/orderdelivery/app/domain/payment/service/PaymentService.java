@@ -14,10 +14,11 @@ import com.fortest.orderdelivery.app.domain.payment.repository.PaymentQueryRepos
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -25,15 +26,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Locale;
-
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class PaymentService {
 
     private final WebClient webClient;
-    private final MessageSource messageSource;
+    private final MessageUtil messageUtil;
     private final PaymentRepository paymentRepository;
     private final PaymentQueryRepository paymentQueryRepository;
     private final PaymentAgentRepository paymentAgentRepository;
@@ -49,7 +48,7 @@ public class PaymentService {
             // TODO : 결제 실패 처리
             // TODO : 주문 실패 상태 업데이트 요청
             log.error("", e);
-            throw new BusinessLogicException(messageSource.getMessage("app.payment.payment-save-fail", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("app.payment.payment-save-fail"));
         }
     }
 
@@ -59,16 +58,16 @@ public class PaymentService {
         // TODO : 주문 정보 요청 : 외부 요청으로 교체 예정
         CommonDto<OrderValidResponseDto> validOrderFromApp = getValidOrderFromApp(saveRequestDto.getOrderId());
         if (validOrderFromApp == null || validOrderFromApp.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
         }
         throwByRespCode(validOrderFromApp.getCode());
 
         PaymentAgent paymentAgent = paymentAgentRepository.findByName(saveRequestDto.getPaymentAgent())
-                .orElseThrow(() -> new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA)));
+                .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
         // 주문 유효성 검사
         if ( ! Order.OrderStatus.WAIT.name().equals(validOrderFromApp.getData().getOrderStatus()) ) {
-            throw new BusinessLogicException(messageSource.getMessage("app.payment.invalid-order", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("app.payment.invalid-order"));
         }
 
         OrderValidResponseDto validOrder = validOrderFromApp.getData();
@@ -94,7 +93,7 @@ public class PaymentService {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
         if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
         }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
@@ -107,6 +106,14 @@ public class PaymentService {
             paymentPage = paymentQueryRepository.findPaymentListUsingSearch(pageable, username, search);
         }
         return PaymentMapper.pageToGetOrderListDto(paymentPage, null);
+    }
+
+    @Transactional
+    public String deletePayment(String paymentId, Long userId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.payment")));
+        payment.isDeletedNow(userId);
+        return payment.getId();
     }
 
     // TODO : 하단 코드로 교체 예정
@@ -175,10 +182,10 @@ public class PaymentService {
         int firstNum = httpStatusCode / 100;
         switch (firstNum) {
             case 4 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
+                throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
             }
             case 5 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+                throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
             }
         }
     }
