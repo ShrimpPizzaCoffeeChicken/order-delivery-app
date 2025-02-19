@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class MenuQueryRepository {
+
     private final JPAQueryFactory queryFactory;
 
     @Value("${cloud.aws.default.image-url}")
@@ -37,7 +38,7 @@ public class MenuQueryRepository {
                 Expressions.stringTemplate("COALESCE({0}, {1})", image.s3Url, defaultImageUrl),
                 menu.createdAt,
                 menu.updatedAt
-                ))
+            ))
             .from(menu)
             .leftJoin(image).on(image.menu.id.eq(menu.id).and(image.sequence.eq(10)))
             .where(
@@ -58,6 +59,46 @@ public class MenuQueryRepository {
                 menu.storeId.eq(storeId),
                 menu.deletedAt.isNull(),
                 image.deletedAt.isNull()
+            )
+            .fetchOne();
+
+        return new PageImpl<>(contents, pageable, total);
+    }
+
+    public Page<MenuListDto> searchMenuListPage(Pageable pageable, String storeId, String keyword) {
+        OrderSpecifier<?>[] orderSpecifiers = getAllOrderSpecifiers(pageable, menu);
+
+        List<MenuListDto> contents = queryFactory
+            .selectDistinct(Projections.constructor(MenuListDto.class,
+                menu.name,
+                menu.description,
+                menu.price,
+                Expressions.stringTemplate("COALESCE({0}, {1})", image.s3Url, defaultImageUrl),
+                menu.createdAt,
+                menu.updatedAt
+            ))
+            .from(menu)
+            .leftJoin(image).on(image.menu.id.eq(menu.id).and(image.sequence.eq(10)))
+            .where(
+                menu.storeId.eq(storeId),
+                menu.deletedAt.isNull(),
+                image.deletedAt.isNull(),
+                menu.name.contains(keyword)
+            )
+            .orderBy(orderSpecifiers)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        Long total = queryFactory
+            .select(menu.countDistinct())
+            .from(menu)
+            .leftJoin(image).on(image.menu.id.eq(menu.id).and(image.sequence.eq(10)))
+            .where(
+                menu.storeId.eq(storeId),
+                menu.deletedAt.isNull(),
+                image.deletedAt.isNull(),
+                menu.name.contains(keyword)
             )
             .fetchOne();
 
