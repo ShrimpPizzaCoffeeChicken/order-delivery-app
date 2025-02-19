@@ -21,10 +21,10 @@ public class AiRequest extends BaseDataEntity {
     private String id;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String request;
+    private String question;
 
     @Column(columnDefinition = "TEXT")
-    private String response;
+    private String answer;
 
     @Column(length = 50)
     private String storeId;

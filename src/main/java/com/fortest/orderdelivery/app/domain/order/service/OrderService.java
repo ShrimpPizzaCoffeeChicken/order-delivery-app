@@ -39,7 +39,7 @@ public class OrderService {
     private static final int REMOVE_ABLE_TIME = 5 * 60; // 60초
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String USER_APP_URL = "http://{host}:{port}/api/app/user/{userId}";
-    private static final String STORE_APP_URL = "http://{host}:{port}/api/app/store/{storeId}/valid";
+    private static final String STORE_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
 
     /**
      * 내부 호출용 데이터
