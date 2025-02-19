@@ -28,7 +28,7 @@ public class MenuOption extends BaseDataEntity {
 
     private Integer price;
 
-    @JoinColumn(name = "menu_id")
+    @JoinColumn(name = "p_menu_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Menu menu;
 
