@@ -10,10 +10,10 @@ import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Locale;
 
 @Data
 @Slf4j
@@ -33,7 +32,7 @@ import java.util.Locale;
 public class OrderService {
 
     private final WebClient webClient;
-    private final MessageSource messageSource;
+    private final MessageUtil messageUtil;
     private final OrderRepository orderRepository;
     private final OrderQueryRepository orderQueryRepository;
 
@@ -41,6 +40,18 @@ public class OrderService {
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String USER_APP_URL = "http://{host}:{port}/api/app/user/{userId}";
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/store/{storeId}/valid";
+
+    /**
+     * 내부 호출용 데이터
+     * @param orderId
+     * @return
+     */
+    @Transactional
+    public OrderGetDataDto getOrderData(String orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.order")));
+        return OrderMapper.entityToGetDataDto(order);
+    }
 
     @Transactional
     public String saveOrder(OrderSaveRequestDto orderSaveRequestDto, Long userId) {
@@ -50,7 +61,7 @@ public class OrderService {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
         if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
         }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
@@ -61,7 +72,7 @@ public class OrderService {
         throwByRespCode(storeMenuValidResponse.getCode());
         if (!storeMenuValidResponse.getData().getResult()) {
             throw new BusinessLogicException(
-                    messageSource.getMessage("api.call.client-error", null, Locale.KOREA)
+                    messageUtil.getMessage("api.call.client-error")
             );
         }
         StoreMenuValidResponseDto storeMenuValidDto = storeMenuValidResponse.getData();
@@ -72,7 +83,7 @@ public class OrderService {
             order = OrderMapper.saveDtoToEntity(orderSaveRequestDto, storeMenuValidDto, userId, username);
         } catch (IllegalArgumentException e) {
             log.error("Order : Convert Dto to Entity Fail : ", e);
-            throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
         }
 
         orderRepository.save(order);
@@ -94,7 +105,7 @@ public class OrderService {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
         if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
         }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
@@ -114,15 +125,15 @@ public class OrderService {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
         if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
         }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
 
         Order order = orderQueryRepository.findOrderDetail(orderId)
-                .orElseThrow(() -> new NotFoundException(messageSource.getMessage("not-found.order", null, Locale.KOREA)));
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.order")));
         if (!order.getCustomerName().equals(username)) {
-            throw new NotValidRequestException(messageSource.getMessage("app.order.not-valid-user", null, Locale.KOREA));
+            throw new NotValidRequestException(messageUtil.getMessage("app.order.not-valid-user"));
         }
 
         return OrderMapper.entityToGetDetailDto(order);
@@ -133,20 +144,20 @@ public class OrderService {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
         if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
         }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NotFoundException(messageSource.getMessage("not-found.order", null, Locale.KOREA)));
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.order")));
         if (!order.getCustomerName().equals(username)) {
-            throw new NotValidRequestException(messageSource.getMessage("app.order.not-valid-user", null, Locale.KOREA));
+            throw new NotValidRequestException(messageUtil.getMessage("app.order.not-valid-user"));
         }
 
         Duration between = Duration.between(order.getCreatedAt(), LocalDateTime.now());
         if (between.getSeconds() > REMOVE_ABLE_TIME) {
-            throw new BusinessLogicException(messageSource.getMessage("app.order.inable-delete", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("app.order.inable-delete"));
         }
 
         order.isDeletedNow(userId);
@@ -252,10 +263,10 @@ public class OrderService {
         int firstNum = httpStatusCode / 100;
         switch (firstNum) {
             case 4 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
+                throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
             }
             case 5 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+                throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
             }
         }
     }

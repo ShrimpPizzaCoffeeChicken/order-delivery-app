@@ -1,9 +1,6 @@
 package com.fortest.orderdelivery.app.domain.order.mapper;
 
-import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailResponseDto;
-import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListResponseDto;
-import com.fortest.orderdelivery.app.domain.order.dto.OrderSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidResponseDto;
+import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.entity.MenuOptionMenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.MenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
@@ -144,6 +141,17 @@ public class OrderMapper {
             );
         }
         return orderDtoBuilder.menuList(menuDtos).build();
+    }
 
+    public static OrderGetDataDto entityToGetDataDto(Order order) {
+        return OrderGetDataDto.builder()
+                .orderId(order.getId())
+                .orderStatus(order.getOrderStatus().name())
+                .customerName(order.getCustomerName())
+                .storeId(order.getStoreId())
+                .storeName(order.getStoreName())
+                .createdAt(CommonUtil.LDTToString(order.getCreatedAt()))
+                .updatedAt(CommonUtil.LDTToString(order.getUpdatedAt()))
+                .build();
     }
 }
