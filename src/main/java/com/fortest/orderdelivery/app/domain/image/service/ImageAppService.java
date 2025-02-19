@@ -29,7 +29,7 @@ public class ImageAppService {
         boolean result = false;
 
         imageIdList.forEach(id -> {
-            Image image = imageService.getImage(id);
+            Image image = imageService.getImageById(id);
             image.updateMenu(menu);
 
             updatedImageIdList.add(imageRepository.save(image).getId());

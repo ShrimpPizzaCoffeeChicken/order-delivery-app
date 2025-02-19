@@ -25,8 +25,9 @@ public class ImageServiceController {
     private final ImageService imageService;
 
     @PostMapping("/menus")
-    public ResponseEntity<CommonDto<MenuImageResponseDto>> registerMenuImage(@RequestParam(value = "image-list", required = false)
-    List<MultipartFile> multipartFileList) {
+    public ResponseEntity<CommonDto<MenuImageResponseDto>> registerMenuImage(
+        @RequestParam(value = "image-list", required = false)
+        List<MultipartFile> multipartFileList) {
         MenuImageResponseDto responseDto = imageService.registerMenuImage(multipartFileList);
 
         return ResponseEntity.ok(CommonDto.<MenuImageResponseDto>builder()
@@ -39,8 +40,8 @@ public class ImageServiceController {
     @PostMapping("/menus/{menuId}")
     public ResponseEntity<CommonDto<MenuImageResponseDto>> updateMenuImage(
         @RequestParam(value = "image-list", required = false) List<MultipartFile> multipartFileList,
-        @PathVariable String menuId) {
-        MenuImageResponseDto responseDto = imageService.updateMenuImage(multipartFileList,menuId);
+        @PathVariable("menuId") String menuId) {
+        MenuImageResponseDto responseDto = imageService.updateMenuImage(multipartFileList, menuId);
 
         return ResponseEntity.ok(CommonDto.<MenuImageResponseDto>builder()
             .message("사진 추가 저장 완료")

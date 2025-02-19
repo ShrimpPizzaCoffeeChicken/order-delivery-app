@@ -12,9 +12,14 @@ import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageQueryRepository;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageRepository;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
+import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,12 +29,20 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
+import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+@Slf4j(topic = "ImageService")
 @Service
 @RequiredArgsConstructor
 public class ImageService {
@@ -37,7 +50,10 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    private static final String MENU_APP_URL = "http://{url}:{port}/api/app/menus";
+
     private final AmazonS3 amazonS3;
+    private final WebClient webClient;
     private final MessageSource messageSource;
     private final ImageRepository imageRepository;
     private final ImageQueryRepository imageQueryRepository;
@@ -50,21 +66,34 @@ public class ImageService {
         if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
             AtomicInteger sequence = new AtomicInteger(10);
 
-            uploadImageToS3(multipartFileList, imageIdList, sequence);
+            uploadImageToS3(multipartFileList, imageIdList, sequence, null);
         }
 
         return ImageMapper.toMenuImageResponseDto(imageIdList);
     }
 
+    // TODO : menuId 로 menu 받아오는 API 적용
     @Transactional
-    public MenuImageResponseDto updateMenuImage(List<MultipartFile> multipartFileList, String menuId) {
+    public MenuImageResponseDto updateMenuImage(List<MultipartFile> multipartFileList,
+        String menuId) {
         List<String> imageIdList = new ArrayList<>();
 
         if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
             int maxImageSequence = imageQueryRepository.getMaxImageSequence(menuId);
-            AtomicInteger sequence = new AtomicInteger(maxImageSequence);
+            AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
 
-            uploadImageToS3(multipartFileList, imageIdList, sequence);
+            CommonDto<MenuAppResponseDto> commonDto = getMenuFromApp(List.of(menuId));
+
+            if (Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
+                throw new NotFoundException(
+                    messageSource.getMessage("not-found.menu", null,
+                        Locale.getDefault()));
+            }
+
+            throwByRespCode(commonDto.getCode());
+
+            uploadImageToS3(multipartFileList, imageIdList, sequence,
+                commonDto.getData().getMenuList().get(0));
         }
 
         return ImageMapper.toMenuImageResponseDto(imageIdList);
@@ -72,7 +101,7 @@ public class ImageService {
 
     @Transactional
     protected void uploadImageToS3(List<MultipartFile> multipartFileList, List<String> imageIdList,
-        AtomicInteger sequence) {
+        AtomicInteger sequence, Menu menu) {
         multipartFileList.forEach(file -> {
 
             String originalFileName = file.getOriginalFilename();
@@ -92,7 +121,7 @@ public class ImageService {
                     "s3.image.upload.failure", null, Locale.getDefault()));
             }
 
-            imageIdList.add(saveImage(sequence.get(), fileName));
+            imageIdList.add(saveImage(sequence.get(), fileName, menu));
             sequence.addAndGet(10);
         });
     }
@@ -147,10 +176,11 @@ public class ImageService {
 
     // TODO : createBy 추가
     @Transactional
-    protected String saveImage(int sequence, String fileName) {
+    protected String saveImage(int sequence, String fileName, Menu menu) {
         Image image = Image.builder()
             .sequence(sequence)
             .fileName(fileName)
+            .menu(menu)
             .s3Url(amazonS3.getUrl(bucket, fileName).toString())
             .build();
 
@@ -158,24 +188,67 @@ public class ImageService {
         return savedImage.getId();
     }
 
-    public Image getImage(String id) {
+    public Image getImageById(String id) {
         return imageRepository.findById(id).orElseThrow(
             () -> new BusinessLogicException(messageSource.getMessage(
                 "image.get.failure", null, Locale.getDefault())));
     }
 
     private String getImageFileName(String id) {
-        return getImage(id).getFileName();
+        return getImageById(id).getFileName();
     }
 
     // TODO : deleteBy 추가
     @Transactional
     protected String deleteImage(String id) {
-        Image image = getImage(id);
+        Image image = getImageById(id);
 
         image.isDeletedNow(1L);
         Image savedImage = imageRepository.save(image);
 
         return savedImage.getId();
+    }
+
+    /**
+     * 메뉴 서비스에 메뉴 Id로 메뉴 객체 요청
+     *
+     * @param menuIdList
+     * @return CommonDto<MenuAppResponseDto> : 요청 실패 시 null
+     */
+    public CommonDto<MenuAppResponseDto> getMenuFromApp(List<String> menuIdList) {
+
+        String targetUrl = MENU_APP_URL
+            .replace("{url}", "localhost")
+            .replace("{port}", "8082");
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(targetUrl)
+            .queryParam("menuId", menuIdList);
+
+        String finalUri = uriBuilder.build().toString();
+
+        return webClient.get()
+            .uri(finalUri)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {})
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", finalUri, throwable);
+                return Mono.empty();
+            })
+            .block();
+    }
+
+    private void throwByRespCode(int httpStatusCode) {
+        int firstNum = httpStatusCode / 100;
+        switch (firstNum) {
+            case 4 -> {
+                throw new BusinessLogicException(
+                    messageSource.getMessage("api.call.client-error", null, Locale.getDefault()));
+            }
+            case 5 -> {
+                throw new BusinessLogicException(
+                    messageSource.getMessage("api.call.server-error", null, Locale.getDefault()));
+            }
+        }
     }
 }

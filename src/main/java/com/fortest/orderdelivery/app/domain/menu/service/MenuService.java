@@ -6,12 +6,15 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
+import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
-import com.fortest.orderdelivery.app.domain.menu.repository.MenuRepository;
 import com.fortest.orderdelivery.app.domain.menu.repository.MenuQueryRepository;
+import com.fortest.orderdelivery.app.domain.menu.repository.MenuRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import java.time.Duration;
 import java.util.List;
@@ -95,6 +98,24 @@ public class MenuService {
         return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }
 
+    // TODO : CreatedBy 변경
+    @Transactional
+    public MenuSaveResponseDto updateMenu(MenuUpdateRequestDto menuUpdateRequestDto,
+        String menuId) {
+        Menu menu = getMenuById(menuId);
+
+        menu.updateMenu(
+            menuUpdateRequestDto.getName(),
+            menuUpdateRequestDto.getDescription(),
+            menuUpdateRequestDto.getPrice(),
+            ExposeStatus.valueOf(menuUpdateRequestDto.getExposeStatus()));
+        menu.isUpdatedNow(1L);
+
+        Menu savedMenu = menuRepository.save(menu);
+
+        return MenuMapper.toMenuSaveResponseDto(savedMenu);
+    }
+
     /**
      * 가게유효성 검사 요청
      *
@@ -147,6 +168,12 @@ public class MenuService {
                 return Mono.empty();
             })
             .block();
+    }
+
+    public Menu getMenuById(String menuId) {
+        return menuRepository.findById(menuId).orElseThrow(
+            () -> new NotFoundException(
+                messageSource.getMessage("not-found.menu", null, Locale.getDefault())));
     }
 
     private void throwByRespCode(int httpStatusCode) {
