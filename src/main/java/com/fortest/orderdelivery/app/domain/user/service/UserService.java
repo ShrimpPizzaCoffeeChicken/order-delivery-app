@@ -25,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -86,4 +88,21 @@ public class UserService {
         findUser.isCreatedBy(findUser.getId());
         userRepository.save(findUser);
     }
+
+    @Transactional(readOnly = true)
+    public CommonDto<Map<String, Object>> checkUsernameAvailability(String username) {
+        //존재하는 아이디이면 false, 존재하지 않으면 true
+        boolean isAvailable = !userRepository.existsByUsername(username);
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("username", username);
+        responseData.put("is-available", isAvailable);
+
+        String message = isAvailable ? "사용 가능한 아이디입니다." : "이미 사용 중인 아이디입니다.";
+        HttpStatus status = isAvailable ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+
+        //응답 객체 생성 및 반환
+        return new CommonDto<>(message, status.value(), responseData);
+    }
+
 }
