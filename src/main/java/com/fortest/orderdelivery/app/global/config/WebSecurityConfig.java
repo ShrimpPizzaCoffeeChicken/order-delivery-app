@@ -27,7 +27,6 @@ public class WebSecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
-//    private final UserService userService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,7 +45,7 @@ public class WebSecurityConfig {
 //        return filter;
 //    }
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(UserService userService) throws Exception { // ✅ 메서드에서 주입
+    public JwtAuthenticationFilter jwtAuthenticationFilter(UserService userService) throws Exception { //메서드에서 주입
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userService);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;

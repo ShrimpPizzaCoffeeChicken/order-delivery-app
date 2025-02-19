@@ -38,6 +38,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             }
 
             Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
+            log.info("JWT에서 추출한 username: " + info.getSubject());
 
             try {
                 setAuthentication(info.getSubject());

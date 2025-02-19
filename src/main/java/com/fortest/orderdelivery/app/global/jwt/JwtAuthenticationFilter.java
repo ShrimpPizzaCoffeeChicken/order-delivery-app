@@ -34,17 +34,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
-        setFilterProcessesUrl("/api/user/login");
+        setFilterProcessesUrl("/api/service/users/login");
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        log.info("로그인 시도");
         try {
             LoginRequestDto requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
-            return getAuthenticationManager().authenticate(
-                    new UsernamePasswordAuthenticationToken(
+            return getAuthenticationManager().authenticate( //매니저 통해 인증진행
+                    new UsernamePasswordAuthenticationToken( //username, password 읽고 토큰 생성
                             requestDto.getUsername(),
                             requestDto.getPassword(),
                             null
@@ -58,7 +57,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.info(SUCCESS_MESSAGE);
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         RoleType roleType = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRoleType();
 
@@ -68,10 +66,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         jwtUtil.addAccessTokenToHeader(accessToken, response);
         jwtUtil.addRefreshTokenToCookie(refreshToken, response);
 
-//        LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
-//        CommonDto<LoginResponseDto> success = new CommonDto<>(STATUS_SUCCESS, HttpStatus.OK.value(), responseDto);
-
-        CommonDto<String> success = new CommonDto<>(STATUS_SUCCESS, HttpStatus.OK.value(), "로그인 성공");
+        LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
+        CommonDto<LoginResponseDto> success = new CommonDto<>(
+                STATUS_SUCCESS, HttpStatus.OK.value(), responseDto);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResponse = objectMapper.writeValueAsString(success);
@@ -84,7 +81,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        log.info("로그인 실패");
         response.setStatus(401);
     }
 }

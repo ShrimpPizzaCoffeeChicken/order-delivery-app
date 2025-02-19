@@ -24,13 +24,13 @@ public class UserServiceController {
 
     private final UserService userService;
 
-    // 토큰 재발급 API (로그인 관련)
+    // 토큰 재발급
     @PostMapping("/users/refresh")
     public ResponseEntity<CommonDto<LoginResponseDto>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok(userService.refreshToken(request, response));
     }
 
-    // 회원가입 API (회원가입 관련)
+    // 회원가입
     @PostMapping("/users/signup")
     public ResponseEntity<CommonDto<Void>> signup(@RequestBody SignupRequestDto requestDto) {
         User user = userService.signup(requestDto);
