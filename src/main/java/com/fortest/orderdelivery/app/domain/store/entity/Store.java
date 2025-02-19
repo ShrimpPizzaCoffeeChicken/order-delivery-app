@@ -39,9 +39,4 @@ public class Store extends BaseDataEntity {
         this.detailAddress = detailAddress;
         this.ownerName = ownerName;
     }
-
-    public void delete(Long userId) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = userId;
-    }
 }
