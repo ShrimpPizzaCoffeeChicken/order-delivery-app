@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.menu.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "p_menu")
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Menu extends BaseDataEntity {
 
     @Id

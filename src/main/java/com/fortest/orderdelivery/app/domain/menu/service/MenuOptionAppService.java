@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MenuOptionAppService {
 
-    private MenuOptionService menuOptionService;
+    private final MenuOptionService menuOptionService;
 
     public MenuOptionAppResponseDto getMenuOptionFromApp(List<String> menuOptionIdList) {
 

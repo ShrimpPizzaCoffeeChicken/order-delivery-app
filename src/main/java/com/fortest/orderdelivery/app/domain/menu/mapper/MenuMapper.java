@@ -4,6 +4,7 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
@@ -49,6 +50,12 @@ public class MenuMapper {
     public static MenuOptionAppResponseDto toMenuOptionAppResponseDto(List<MenuOption> menuOptionList) {
         return MenuOptionAppResponseDto.builder()
             .menuOptionList(menuOptionList)
+            .build();
+    }
+
+    public static MenuOptionSaveResponseDto toMenuOptionSaveResponseDto(MenuOption menuOption) {
+        return MenuOptionSaveResponseDto.builder()
+            .optionId(menuOption.getId())
             .build();
     }
 }

@@ -53,7 +53,7 @@ public class ImageServiceController {
     @PostMapping("/options/{optionId}")
     public ResponseEntity<CommonDto<ImageResponseDto>> updateMenuOptionImage(
         @RequestParam(value = "image-list", required = false) List<MultipartFile> multipartFileList,
-        @PathVariable("menuOptionId") String menuOptionId) {
+        @PathVariable("optionId") String menuOptionId) {
         ImageResponseDto responseDto = imageService.updateMenuOptionImage(multipartFileList, menuOptionId);
 
         return ResponseEntity.ok(CommonDto.<ImageResponseDto>builder()
