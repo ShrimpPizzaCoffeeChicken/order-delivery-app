@@ -19,6 +19,6 @@ public class ImageQueryRepository {
             .where(image.menu.id.eq(menuId))
             .fetchOne();
 
-        return result == null ? 10 : result;
+        return result == null ? 0 : result;
     }
 }

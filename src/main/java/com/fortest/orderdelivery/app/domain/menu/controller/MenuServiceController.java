@@ -69,4 +69,22 @@ public class MenuServiceController {
             .build());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<CommonDto<MenuListGetResponseDto>> searchMenuList(
+        @RequestParam("store-id") String storeId,
+        @RequestParam("page") int page,
+        @RequestParam("size") int size,
+        @RequestParam("order-by") String orderBy,
+        @RequestParam("sort") String sort,
+        @RequestParam("search") String keyword
+    ) {
+        MenuListGetResponseDto responseDto = menuService.searchMenuList(storeId, page, size, orderBy, sort, keyword);
+
+        return ResponseEntity.ok(CommonDto.<MenuListGetResponseDto>builder()
+            .message("메뉴 리스트 검색 완료")
+            .code(HttpStatus.OK.value())
+            .data(responseDto)
+            .build());
+    }
+
 }

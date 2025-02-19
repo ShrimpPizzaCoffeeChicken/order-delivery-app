@@ -98,7 +98,7 @@ public class MenuService {
         return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }
 
-    // TODO : CreatedBy 변경
+    // TODO : updatedBy 변경
     @Transactional
     public MenuSaveResponseDto updateMenu(MenuUpdateRequestDto menuUpdateRequestDto,
         String menuId) {
@@ -114,6 +114,14 @@ public class MenuService {
         Menu savedMenu = menuRepository.save(menu);
 
         return MenuMapper.toMenuSaveResponseDto(savedMenu);
+    }
+
+    public MenuListGetResponseDto searchMenuList(String storeId, int page, int size, String orderBy,
+        String sort, String keyword) {
+        PageRequest pageRequest = JpaUtil.getNormalPageable(page, size, orderBy, sort);
+        Page<MenuListDto> menuListPage = menuRepositoryQuery.searchMenuListPage(pageRequest, storeId, keyword);
+
+        return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }
 
     /**

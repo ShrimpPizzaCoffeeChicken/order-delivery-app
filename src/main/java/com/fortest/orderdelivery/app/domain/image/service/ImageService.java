@@ -72,7 +72,6 @@ public class ImageService {
         return ImageMapper.toMenuImageResponseDto(imageIdList);
     }
 
-    // TODO : menuId 로 menu 받아오는 API 적용
     @Transactional
     public MenuImageResponseDto updateMenuImage(List<MultipartFile> multipartFileList,
         String menuId) {
