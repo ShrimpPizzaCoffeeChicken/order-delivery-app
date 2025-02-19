@@ -79,7 +79,7 @@ public class OrderService {
      * @param size
      * @param orderby : 정렬 기준 필드 명
      * @param sort : DESC or ASC
-     * @param search : 가게 이름 검색 키워드
+     * @param search : 가게 이름 검색 키워드건 (포함 조건)
      * @param userId : 접속한 유저 ID
      * @return
      */
@@ -93,14 +93,13 @@ public class OrderService {
         String username = validUserResponse.getData().getUsername();
 
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
-        Page<Order> orderList;
+        Page<Order> orderPage;
         if (search == null || search.isBlank() || search.isEmpty()) {
-            orderList = orderQueryRepository.findOrderList(pageable, username);
-            return OrderMapper.pageToGetOrderListDto(orderList);
+            orderPage = orderQueryRepository.findOrderList(pageable, username);
         } else {
-            orderList = orderQueryRepository.findOrderListUsingSearch(pageable, search, username);
-            return OrderMapper.pageToGetOrderListDto(orderList, search);
+            orderPage = orderQueryRepository.findOrderListUsingSearch(pageable, search, username);
         }
+        return OrderMapper.pageToGetOrderListDto(orderPage, search);
     }
 
     // TODO : 하단 코드로 교체 예정

@@ -14,6 +14,11 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 public class QueryDslUtil {
 
+    public static OrderSpecifier<?>[] getAllOrderSpecifierArr(Pageable pageable, Path<?> path) {
+        List<OrderSpecifier<?>> orders = getAllOrderSpecifiers(pageable, path);
+        return orders.toArray(OrderSpecifier[]::new);
+    }
+
     /**
      * 정렬 기준을 포함한 페이징 객체를 사용하여 QueryDSL 용 다중 기준 정렬 조건을 생성
      * @param pageable : 페이징을 위한 객체
