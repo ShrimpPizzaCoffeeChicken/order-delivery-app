@@ -20,6 +20,9 @@ public class Image extends BaseDataEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(length = 100)
+    private String fileName;
+
     private Integer sequence;
 
     @Column(length = 50)
@@ -31,4 +34,11 @@ public class Image extends BaseDataEntity {
     @Column(length = 200, nullable = false)
     private String s3Url;
 
+    public void updateMenuId(String menuId) {
+        this.menuId = menuId;
+    }
+
+    public void updateOptionId(String optionId) {
+        this.optionId = optionId;
+    }
 }

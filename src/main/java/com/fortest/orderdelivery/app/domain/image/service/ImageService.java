@@ -1,10 +1,13 @@
 package com.fortest.orderdelivery.app.domain.image.service;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.fortest.orderdelivery.app.domain.image.dto.MenuImageSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.image.dto.MenuImageRequestDto;
+import com.fortest.orderdelivery.app.domain.image.dto.MenuImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageRepository;
@@ -18,6 +21,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -36,8 +40,9 @@ public class ImageService {
     private final MessageSource messageSource;
     private final AmazonS3 amazonS3;
 
+    // TODO : multipart upload로 업로드 중간에 실패할 때의 데이터 불일치 문제 해결하기
     @Transactional
-    public MenuImageSaveResponseDto updateImageToS3(List<MultipartFile> multipartFileList) {
+    public MenuImageResponseDto updateImageToS3(List<MultipartFile> multipartFileList) {
         List<String> imageIdList = new ArrayList<>();
 
         if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
@@ -57,7 +62,7 @@ public class ImageService {
                     amazonS3.putObject(
                         new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
                             .withCannedAcl(CannedAccessControlList.PublicRead));
-                } catch (IOException e) {
+                } catch (IOException | AmazonServiceException e) {
                     throw new BusinessLogicException(messageSource.getMessage(
                         "s3.image.upload.failure", null, Locale.getDefault()));
                 }
@@ -67,8 +72,36 @@ public class ImageService {
             });
         }
 
-        return ImageMapper.toMenuImageSaveResponseDto(imageIdList);
+        return ImageMapper.toMenuImageResponseDto(imageIdList);
     }
+
+    @Transactional
+    public MenuImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
+        List<String> imageIdList = requestDto.getImageIdList();
+        List<String> deleteImageIdList = new ArrayList<>();
+
+        if (!Objects.isNull(imageIdList) && !imageIdList.isEmpty()) {
+            List<DeleteObjectsRequest.KeyVersion> keysToDelete = imageIdList.stream()
+                .map(id -> new DeleteObjectsRequest.KeyVersion(getImageFileName(id)))
+                .collect(Collectors.toList());
+
+            try {
+                amazonS3.deleteObjects(new DeleteObjectsRequest(bucket)
+                    .withKeys(keysToDelete)
+                    .withQuiet(false));
+
+                imageIdList.forEach(id -> deleteImageIdList.add(deleteImage(id)));
+
+            } catch (AmazonServiceException e) {
+                throw new BusinessLogicException(
+                    messageSource.getMessage("s3.image.delete.failure", null, Locale.getDefault())
+                );
+            }
+        }
+
+        return ImageMapper.toMenuImageResponseDto(deleteImageIdList);
+    }
+
 
     private String createFileName(String fileName) {
         return UUID.randomUUID().toString().substring(0, 15) + fileName;
@@ -90,13 +123,37 @@ public class ImageService {
         }
     }
 
-    private String saveImage(int sequence, String fileName) {
+    // TODO : createBy 추가
+    @Transactional
+    protected String saveImage(int sequence, String fileName) {
         Image image = Image.builder()
             .sequence(sequence)
+            .fileName(fileName)
             .s3Url(amazonS3.getUrl(bucket, fileName).toString())
             .build();
 
         Image savedImage = imageRepository.save(image);
+        return savedImage.getId();
+    }
+
+    public Image getImage(String id) {
+        return imageRepository.findById(id).orElseThrow(
+            () -> new BusinessLogicException(messageSource.getMessage(
+                "image.get.failure", null, Locale.getDefault())));
+    }
+
+    private String getImageFileName(String id) {
+        return getImage(id).getFileName();
+    }
+
+    // TODO : deleteBy 추가
+    @Transactional
+    protected String deleteImage(String id) {
+        Image image = getImage(id);
+
+        image.isDeletedNow(1L);
+        Image savedImage = imageRepository.save(image);
+
         return savedImage.getId();
     }
 }
