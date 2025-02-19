@@ -12,7 +12,9 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
+import static com.fortest.orderdelivery.app.domain.order.entity.QMenuOrder.*;
 import static com.fortest.orderdelivery.app.domain.order.entity.QOrder.*;
 
 @RequiredArgsConstructor
@@ -79,5 +81,19 @@ public class OrderQueryRepository {
                 );
 
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
+    }
+
+    // 사용자가 요청한 주문 1개에 대한 상세 정보 조회
+    public Optional<Order> findOrderDetail (String orderId) {
+        return Optional.ofNullable(
+                jpaQueryFactory
+                .selectFrom(order)
+                .join(order.menuOrderList, menuOrder)
+                .where(
+                        order.id.eq(orderId),
+                        order.deletedAt.isNull()
+                )
+                .fetchOne()
+        );
     }
 }

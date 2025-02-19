@@ -36,11 +36,12 @@ public class MenuOrder {
     @OneToMany(mappedBy = "menuOrder", cascade = CascadeType.PERSIST)
     private List<MenuOptionMenuOrder> menuOptionMenuOrderList = new ArrayList<>();
 
-    public void addMenuOptionMenuOrder (MenuOptionMenuOrder menuOptionMenuOrder) {
-        this.menuOptionMenuOrderList.add(menuOptionMenuOrder);
+    public void bindOrder(Order order){
+        this.order = order;
     }
 
-    public void addMenuOptionMenuOrderList (List<MenuOptionMenuOrder> menuOptionMenuOrderList) {
-        this.menuOptionMenuOrderList.addAll(menuOptionMenuOrderList);
+    public void addMenuOptionMenuOrder (MenuOptionMenuOrder menuOptionMenuOrder) {
+        this.menuOptionMenuOrderList.add(menuOptionMenuOrder);
+        menuOptionMenuOrder.bindMenuOrder(this);
     }
 }

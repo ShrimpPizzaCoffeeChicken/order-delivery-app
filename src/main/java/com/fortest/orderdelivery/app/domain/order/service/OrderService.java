@@ -7,6 +7,8 @@ import com.fortest.orderdelivery.app.domain.order.repository.OrderQueryRepositor
 import com.fortest.orderdelivery.app.domain.order.repository.OrderRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -102,9 +104,30 @@ public class OrderService {
         return OrderMapper.pageToGetOrderListDto(orderPage, search);
     }
 
+    @Transactional
+    public OrderGetDetailResponseDto getOrderDetail (String orderId, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+        // TODO : TEST
+        log.info("username = {}", username);
+
+        Order order = orderQueryRepository.findOrderDetail(orderId)
+                .orElseThrow(() -> new NotFoundException(messageSource.getMessage("not-found.order", null, Locale.KOREA)));
+        if (!order.getCustomerName().equals(username)) {
+            throw new NotValidRequestException(messageSource.getMessage("app.order.not-valid-user", null, Locale.KOREA));
+        }
+
+        return OrderMapper.entityToGetDetailDto(order);
+    }
+
     // TODO : 하단 코드로 교체 예정
     private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-        String userName = "testUser123";
+        String userName = "user" + userId;
 
         UserResponseDto userDto = UserResponseDto.builder()
                 .username(userName)

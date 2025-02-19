@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.order.mapper;
 
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailResponseDto;
 import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListResponseDto;
 import com.fortest.orderdelivery.app.domain.order.dto.OrderSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidResponseDto;
@@ -38,49 +39,47 @@ public class OrderMapper {
 
         // dto -> entity 시작
         // total price 연산
+
+        Order order = Order.builder()
+                .storeId(saveDto.getStoreId())
+                .storeName(validDto.getStoreName())
+                .customerName(userName)
+                .orderStatus(Order.OrderStatus.WAIT)
+                .orderType(Order.getOrderTypeByString(saveDto.getOrderType()))
+                .menuOrderList(new ArrayList<>())
+                .build();
+        order.isCreatedBy(userId);
+
         int totalPrice = 0;
-        List<MenuOrder> menuOrderList = new ArrayList<>();
         for (OrderSaveRequestDto.MenuDto menuSaveDto : saveDto.getMenuList()) {
-            StoreMenuValidResponseDto.MenuDto menuValidDto = menuValidMap.get(menuSaveDto.getId());
+            StoreMenuValidResponseDto.MenuDto menuOrderValidDto = menuValidMap.get(menuSaveDto.getId());
 
-            List<MenuOptionMenuOrder> menuOptionMenuOrderList = new ArrayList<>();
-            MenuOrder menu = MenuOrder.builder()
-                    .menuId(menuValidDto.getId())
-                    .menuName(menuValidDto.getName())
-                    .price(menuValidDto.getPrice())
+            MenuOrder menuOrder = MenuOrder.builder()
+                    .menuId(menuOrderValidDto.getId())
+                    .menuName(menuOrderValidDto.getName())
+                    .price(menuOrderValidDto.getPrice())
                     .count(menuSaveDto.getCount())
-                    .menuOptionMenuOrderList(menuOptionMenuOrderList)
+                    .menuOptionMenuOrderList(new ArrayList<>())
                     .build();
-            menuOrderList.add(menu);
+            order.addMenuOrder(menuOrder);
 
-            totalPrice += menuValidDto.getPrice() * menuSaveDto.getCount();
+            totalPrice += menuOrderValidDto.getPrice() * menuSaveDto.getCount();
 
             for (OrderSaveRequestDto.OptionDto optionSaveDto : menuSaveDto.getOptionList()) {
                 StoreMenuValidResponseDto.OptionDto optionValidDto = optionValidMap.get(optionSaveDto.getId());
 
-                MenuOptionMenuOrder menuOption = MenuOptionMenuOrder.builder()
+                MenuOptionMenuOrder menuOptionMenuOrder = MenuOptionMenuOrder.builder()
                         .menuOptionId(optionValidDto.getId())
                         .menuOptionName(optionValidDto.getName())
                         .menuOptionPrice(optionValidDto.getPrice())
                         .menuOptionCount(optionValidDto.getPrice())
                         .build();
-                menuOptionMenuOrderList.add(menuOption);
+                menuOrder.addMenuOptionMenuOrder(menuOptionMenuOrder);
 
                 totalPrice += optionValidDto.getPrice() * optionSaveDto.getCount();
             }
-            menu.addMenuOptionMenuOrderList(menuOptionMenuOrderList);
         }
-
-        Order order = Order.builder()
-                .storeId(saveDto.getStoreId())
-                .storeName(validDto.getStoreName())
-                .totalPrice(totalPrice)
-                .customerName(userName)
-                .orderStatus(Order.OrderStatus.WAIT)
-                .orderType(Order.getOrderTypeByString(saveDto.getOrderType()))
-                .menuOrderList(menuOrderList)
-                .build();
-        order.isCreatedBy(userId);
+        order.updateTotalPrice(totalPrice);
 
         return order;
     }
@@ -99,7 +98,7 @@ public class OrderMapper {
         return builder.build();
     }
 
-    public static OrderGetListResponseDto.OrderDto entityToOrderListDtoElement(Order order) {
+    private static OrderGetListResponseDto.OrderDto entityToOrderListDtoElement(Order order) {
         return OrderGetListResponseDto.OrderDto.builder()
                 .orderId(order.getId())
                 .storeId(order.getStoreId())
@@ -108,5 +107,43 @@ public class OrderMapper {
                 .createdAt(CommonUtil.LDTToString(order.getCreatedAt()))
                 .updatedAt(CommonUtil.LDTToString(order.getUpdatedAt()))
                 .build();
+    }
+
+    public static OrderGetDetailResponseDto entityToGetDetailDto(Order order) {
+        OrderGetDetailResponseDto.OrderGetDetailResponseDtoBuilder orderDtoBuilder = OrderGetDetailResponseDto.builder()
+                .orderId(order.getId())
+                .createdAt(CommonUtil.LDTToString(order.getCreatedAt()))
+                .updatedAt(CommonUtil.LDTToString(order.getUpdatedAt()))
+                .storeId(order.getStoreId())
+                .storeName(order.getStoreName())
+                .price(order.getTotalPrice());
+
+        List<MenuOrder> menuOrderList = order.getMenuOrderList();
+        ArrayList<OrderGetDetailResponseDto.MenuDto> menuDtos = new ArrayList<>();
+        for (MenuOrder menuOrder : menuOrderList) {
+
+            OrderGetDetailResponseDto.MenuDto.MenuDtoBuilder menuDtoBuilder = OrderGetDetailResponseDto.MenuDto.builder()
+                    .menuName(menuOrder.getMenuName())
+                    .menuCount(menuOrder.getCount());
+
+            List<MenuOptionMenuOrder> menuOptionMenuOrderList = menuOrder.getMenuOptionMenuOrderList();
+            ArrayList<OrderGetDetailResponseDto.OptionDto> optionDtos = new ArrayList<>();
+            for (MenuOptionMenuOrder menuOptionMenuOrder : menuOptionMenuOrderList) {
+                optionDtos.add(
+                        OrderGetDetailResponseDto.OptionDto.builder()
+                                .optionName(menuOptionMenuOrder.getMenuOptionName())
+                                .optionCount(menuOptionMenuOrder.getMenuOptionCount())
+                                .build()
+                );
+            }
+
+            menuDtos.add(
+                menuDtoBuilder
+                        .orderList(optionDtos)
+                        .build()
+            );
+        }
+        return orderDtoBuilder.menuList(menuDtos).build();
+
     }
 }
