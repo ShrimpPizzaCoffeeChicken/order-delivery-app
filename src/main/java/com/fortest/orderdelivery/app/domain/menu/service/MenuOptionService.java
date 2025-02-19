@@ -2,11 +2,14 @@ package com.fortest.orderdelivery.app.domain.menu.service;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
+import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
@@ -18,7 +21,6 @@ import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import java.time.Duration;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +47,8 @@ public class MenuOptionService {
     private final MenuOptionRepository menuOptionRepository;
 
     // TODO : createdBy 추가
-    public MenuOptionSaveResponseDto saveMenuOption(MenuOptionsSaveRequestDto menuOptionsSaveRequestDto, String menuId) {
+    public MenuOptionSaveResponseDto saveMenuOption(
+        MenuOptionsSaveRequestDto menuOptionsSaveRequestDto, String menuId) {
 
         //메뉴 유효한지 확인 후 객체 가져오기
         CommonDto<MenuAppResponseDto> menuCommonDto = getMenuFromApp(List.of(menuId));
@@ -91,6 +94,25 @@ public class MenuOptionService {
         return MenuOptionMapper.toMenuOptionSaveResponseDto(savedMenuOption);
     }
 
+    // TODO : updatedBy 변경
+    @Transactional
+    public MenuOptionSaveResponseDto updateMenuOption(
+        MenuOptionUpdateRequestDto menuOptionUpdateRequestDto,
+        String menuOptionId) {
+        MenuOption menuOption = getMenuOptionById(menuOptionId);
+
+        menuOption.updateMenuOption(
+            menuOptionUpdateRequestDto.getName(),
+            menuOptionUpdateRequestDto.getDescription(),
+            menuOptionUpdateRequestDto.getPrice(),
+            ExposeStatus.valueOf(menuOptionUpdateRequestDto.getExposeStatus()));
+        menuOption.isUpdatedNow(1L);
+
+        MenuOption savedMenuOption = menuOptionRepository.save(menuOption);
+
+        return MenuMapper.toMenuOptionSaveResponseDto(savedMenuOption);
+    }
+
     /**
      * 메뉴 서비스에 메뉴 Id로 메뉴 객체 요청
      *
@@ -111,7 +133,8 @@ public class MenuOptionService {
         return webClient.get()
             .uri(finalUri)
             .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {})
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {
+            })
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", finalUri, throwable);
@@ -138,8 +161,9 @@ public class MenuOptionService {
             .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionImageMappingResponseDto>>() {
-            })
+            .bodyToMono(
+                new ParameterizedTypeReference<CommonDto<MenuOptionImageMappingResponseDto>>() {
+                })
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
@@ -160,5 +184,11 @@ public class MenuOptionService {
                     messageUtil.getMessage("api.call.server-error"));
             }
         }
+    }
+
+    public MenuOption getMenuOptionById(String menuOptionId) {
+        return menuOptionRepository.findById(menuOptionId).orElseThrow(
+            () -> new NotFoundException(
+                messageUtil.getMessage("not-found.menu.option")));
     }
 }

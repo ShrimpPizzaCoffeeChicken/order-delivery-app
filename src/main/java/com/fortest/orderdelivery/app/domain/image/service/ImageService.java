@@ -7,13 +7,15 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fortest.orderdelivery.app.domain.image.dto.MenuImageRequestDto;
-import com.fortest.orderdelivery.app.domain.image.dto.MenuImageResponseDto;
+import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageQueryRepository;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageRepository;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
+import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
@@ -37,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -51,6 +52,7 @@ public class ImageService {
     private String bucket;
 
     private static final String MENU_APP_URL = "http://{url}:{port}/api/app/menus";
+    private static final String MENU_OPTION_APP_URL = "http://{url}:{port}/api/app/menus/options";
 
     private final AmazonS3 amazonS3;
     private final WebClient webClient;
@@ -60,25 +62,24 @@ public class ImageService {
 
     // TODO : multipart upload로 업로드 중간에 실패할 때의 데이터 불일치 문제 해결하기
     @Transactional
-    public MenuImageResponseDto registerMenuImage(List<MultipartFile> multipartFileList) {
+    public ImageResponseDto registerMenuImage(List<MultipartFile> multipartFileList) {
         List<String> imageIdList = new ArrayList<>();
 
         if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
             AtomicInteger sequence = new AtomicInteger(10);
 
-            uploadImageToS3(multipartFileList, imageIdList, sequence, null);
+            uploadImageToS3(multipartFileList, imageIdList, sequence, null, null);
         }
 
-        return ImageMapper.toMenuImageResponseDto(imageIdList);
+        return ImageMapper.toImageResponseDto(imageIdList);
     }
 
     @Transactional
-    public MenuImageResponseDto updateMenuImage(List<MultipartFile> multipartFileList,
-        String menuId) {
+    public ImageResponseDto updateMenuImage(List<MultipartFile> multipartFileList, String menuId) {
         List<String> imageIdList = new ArrayList<>();
 
         if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
-            int maxImageSequence = imageQueryRepository.getMaxImageSequence(menuId);
+            int maxImageSequence = imageQueryRepository.getMaxMenuImageSequence(menuId);
             AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
 
             CommonDto<MenuAppResponseDto> commonDto = getMenuFromApp(List.of(menuId));
@@ -92,15 +93,40 @@ public class ImageService {
             throwByRespCode(commonDto.getCode());
 
             uploadImageToS3(multipartFileList, imageIdList, sequence,
-                commonDto.getData().getMenuList().get(0));
+                commonDto.getData().getMenuList().get(0), null);
         }
 
-        return ImageMapper.toMenuImageResponseDto(imageIdList);
+        return ImageMapper.toImageResponseDto(imageIdList);
+    }
+
+    @Transactional
+    public ImageResponseDto updateMenuOptionImage(List<MultipartFile> multipartFileList, String menuOptionId) {
+        List<String> imageIdList = new ArrayList<>();
+
+        if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
+            int maxImageSequence = imageQueryRepository.getMaxMenuOptionImageSequence(menuOptionId);
+            AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
+
+            CommonDto<MenuOptionAppResponseDto> commonDto = getMenuOptionFromApp(List.of(menuOptionId));
+
+            if (Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
+                throw new NotFoundException(
+                    messageSource.getMessage("not-found.menu.option", null,
+                        Locale.getDefault()));
+            }
+
+            throwByRespCode(commonDto.getCode());
+
+            uploadImageToS3(multipartFileList, imageIdList, sequence,
+                null, commonDto.getData().getMenuOptionList().get(0));
+        }
+
+        return ImageMapper.toImageResponseDto(imageIdList);
     }
 
     @Transactional
     protected void uploadImageToS3(List<MultipartFile> multipartFileList, List<String> imageIdList,
-        AtomicInteger sequence, Menu menu) {
+        AtomicInteger sequence, Menu menu, MenuOption menuOption) {
         multipartFileList.forEach(file -> {
 
             String originalFileName = file.getOriginalFilename();
@@ -120,13 +146,13 @@ public class ImageService {
                     "s3.image.upload.failure", null, Locale.getDefault()));
             }
 
-            imageIdList.add(saveImage(sequence.get(), fileName, menu));
+            imageIdList.add(saveImage(sequence.get(), fileName, menu, menuOption));
             sequence.addAndGet(10);
         });
     }
 
     @Transactional
-    public MenuImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
+    public ImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
         List<String> imageIdList = requestDto.getImageIdList();
         List<String> deleteImageIdList = new ArrayList<>();
 
@@ -149,7 +175,7 @@ public class ImageService {
             }
         }
 
-        return ImageMapper.toMenuImageResponseDto(deleteImageIdList);
+        return ImageMapper.toImageResponseDto(deleteImageIdList);
     }
 
 
@@ -175,11 +201,12 @@ public class ImageService {
 
     // TODO : createBy 추가
     @Transactional
-    protected String saveImage(int sequence, String fileName, Menu menu) {
+    protected String saveImage(int sequence, String fileName, Menu menu, MenuOption menuOption) {
         Image image = Image.builder()
             .sequence(sequence)
             .fileName(fileName)
             .menu(menu)
+            .menuOption(menuOption)
             .s3Url(amazonS3.getUrl(bucket, fileName).toString())
             .build();
 
@@ -229,6 +256,35 @@ public class ImageService {
             .uri(finalUri)
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {})
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", finalUri, throwable);
+                return Mono.empty();
+            })
+            .block();
+    }
+
+    /**
+     * 메뉴 옵션 서비스에 메뉴 옵션 Id로 메뉴 옵션 객체 요청
+     *
+     * @param menuOptionIdList
+     * @return CommonDto<MenuAppResponseDto> : 요청 실패 시 null
+     */
+    public CommonDto<MenuOptionAppResponseDto> getMenuOptionFromApp(List<String> menuOptionIdList) {
+
+        String targetUrl = MENU_OPTION_APP_URL
+            .replace("{url}", "localhost")
+            .replace("{port}", "8082");
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(targetUrl)
+            .queryParam("menuOptionId", menuOptionIdList);
+
+        String finalUri = uriBuilder.build().toString();
+
+        return webClient.get()
+            .uri(finalUri)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionAppResponseDto>>() {})
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", finalUri, throwable);
