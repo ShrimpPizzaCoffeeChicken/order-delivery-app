@@ -34,30 +34,30 @@ class OrderServiceTest {
 
     @BeforeEach
     void initData() {
-        // order 생성
-        ArrayList<Order> orders = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Order order = Order.builder()
-                    .storeId("testId" + i)
-                    .storeName("testName" + i)
-                    .totalPrice(i * 1000)
-                    .orderStatus(i % 2 == 0 ? Order.OrderStatus.WAIT : Order.OrderStatus.FAIL)
-                    .orderType(i % 2 == 0 ? Order.OrderType.DELIVERY : Order.OrderType.INSTORE)
-                    .customerName("testUser123")
-                    .build();
-            orders.add(order);
-        }
-        Order order = Order.builder()
-                .storeId("YtestId1")
-                .storeName("Ytest1")
-                .totalPrice(1234)
-                .orderStatus(Order.OrderStatus.WAIT)
-                .orderType(Order.OrderType.INSTORE)
-                .customerName("YYYUSER123")
-                .build();
-        orders.add(order);
-
-        orderRepository.saveAll(orders);
+//        // order 생성
+//        ArrayList<Order> orders = new ArrayList<>();
+//        for (int i = 1; i <= 5; i++) {
+//            Order order = Order.builder()
+//                    .storeId("testId" + i)
+//                    .storeName("testName" + i)
+//                    .totalPrice(i * 1000)
+//                    .orderStatus(i % 2 == 0 ? Order.OrderStatus.WAIT : Order.OrderStatus.FAIL)
+//                    .orderType(i % 2 == 0 ? Order.OrderType.DELIVERY : Order.OrderType.INSTORE)
+//                    .customerName("testUser123")
+//                    .build();
+//            orders.add(order);
+//        }
+//        Order order = Order.builder()
+//                .storeId("YtestId1")
+//                .storeName("Ytest1")
+//                .totalPrice(1234)
+//                .orderStatus(Order.OrderStatus.WAIT)
+//                .orderType(Order.OrderType.INSTORE)
+//                .customerName("YYYUSER123")
+//                .build();
+//        orders.add(order);
+//
+//        orderRepository.saveAll(orders);
     }
 
     @Test
@@ -141,5 +141,32 @@ class OrderServiceTest {
         log.info("result = {}", jsonObject);
     }
 
+    @Test
+    @DisplayName("주문 삭제 테스트 : 테스트를 위해 삭제 가능 시간을 짧게 조정")
+    void deleteOrderTest () {
+        // given
+        Order order = Order.builder()
+                .storeId(UUID.randomUUID().toString())
+                .storeName("가게이름 1")
+                .customerName("user1")
+                .orderStatus(Order.OrderStatus.WAIT)
+                .orderType(Order.OrderType.INSTORE)
+                .menuOrderList(new ArrayList<>())
+                .build();
+        orderRepository.save(order);
 
+        for (int i = 1; i < 4; i++) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info(i + "초 경과");
+        }
+
+        String deletedId = orderService.deleteOrder(order.getId(), 1L);
+        Order deletedOrder = orderRepository.findById(deletedId).get();
+        log.info("result = {}", deletedOrder.getId());
+        log.info("deleted At = {} , deletedBy = {}", deletedOrder.getDeletedAt(), deletedOrder.getDeletedBy());
+    }
 }

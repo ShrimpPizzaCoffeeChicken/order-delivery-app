@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.order.controller;
 
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailResponseDto;
 import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListResponseDto;
 import com.fortest.orderdelivery.app.domain.order.dto.OrderSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
@@ -52,6 +53,31 @@ public class OrderServiceController {
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(orderList)
+                        .build()
+        );
+    }
+
+    @GetMapping("/orders/{orderId}")
+    public ResponseEntity<CommonDto<OrderGetDetailResponseDto>> getOrderDetail(@PathVariable("orderId") String orderId) {
+        OrderGetDetailResponseDto orderDetail = orderService.getOrderDetail(orderId, 123L);
+        return ResponseEntity.ok(
+                CommonDto.<OrderGetDetailResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(orderDetail)
+                        .build()
+        );
+    }
+
+    @DeleteMapping("/orders/{orderId}")
+    public ResponseEntity<CommonDto<Map<String, String>>> deleteOrder (@PathVariable("orderId") String orderId) {
+        String deletedOrderId = orderService.deleteOrder(orderId, 123L);
+        Map<String, String> data = Map.of("order-id", deletedOrderId);
+        return ResponseEntity.ok(
+                CommonDto.<Map<String, String>> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(data)
                         .build()
         );
     }
