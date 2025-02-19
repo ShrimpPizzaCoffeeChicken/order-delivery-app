@@ -1,5 +1,7 @@
 package com.fortest.orderdelivery.app.domain.image.entity;
 
+import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
+import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,20 +27,22 @@ public class Image extends BaseDataEntity {
 
     private Integer sequence;
 
-    @Column(length = 50)
-    private String menuId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id")
+    private Menu menu;
 
-    @Column(length = 50)
-    private String optionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_option_id")
+    private MenuOption menuOption;
 
     @Column(length = 200, nullable = false)
     private String s3Url;
 
-    public void updateMenuId(String menuId) {
-        this.menuId = menuId;
+    public void updateMenu(Menu menu) {
+        this.menu = menu;
     }
 
-    public void updateOptionId(String optionId) {
-        this.optionId = optionId;
+    public void updateOption(MenuOption menuOption) {
+        this.menuOption = menuOption;
     }
 }

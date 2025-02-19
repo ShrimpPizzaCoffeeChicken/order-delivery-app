@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageRepository;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +23,14 @@ public class ImageAppService {
     @Transactional
     public MenuImageMappingResponseDto updateMenuId(MenuImageMappingRequestDto menuImageRequestDto) {
         List<String> imageIdList = menuImageRequestDto.getImageIdList();
-        String menuId = menuImageRequestDto.getMenuId();
+        Menu menu = menuImageRequestDto.getMenu();
 
         List<String> updatedImageIdList = new ArrayList<>();
         boolean result = false;
 
         imageIdList.forEach(id -> {
             Image image = imageService.getImage(id);
-            image.updateMenuId(menuId);
+            image.updateMenu(menu);
 
             updatedImageIdList.add(imageRepository.save(image).getId());
         });
