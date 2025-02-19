@@ -2,14 +2,9 @@ package com.fortest.orderdelivery.app.domain.menu.repository;
 
 import static com.fortest.orderdelivery.app.domain.image.entity.QImage.image;
 import static com.fortest.orderdelivery.app.domain.menu.entity.QMenu.menu;
-import static com.fortest.orderdelivery.app.domain.order.entity.QOrder.order;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
-import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
-import com.fortest.orderdelivery.app.global.config.QueryDSLConfig;
-import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
-import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Projections;
