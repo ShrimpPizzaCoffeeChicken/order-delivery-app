@@ -14,6 +14,7 @@ import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
@@ -130,6 +131,27 @@ public class DeliveryService {
             deliveryPage = deliveryQueryRepository.findDeliveryListUsingSearch(pageable, search, username);
         }
         return DeliveryMapper.entityToGetListDto(deliveryPage, search);
+    }
+
+    @Transactional
+    public String deleteDelivery(String deliveryId, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
+
+        if (! delivery.getCustomerName().equals(username)) {
+            throw new NotValidRequestException(messageUtil.getMessage("app.delivery.not-valid-user"));
+        }
+
+        delivery.isDeletedNow(userId);
+        return delivery.getId();
     }
 
     // TODO : 하단 코드로 교체 예정
