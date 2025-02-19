@@ -1,4 +1,4 @@
-package com.fortest.orderdelivery.app.domain.order.dto;
+package com.fortest.orderdelivery.app.domain.payment.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderGetListResponseDto {
+public class PaymentGetListResponseDto {
 
     private String search;
 
@@ -25,17 +25,19 @@ public class OrderGetListResponseDto {
     private Integer currentPage;
 
     @JsonProperty("order-list")
-    private List<OrderDto> orderList;
+    private List<PaymentDto> orderList;
 
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class OrderDto {
-        @JsonProperty("order-id")
-        private String orderId;
-        @JsonProperty("store-id")
-        private String storeId;
+    public static class PaymentDto {
+        @JsonProperty("payment-id")
+        private String paymentId;
+        @JsonProperty("payment-agent")
+        private String paymentAgent;
+        @JsonProperty("payment-status")
+        private String paymentStatus;
         @JsonProperty("store-name")
         private String storeName;
         private Integer price;

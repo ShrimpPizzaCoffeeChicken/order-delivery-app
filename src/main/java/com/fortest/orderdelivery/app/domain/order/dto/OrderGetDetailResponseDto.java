@@ -6,33 +6,46 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class StoreMenuValidResponseDto {
+public class OrderGetDetailResponseDto {
+
+    @JsonProperty("order-id")
+    private String orderId;
+
+    @JsonProperty("created-at")
+    private String createdAt;
+
+    @JsonProperty("updated-at")
+    private String updatedAt;
 
     @JsonProperty("store-id")
     private String storeId;
+
     @JsonProperty("store-name")
     private String storeName;
-    private Boolean result;
+
+    @JsonProperty("price")
+    private Integer price;
+
     @JsonProperty("menu-list")
-    private List<MenuDto> menuList = new ArrayList<>();
+    private List<MenuDto> menuList;
 
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class MenuDto {
-        private String id;
-        private String name;
-        private Integer price;
-        @JsonProperty("option-list")
-        private List<OptionDto> optionList = new ArrayList<>();
+        @JsonProperty("menu-name")
+        private String menuName;
+        @JsonProperty("menu-count")
+        private Integer menuCount;
+        @JsonProperty("order-list")
+        private List<OptionDto> orderList;
     }
 
     @Getter
@@ -40,8 +53,9 @@ public class StoreMenuValidResponseDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class OptionDto {
-        private String name;
-        private String id;
-        private Integer price;
+        @JsonProperty("order-name")
+        private String optionName;
+        @JsonProperty("order-count")
+        private Integer optionCount;
     }
 }

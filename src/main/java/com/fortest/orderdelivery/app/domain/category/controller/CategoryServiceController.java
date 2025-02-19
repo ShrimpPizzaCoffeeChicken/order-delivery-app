@@ -1,12 +1,10 @@
 package com.fortest.orderdelivery.app.domain.category.controller;
 
-import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveRequestDto;
-import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveResponseDto;
-import com.fortest.orderdelivery.app.domain.category.dto.CategoryUpdateRequestDto;
-import com.fortest.orderdelivery.app.domain.category.dto.CategoryUpdateResponseDto;
+import com.fortest.orderdelivery.app.domain.category.dto.*;
 import com.fortest.orderdelivery.app.domain.category.service.CategoryService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +39,19 @@ public class CategoryServiceController {
                         .message("SUCCESS")
                         .code(HttpStatus.OK.value())
                         .data(categoryUpdateResponseDto)
+                        .build()
+        );
+    }
+
+    @DeleteMapping("/categories/{categoryId}")
+    public ResponseEntity<CommonDto<CategoryDeleteResponseDto>> deleteCategory(@PathVariable String categoryId){
+        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, 123L);
+
+        return ResponseEntity.ok(
+                CommonDto.<CategoryDeleteResponseDto>builder()
+                        .message("SUCCESS")
+                        .code(HttpStatus.OK.value())
+                        .data(categoryDeleteResponseDto)
                         .build()
         );
     }

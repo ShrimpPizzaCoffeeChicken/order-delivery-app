@@ -26,4 +26,5 @@ public class Category extends BaseDataEntity {
     public void update(String categoryName) {
         this.name = categoryName;
     }
+
 }

@@ -24,7 +24,11 @@ public class Payment extends BaseDataEntity {
     private String orderId;
 
     @Column(length = 50)
-    private String paymentAgentId;
+    private String customerName;
+
+    @JoinColumn(name = "payment_agent_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private PaymentAgent paymentAgent;
 
     @Column(length = 200, nullable = false, unique = true)
     private String paymentPid;
@@ -32,6 +36,8 @@ public class Payment extends BaseDataEntity {
     @Column(length = 50)
     @Enumerated(value = EnumType.STRING)
     private Status status;
+
+    private Integer price;
 
     @Getter
     @AllArgsConstructor

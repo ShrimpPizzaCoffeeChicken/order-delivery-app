@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.payment.controller;
 
+import com.fortest.orderdelivery.app.domain.payment.dto.PaymentGetListResponseDto;
 import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.payment.service.PaymentService;
@@ -7,10 +8,7 @@ import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RequiredArgsConstructor
@@ -29,6 +27,25 @@ public class PaymentServiceController {
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(responseDto)
+                        .build()
+        );
+    }
+
+    @GetMapping("/payments")
+    public ResponseEntity<CommonDto<PaymentGetListResponseDto>> getPaymentList (
+            @RequestParam("page") Integer page,
+            @RequestParam("size") Integer size,
+            @RequestParam("orderby") String orderby,
+            @RequestParam("sort") String sort,
+            @RequestParam("search") String search
+    ) {
+
+        PaymentGetListResponseDto paymentList = paymentService.getPaymentList(page, size, orderby, sort, search, 123L);
+        return ResponseEntity.ok(
+                CommonDto.<PaymentGetListResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(paymentList)
                         .build()
         );
     }

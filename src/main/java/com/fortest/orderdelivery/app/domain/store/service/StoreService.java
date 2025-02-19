@@ -92,6 +92,15 @@ public class StoreService {
         return StoreMapper.toStoreUpdateResponseDto(store, area);
     }
 
+    @Transactional
+    public StoreDeleteResponseDto deleteStore(String storeId, Long userId){
+        Store store = storeRepository.findById(storeId).orElseThrow(()->
+                new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+
+        store.isDeletedNow(userId);
+
+        return StoreMapper.toCategoryDeleteResponseDto(store);
+    }
 
     private void throwByRespCode(int httpStatusCode) {
         int firstNum = httpStatusCode / 100;
