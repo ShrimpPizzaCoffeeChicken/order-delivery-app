@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MenuImageResponseDto {
+public class ImageResponseDto {
     @JsonProperty("image-id-list")
     List<String> imageIdList;
 }

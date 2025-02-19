@@ -3,10 +3,12 @@ package com.fortest.orderdelivery.app.domain.menu.mapper;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
+import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
@@ -41,6 +43,12 @@ public class MenuMapper {
     public static MenuAppResponseDto toMenuAppResponseDto(List<Menu> menuList) {
         return MenuAppResponseDto.builder()
             .menuList(menuList)
+            .build();
+    }
+
+    public static MenuOptionAppResponseDto toMenuOptionAppResponseDto(List<MenuOption> menuOptionList) {
+        return MenuOptionAppResponseDto.builder()
+            .menuOptionList(menuOptionList)
             .build();
     }
 }

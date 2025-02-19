@@ -2,14 +2,12 @@ package com.fortest.orderdelivery.app.domain.menu.service;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
-import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuOptionMapper;
 import com.fortest.orderdelivery.app.domain.menu.repository.MenuOptionRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -18,7 +16,6 @@ import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import java.time.Duration;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +23,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
@@ -160,5 +156,11 @@ public class MenuOptionService {
                     messageUtil.getMessage("api.call.server-error"));
             }
         }
+    }
+
+    public MenuOption getMenuOptionById(String menuOptionId) {
+        return menuOptionRepository.findById(menuOptionId).orElseThrow(
+            () -> new NotFoundException(
+                messageUtil.getMessage("not-found.menu.option")));
     }
 }
