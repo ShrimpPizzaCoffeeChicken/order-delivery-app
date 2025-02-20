@@ -1,12 +1,9 @@
 package com.fortest.orderdelivery.app.domain.user.service;
 
-import com.fortest.orderdelivery.app.domain.user.dto.LoginRequestDto;
 import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
-import com.fortest.orderdelivery.app.domain.user.entity.RefreshToken;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
-import com.fortest.orderdelivery.app.domain.user.repository.RefreshTokenRepository;
 import com.fortest.orderdelivery.app.domain.user.repository.RoleTypeRepository;
 import com.fortest.orderdelivery.app.domain.user.repository.UserRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -18,16 +15,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -43,9 +36,8 @@ public class UserService {
     @Transactional
     public CommonDto<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
-
         if (refreshToken == null || !jwtUtil.validateToken(refreshToken)) {
-            throw new RuntimeException("유효하지 않은 Refresh Token입니다.");
+            return new CommonDto<>("Invalid Refresh Token", HttpStatus.UNAUTHORIZED.value(), null);
         }
 
         Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
@@ -54,6 +46,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
         String newAccessToken = jwtUtil.createAccessToken(username, user.getRoleType().getName());
+
         jwtUtil.addAccessTokenToHeader(newAccessToken, response);
 
         return CommonDto.<LoginResponseDto>builder()
@@ -63,7 +56,6 @@ public class UserService {
                 .build();
     }
 
-    // 회원가입 관련 기능
     @Transactional
     public User signup(SignupRequestDto requestDto) {
         RoleType roleType = roleTypeRepository.findByName("CUSTOMER")
@@ -81,7 +73,6 @@ public class UserService {
         return user;
     }
 
-    // 유저 생성자 설정
     @Transactional
     public void isCreatedBy(User user){
         User findUser = userRepository.findById(user.getId()).get();
@@ -104,5 +95,7 @@ public class UserService {
         //응답 객체 생성 및 반환
         return new CommonDto<>(message, status.value(), responseData);
     }
+
+
 
 }
