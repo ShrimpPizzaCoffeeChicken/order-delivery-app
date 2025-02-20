@@ -117,8 +117,10 @@ public class ImageService {
 
             throwByRespCode(commonDto.getCode());
 
+            MenuOption menuOption = commonDto.getData().getMenuOptionList().get(0);
+
             uploadImageToS3(multipartFileList, imageIdList, sequence,
-                null, commonDto.getData().getMenuOptionList().get(0));
+                menuOption.getMenu(), menuOption);
         }
 
         return ImageMapper.toImageResponseDto(imageIdList);

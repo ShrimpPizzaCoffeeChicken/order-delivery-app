@@ -64,4 +64,15 @@ public class ImageAppController {
             .data(responseDto)
             .build());
     }
+
+    @DeleteMapping("/menus/{menuId}")
+    public ResponseEntity<CommonDto<ImageResponseDto>> deleteImageOnMenuDelete(@PathVariable("menuId") String menuId) {
+        ImageResponseDto responseDto = imageAppService.deleteImageOnMenuDelete(menuId);
+
+        return ResponseEntity.ok(CommonDto.<ImageResponseDto>builder()
+            .message("사진 삭제 완료")
+            .code(HttpStatus.OK.value())
+            .data(responseDto)
+            .build());
+    }
 }

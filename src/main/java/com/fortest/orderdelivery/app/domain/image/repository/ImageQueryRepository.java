@@ -49,4 +49,14 @@ public class ImageQueryRepository {
             )
             .fetch();
     }
+
+    public List<Image> getImageListByMenuId(String menuId) {
+        return queryFactory
+            .selectFrom(image)
+            .where(
+                image.menu.id.eq(menuId),
+                image.deletedAt.isNull()
+            )
+            .fetch();
+    }
 }

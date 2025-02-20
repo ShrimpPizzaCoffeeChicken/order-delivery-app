@@ -1,10 +1,9 @@
 package com.fortest.orderdelivery.app.domain.menu.service;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
-import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
-import java.util.ArrayList;
+import com.fortest.orderdelivery.app.domain.menu.repository.MenuOptionQueryRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,16 +12,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MenuOptionAppService {
 
-    private final MenuOptionService menuOptionService;
+    private final MenuOptionQueryRepository menuOptionQueryRepository;
 
     public MenuOptionAppResponseDto getMenuOptionFromApp(List<String> menuOptionIdList) {
+        List<MenuOption> menuOptionList = menuOptionQueryRepository.getMenuOptionsAndMenusByMenuOptionIds(menuOptionIdList);
 
-        List<MenuOption> menuOptionList = new ArrayList<>();
-
-        menuOptionIdList.forEach(id -> {
-            MenuOption menuOption = menuOptionService.getMenuOptionById(id);
-            menuOptionList.add(menuOption);
-        });
         return MenuMapper.toMenuOptionAppResponseDto(menuOptionList);
     }
 }

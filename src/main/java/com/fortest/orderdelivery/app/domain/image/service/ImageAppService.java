@@ -83,4 +83,14 @@ public class ImageAppService {
 
         return ImageMapper.toImageResponseDto(deleteImageIdList);
     }
+
+    // TODO : deleteBy 코드 추가
+    public ImageResponseDto deleteImageOnMenuDelete(String menuId) {
+        List<Image> imageList = imageQueryRepository.getImageListByMenuId(menuId);
+        List<String> imageIdList = imageList.stream().map(Image::getId).toList();
+
+        List<String> deleteImageIdList = imageService.deleteImageFromS3(imageIdList);
+
+        return ImageMapper.toImageResponseDto(deleteImageIdList);
+    }
 }
