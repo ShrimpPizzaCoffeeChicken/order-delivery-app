@@ -7,13 +7,21 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fortest.orderdelivery.app.domain.image.dto.MenuImageRequestDto;
-import com.fortest.orderdelivery.app.domain.image.dto.MenuImageResponseDto;
+import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
+import com.fortest.orderdelivery.app.domain.image.repository.ImageQueryRepository;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageRepository;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
+import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
+import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,12 +31,19 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+@Slf4j(topic = "ImageService")
 @Service
 @RequiredArgsConstructor
 public class ImageService {
@@ -36,47 +51,108 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    private final ImageRepository imageRepository;
-    private final MessageSource messageSource;
+    private static final String MENU_APP_URL = "http://{url}:{port}/api/app/menus";
+    private static final String MENU_OPTION_APP_URL = "http://{url}:{port}/api/app/menus/options";
+
     private final AmazonS3 amazonS3;
+    private final WebClient webClient;
+    private final MessageSource messageSource;
+    private final ImageRepository imageRepository;
+    private final ImageQueryRepository imageQueryRepository;
 
     // TODO : multipart upload로 업로드 중간에 실패할 때의 데이터 불일치 문제 해결하기
     @Transactional
-    public MenuImageResponseDto updateImageToS3(List<MultipartFile> multipartFileList) {
+    public ImageResponseDto registerMenuImage(List<MultipartFile> multipartFileList) {
         List<String> imageIdList = new ArrayList<>();
 
         if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
             AtomicInteger sequence = new AtomicInteger(10);
 
-            multipartFileList.forEach(file -> {
-
-                String originalFileName = file.getOriginalFilename();
-                validateFileExtension(originalFileName);
-                String fileName = createFileName(originalFileName);
-
-                ObjectMetadata objectMetadata = new ObjectMetadata();
-                objectMetadata.setContentLength(file.getSize());
-                objectMetadata.setContentType(file.getContentType());
-
-                try (InputStream inputStream = file.getInputStream()) {
-                    amazonS3.putObject(
-                        new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
-                            .withCannedAcl(CannedAccessControlList.PublicRead));
-                } catch (IOException | AmazonServiceException e) {
-                    throw new BusinessLogicException(messageSource.getMessage(
-                        "s3.image.upload.failure", null, Locale.getDefault()));
-                }
-
-                imageIdList.add(saveImage(sequence.get(), fileName));
-                sequence.addAndGet(10);
-            });
+            uploadImageToS3(multipartFileList, imageIdList, sequence, null, null);
         }
 
-        return ImageMapper.toMenuImageResponseDto(imageIdList);
+        return ImageMapper.toImageResponseDto(imageIdList);
     }
 
     @Transactional
-    public MenuImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
+    public ImageResponseDto updateMenuImage(List<MultipartFile> multipartFileList, String menuId) {
+        List<String> imageIdList = new ArrayList<>();
+
+        if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
+            int maxImageSequence = imageQueryRepository.getMaxMenuImageSequence(menuId);
+            AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
+
+            CommonDto<MenuAppResponseDto> commonDto = getMenuFromApp(List.of(menuId));
+
+            if (Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
+                throw new NotFoundException(
+                    messageSource.getMessage("not-found.menu", null,
+                        Locale.getDefault()));
+            }
+
+            throwByRespCode(commonDto.getCode());
+
+            uploadImageToS3(multipartFileList, imageIdList, sequence,
+                commonDto.getData().getMenuList().get(0), null);
+        }
+
+        return ImageMapper.toImageResponseDto(imageIdList);
+    }
+
+    @Transactional
+    public ImageResponseDto updateMenuOptionImage(List<MultipartFile> multipartFileList, String menuOptionId) {
+        List<String> imageIdList = new ArrayList<>();
+
+        if (!Objects.isNull(multipartFileList) && !multipartFileList.isEmpty()) {
+            int maxImageSequence = imageQueryRepository.getMaxMenuOptionImageSequence(menuOptionId);
+            AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
+
+            CommonDto<MenuOptionAppResponseDto> commonDto = getMenuOptionFromApp(List.of(menuOptionId));
+
+            if (Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
+                throw new NotFoundException(
+                    messageSource.getMessage("not-found.menu.option", null,
+                        Locale.getDefault()));
+            }
+
+            throwByRespCode(commonDto.getCode());
+
+            uploadImageToS3(multipartFileList, imageIdList, sequence,
+                null, commonDto.getData().getMenuOptionList().get(0));
+        }
+
+        return ImageMapper.toImageResponseDto(imageIdList);
+    }
+
+    @Transactional
+    protected void uploadImageToS3(List<MultipartFile> multipartFileList, List<String> imageIdList,
+        AtomicInteger sequence, Menu menu, MenuOption menuOption) {
+        multipartFileList.forEach(file -> {
+
+            String originalFileName = file.getOriginalFilename();
+            validateFileExtension(originalFileName);
+            String fileName = createFileName(originalFileName);
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentLength(file.getSize());
+            objectMetadata.setContentType(file.getContentType());
+
+            try (InputStream inputStream = file.getInputStream()) {
+                amazonS3.putObject(
+                    new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+            } catch (IOException | AmazonServiceException e) {
+                throw new BusinessLogicException(messageSource.getMessage(
+                    "s3.image.upload.failure", null, Locale.getDefault()));
+            }
+
+            imageIdList.add(saveImage(sequence.get(), fileName, menu, menuOption));
+            sequence.addAndGet(10);
+        });
+    }
+
+    @Transactional
+    public ImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
         List<String> imageIdList = requestDto.getImageIdList();
         List<String> deleteImageIdList = new ArrayList<>();
 
@@ -99,7 +175,7 @@ public class ImageService {
             }
         }
 
-        return ImageMapper.toMenuImageResponseDto(deleteImageIdList);
+        return ImageMapper.toImageResponseDto(deleteImageIdList);
     }
 
 
@@ -125,10 +201,12 @@ public class ImageService {
 
     // TODO : createBy 추가
     @Transactional
-    protected String saveImage(int sequence, String fileName) {
+    protected String saveImage(int sequence, String fileName, Menu menu, MenuOption menuOption) {
         Image image = Image.builder()
             .sequence(sequence)
             .fileName(fileName)
+            .menu(menu)
+            .menuOption(menuOption)
             .s3Url(amazonS3.getUrl(bucket, fileName).toString())
             .build();
 
@@ -136,24 +214,96 @@ public class ImageService {
         return savedImage.getId();
     }
 
-    public Image getImage(String id) {
+    public Image getImageById(String id) {
         return imageRepository.findById(id).orElseThrow(
             () -> new BusinessLogicException(messageSource.getMessage(
                 "image.get.failure", null, Locale.getDefault())));
     }
 
     private String getImageFileName(String id) {
-        return getImage(id).getFileName();
+        return getImageById(id).getFileName();
     }
 
     // TODO : deleteBy 추가
     @Transactional
     protected String deleteImage(String id) {
-        Image image = getImage(id);
+        Image image = getImageById(id);
 
         image.isDeletedNow(1L);
         Image savedImage = imageRepository.save(image);
 
         return savedImage.getId();
+    }
+
+    /**
+     * 메뉴 서비스에 메뉴 Id로 메뉴 객체 요청
+     *
+     * @param menuIdList
+     * @return CommonDto<MenuAppResponseDto> : 요청 실패 시 null
+     */
+    public CommonDto<MenuAppResponseDto> getMenuFromApp(List<String> menuIdList) {
+
+        String targetUrl = MENU_APP_URL
+            .replace("{url}", "localhost")
+            .replace("{port}", "8082");
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(targetUrl)
+            .queryParam("menuId", menuIdList);
+
+        String finalUri = uriBuilder.build().toString();
+
+        return webClient.get()
+            .uri(finalUri)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {})
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", finalUri, throwable);
+                return Mono.empty();
+            })
+            .block();
+    }
+
+    /**
+     * 메뉴 옵션 서비스에 메뉴 옵션 Id로 메뉴 옵션 객체 요청
+     *
+     * @param menuOptionIdList
+     * @return CommonDto<MenuAppResponseDto> : 요청 실패 시 null
+     */
+    public CommonDto<MenuOptionAppResponseDto> getMenuOptionFromApp(List<String> menuOptionIdList) {
+
+        String targetUrl = MENU_OPTION_APP_URL
+            .replace("{url}", "localhost")
+            .replace("{port}", "8082");
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(targetUrl)
+            .queryParam("menuOptionId", menuOptionIdList);
+
+        String finalUri = uriBuilder.build().toString();
+
+        return webClient.get()
+            .uri(finalUri)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionAppResponseDto>>() {})
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", finalUri, throwable);
+                return Mono.empty();
+            })
+            .block();
+    }
+
+    private void throwByRespCode(int httpStatusCode) {
+        int firstNum = httpStatusCode / 100;
+        switch (firstNum) {
+            case 4 -> {
+                throw new BusinessLogicException(
+                    messageSource.getMessage("api.call.client-error", null, Locale.getDefault()));
+            }
+            case 5 -> {
+                throw new BusinessLogicException(
+                    messageSource.getMessage("api.call.server-error", null, Locale.getDefault()));
+            }
+        }
     }
 }

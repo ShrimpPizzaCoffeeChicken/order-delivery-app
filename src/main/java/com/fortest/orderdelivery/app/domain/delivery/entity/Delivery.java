@@ -21,6 +21,9 @@ public class Delivery extends BaseDataEntity {
     private String id;
 
     @Column(length = 50)
+    private String customerName;
+
+    @Column(length = 50)
     private String orderId;
 
     @Column(length = 100)

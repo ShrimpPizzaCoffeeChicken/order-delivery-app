@@ -29,9 +29,7 @@ public class OrderQueryRepository {
         OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, order);
 
         List<Order> contents = jpaQueryFactory
-                .select(order)
-                .distinct()
-                .from(order)
+                .selectFrom(order)
                 .where(
                     order.deletedAt.isNull(),
                     order.customerName.eq(userName)
@@ -42,7 +40,6 @@ public class OrderQueryRepository {
                 .fetch();
         JPAQuery<Long> countQuery = jpaQueryFactory
                 .select(order.count())
-                .distinct()
                 .from(order)
                 .where(
                     order.deletedAt.isNull(),
@@ -58,9 +55,7 @@ public class OrderQueryRepository {
         OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, order);
 
         List<Order> contents = jpaQueryFactory
-                .select(order)
-                .distinct()
-                .from(order)
+                .selectFrom(order)
                 .where(
                     order.deletedAt.isNull(),
                     order.storeName.contains(searchKeyword),
@@ -72,7 +67,6 @@ public class OrderQueryRepository {
                 .fetch();
         JPAQuery<Long> countQuery = jpaQueryFactory
                 .select(order.count())
-                .distinct()
                 .from(order)
                 .where(
                     order.deletedAt.isNull(),
@@ -87,13 +81,13 @@ public class OrderQueryRepository {
     public Optional<Order> findOrderDetail (String orderId) {
         return Optional.ofNullable(
                 jpaQueryFactory
-                .selectFrom(order)
-                .join(order.menuOrderList, menuOrder)
-                .where(
-                        order.id.eq(orderId),
-                        order.deletedAt.isNull()
-                )
-                .fetchOne()
+                    .selectFrom(order)
+                    .join(order.menuOrderList, menuOrder)
+                    .where(
+                            order.id.eq(orderId),
+                            order.deletedAt.isNull()
+                    )
+                    .fetchOne()
         );
     }
 }

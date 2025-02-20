@@ -1,9 +1,17 @@
 package com.fortest.orderdelivery.app.domain.menu.mapper;
 
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
+import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
+import java.util.List;
+import org.springframework.data.domain.Page;
 
 //추후에 Security Filter 생성 후, createBy 등 사용자 정보 넣어주기
 public class MenuMapper {
@@ -21,6 +29,33 @@ public class MenuMapper {
     public static MenuSaveResponseDto toMenuSaveResponseDto(Menu menu) {
         return MenuSaveResponseDto.builder()
             .menuId(menu.getId())
+            .build();
+    }
+
+    public static MenuListGetResponseDto toMenuListGetResponseDto(Page<MenuListDto> menuPage) {
+        return MenuListGetResponseDto.builder()
+            .totalContents(menuPage.getTotalElements())
+            .size(menuPage.getSize())
+            .currentPage(menuPage.getNumber() + 1)
+            .menuList(menuPage.getContent())
+            .build();
+    }
+
+    public static MenuAppResponseDto toMenuAppResponseDto(List<Menu> menuList) {
+        return MenuAppResponseDto.builder()
+            .menuList(menuList)
+            .build();
+    }
+
+    public static MenuOptionAppResponseDto toMenuOptionAppResponseDto(List<MenuOption> menuOptionList) {
+        return MenuOptionAppResponseDto.builder()
+            .menuOptionList(menuOptionList)
+            .build();
+    }
+
+    public static MenuOptionSaveResponseDto toMenuOptionSaveResponseDto(MenuOption menuOption) {
+        return MenuOptionSaveResponseDto.builder()
+            .optionId(menuOption.getId())
             .build();
     }
 }
