@@ -8,10 +8,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class MenuOptionSaveResponseDto {
-
-    @JsonProperty("option-id")
-    String optionId;
+@AllArgsConstructor
+public class MenuResponseDto {
+    @JsonProperty("menu-id")
+    private String menuId;
 }
