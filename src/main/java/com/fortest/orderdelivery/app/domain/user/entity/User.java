@@ -38,18 +38,21 @@ public class User extends BaseDataEntity {
     @JoinColumn(name = "role_id", nullable = false)  // RoleType과 연결
     private RoleType roleType;
 
-    @Builder
-    public User(String username, String nickname, String email, String password, RoleType roleType, Long createdBy) {
-        this.username = username;
-        this.nickname = nickname;
-        this.email = email;
-        this.password = password;
-        this.roleType = roleType;
-        this.isCreatedBy(createdBy); // 생성자에서 createdBy 설정
-    }
-
     @Bean
     public void encodePassword(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);
     }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
 }
