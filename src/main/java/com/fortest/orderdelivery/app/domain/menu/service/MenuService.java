@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.menu.service;
 
 import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
@@ -42,7 +43,7 @@ public class MenuService {
     private final WebClient webClient;
     private final MessageUtil messageUtil;
     private final MenuRepository menuRepository;
-    private final MenuQueryRepository menuRepositoryQuery;
+    private final MenuQueryRepository menuQueryRepository;
 
     private static final String STORE_APP_URL = "http://{url}:{port}/api/app/stores/{storeId}";
     private static final String IMAGE_UPDATE_APP_URL = "http://{url}:{port}/api/app/images/menus";
@@ -92,7 +93,7 @@ public class MenuService {
     public MenuListGetResponseDto getMenuList(String storeId, int page, int size, String orderBy,
         String sort) {
         PageRequest pageRequest = JpaUtil.getNormalPageable(page, size, orderBy, sort);
-        Page<MenuListDto> menuListPage = menuRepositoryQuery.getMenuListPage(pageRequest, storeId);
+        Page<MenuListDto> menuListPage = menuQueryRepository.getMenuListPage(pageRequest, storeId);
 
         return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }
@@ -133,6 +134,10 @@ public class MenuService {
 
         return MenuMapper.toMenuResponseDto(savedMenu);
 
+    }
+
+    public MenuGetResponseDto getMenu(String menuId) {
+       return menuQueryRepository.getMenuDetails(menuId);
     }
 
     /**
@@ -190,7 +195,7 @@ public class MenuService {
     public MenuListGetResponseDto searchMenuList(String storeId, int page, int size, String orderBy,
         String sort, String keyword) {
         PageRequest pageRequest = JpaUtil.getNormalPageable(page, size, orderBy, sort);
-        Page<MenuListDto> menuListPage = menuRepositoryQuery.searchMenuListPage(pageRequest, storeId, keyword);
+        Page<MenuListDto> menuListPage = menuQueryRepository.searchMenuListPage(pageRequest, storeId, keyword);
 
         return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }

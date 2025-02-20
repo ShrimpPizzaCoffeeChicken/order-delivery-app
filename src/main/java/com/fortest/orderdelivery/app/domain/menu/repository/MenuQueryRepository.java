@@ -2,15 +2,24 @@ package com.fortest.orderdelivery.app.domain.menu.repository;
 
 import static com.fortest.orderdelivery.app.domain.image.entity.QImage.image;
 import static com.fortest.orderdelivery.app.domain.menu.entity.QMenu.menu;
+import static com.fortest.orderdelivery.app.domain.menu.entity.QMenuOption.menuOption;
 
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Coalesce;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import javax.swing.JList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -103,6 +112,47 @@ public class MenuQueryRepository {
             .fetchOne();
 
         return new PageImpl<>(contents, pageable, total);
+    }
+
+    public MenuGetResponseDto getMenuDetails(String menuId) {
+
+        List<String> menuImageList = JPAExpressions
+            .select(image.s3Url)
+            .from(image)
+            .where(
+                image.menu.id.eq(menuId),
+                menu.deletedAt.isNull(),
+                image.deletedAt.isNull()
+            )
+            .orderBy(image.sequence.asc())
+            .fetch();
+
+        MenuGetResponseDto menuGetResponseDto = queryFactory
+            .selectDistinct(Projections.constructor(MenuGetResponseDto.class,
+                menu.name,
+                menu.description,
+                menu.price,
+                null,
+                Projections.list(
+                    Projections.constructor(MenuGetResponseDto.OptionList.class,
+                        menuOption.name,
+                        menuOption.price
+                    ))
+            ))
+            .from(menu)
+            .leftJoin(menuOption).on(menuOption.id.eq(menu.id))
+            .where(
+                menu.id.eq(menuId),
+                menu.deletedAt.isNull(),
+                menuOption.deletedAt.isNull()
+            )
+            .fetchOne();
+
+        if(!Objects.isNull(menuGetResponseDto)) {
+            menuGetResponseDto.updateMenuImageUrl(menuImageList);
+        }
+
+        return menuGetResponseDto;
     }
 
     private OrderSpecifier<?>[] getAllOrderSpecifiers(Pageable pageable, Path<?> path) {

@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.menu.controller;
 
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
@@ -96,6 +97,19 @@ public class MenuServiceController {
 
         return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
             .message("메뉴 삭제 완료")
+            .code(HttpStatus.OK.value())
+            .data(responseDto)
+            .build());
+    }
+
+    @GetMapping("/{menuId}/details")
+    public ResponseEntity<CommonDto<MenuGetResponseDto>> getMenu(
+        @PathVariable("menuId") String menuId
+    ) {
+        MenuGetResponseDto responseDto = menuService.getMenu(menuId);
+
+        return ResponseEntity.ok(CommonDto.<MenuGetResponseDto>builder()
+            .message("메뉴 상세 조회 완료")
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
