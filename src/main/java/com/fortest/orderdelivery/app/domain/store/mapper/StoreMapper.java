@@ -1,6 +1,8 @@
 package com.fortest.orderdelivery.app.domain.store.mapper;
 
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
+import com.fortest.orderdelivery.app.domain.category.entity.Category;
+import com.fortest.orderdelivery.app.domain.category.entity.CategoryStore;
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
 import org.springframework.data.domain.Page;
@@ -126,5 +128,20 @@ public class StoreMapper {
                 .detailAddress(store.getDetailAddress())
                 .ownerName(store.getOwnerName())
                 .build();
+    }
+
+    public static StoreUpdateCategoryResponseDto entityToUpdateCategoryResponseDto(Store store) {
+        List<CategoryStore> categoryStoreList = store.getCategoryStoreList();
+        List<StoreUpdateCategoryResponseDto.CategoryDto> categoryDtoList = new ArrayList<>();
+        for (CategoryStore categoryStore : categoryStoreList) {
+            Category category = categoryStore.getCategory();
+            categoryDtoList.add(
+                    StoreUpdateCategoryResponseDto.CategoryDto.builder()
+                            .categoryId(category.getId())
+                            .name(category.getName())
+                            .build()
+            );
+        }
+        return StoreUpdateCategoryResponseDto.builder().categoryList(categoryDtoList).build();
     }
 }

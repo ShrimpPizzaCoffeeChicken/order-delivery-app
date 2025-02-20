@@ -3,6 +3,9 @@ package com.fortest.orderdelivery.app.domain.store.service;
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
 import com.fortest.orderdelivery.app.domain.area.repository.AreaQueryRepository;
 import com.fortest.orderdelivery.app.domain.area.repository.AreaRepository;
+import com.fortest.orderdelivery.app.domain.category.entity.Category;
+import com.fortest.orderdelivery.app.domain.category.entity.CategoryStore;
+import com.fortest.orderdelivery.app.domain.category.repository.CategoryRepository;
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
 import com.fortest.orderdelivery.app.domain.store.mapper.StoreMapper;
@@ -11,6 +14,7 @@ import com.fortest.orderdelivery.app.domain.store.repository.StoreRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +36,42 @@ public class StoreService {
     private final StoreQueryRepository storeQueryRepository;
     private final AreaRepository areaRepository;
     private final AreaQueryRepository areaQueryRepository;
+    private final CategoryRepository categoryRepository;
+
+    @Transactional
+    public StoreUpdateCategoryResponseDto updateCategory (String storeId, Long userId, StoreUpdateCategoryRequestDto requestDto) {
+
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getUserId(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        Store store = storeQueryRepository.findForCategory(storeId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.store")));
+
+        if (!store.getOwnerName().equals(username)) {
+            throw new NotValidRequestException(messageUtil.getMessage("app.order.not-valid-user"));
+        }
+
+        List<String> deleteCategoryIdList = requestDto.getDeleteCategoryIdList();
+        List<CategoryStore> deleteTargetList = store.getCategoryStoreList().stream()
+                .filter(categoryStore -> deleteCategoryIdList.contains(categoryStore.getCategory().getId()))
+                .collect(Collectors.toList());
+        store.getCategoryStoreList().removeAll(deleteTargetList);
+
+        List<String> addCategoryIdList = requestDto.getAddCategoryIdList();
+        List<Category> newCategoryList = categoryRepository.findAllById(addCategoryIdList);
+        for (Category newCategory : newCategoryList) {
+            CategoryStore categoryStore = new CategoryStore();
+            categoryStore.bindCategory(newCategory);
+            categoryStore.bindStore(store);
+        }
+
+        return StoreMapper.entityToUpdateCategoryResponseDto(store);
+    }
 
     @Transactional
     public StoreSearchResponseDto searchStore (Integer page, Integer size, String orderby, String sort, String search,
