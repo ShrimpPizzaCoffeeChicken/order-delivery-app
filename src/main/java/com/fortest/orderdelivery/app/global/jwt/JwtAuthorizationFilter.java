@@ -28,30 +28,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
-        log.info("JwtAuthorization 필터 실행됨");
         // Access Token 가져오기
         String accessToken = jwtUtil.getAccessTokenFromHeader(req);
-        log.info("가져온 Access Token: {}", accessToken);
 
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(req);
-        log.info("가져온 Refresh Token: {}", refreshToken);
 
         if (StringUtils.hasText(accessToken)) {
-            //Access Token 검증
-//            if (jwtUtil.validateToken(accessToken)) {
-//                //토큰에서 사용자 정보 추출
-//                Claims claims = jwtUtil.getUserInfoFromToken(accessToken);
-//                log.info("JWT에서 추출한 username: " + claims.getSubject());
-//
-//                try {
-//                    setAuthentication(claims.getSubject());
-//                } catch (Exception e) {
-//                    log.error(e.getMessage());
-//                    return;
-//                }
-//            } else {
-//                log.warn("Access Token이 만료됨. 클라이언트는 /api/users/refresh 요청 필요");
-//            }
             if (!jwtUtil.validateToken(accessToken)) {
                 log.error("Access Token이 만료됨");
 
@@ -67,7 +49,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             }
 
             Claims info = jwtUtil.getUserInfoFromToken(accessToken);
-            log.info("JWT에서 추출한 username: " + info.getSubject());
 
             try {
                 setAuthentication(info.getSubject());
