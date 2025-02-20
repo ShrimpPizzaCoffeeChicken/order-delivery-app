@@ -51,4 +51,9 @@ public class UserServiceController {
         return ResponseEntity.ok(userService.checkUsernameAvailability(username));
     }
 
+    @PostMapping("/users/logout")
+    public CommonDto<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        return userService.logout(request, response);
+    }
+
 }
