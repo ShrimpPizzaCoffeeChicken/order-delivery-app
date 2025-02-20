@@ -27,7 +27,7 @@ public class JwtUtil {
     public static final String REFRESH_TOKEN_COOKIE = "refreshToken";
     public static final String AUTHORIZATION_KEY = "auth";
     public static final String BEARER_PREFIX = "Bearer ";
-    private final long ACCESS_TOKEN_TIME  = 60 * 1000L;
+    private final long ACCESS_TOKEN_TIME  = 5 * 60 * 1000L;
     private final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L;
 
     @Value("${jwt.secret.key}")
@@ -109,6 +109,10 @@ public class JwtUtil {
 
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+    }
+
+    public String getUsernameFromToken(String token) {
+        return getUserInfoFromToken(token).getSubject();
     }
 
     public String getAccessTokenFromHeader(HttpServletRequest req) {
