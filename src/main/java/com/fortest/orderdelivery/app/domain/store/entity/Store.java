@@ -1,11 +1,13 @@
 package com.fortest.orderdelivery.app.domain.store.entity;
 
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
+import com.fortest.orderdelivery.app.domain.category.entity.CategoryStore;
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -32,6 +34,9 @@ public class Store extends BaseDataEntity {
 
     @Column(length = 100)
     private String ownerName;
+
+    @OneToMany(mappedBy = "store", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<CategoryStore> categoryStoreList = new ArrayList<>();
 
     public void update(String storeName, Area area, String detailAddress, String ownerName) {
         this.name = storeName;
