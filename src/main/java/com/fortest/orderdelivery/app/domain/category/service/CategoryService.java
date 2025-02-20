@@ -3,11 +3,15 @@ package com.fortest.orderdelivery.app.domain.category.service;
 import com.fortest.orderdelivery.app.domain.category.dto.*;
 import com.fortest.orderdelivery.app.domain.category.entity.Category;
 import com.fortest.orderdelivery.app.domain.category.mapper.CategoryMapper;
+import com.fortest.orderdelivery.app.domain.category.repository.CategoryQueryRepository;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +22,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final CategoryQueryRepository categoryQueryRepository;
     private final MessageSource messageSource;
 
     @Transactional
@@ -63,6 +68,15 @@ public class CategoryService {
 //                })
 //                .block();
 //    }
+
+    public CategoryGetListDto getCategoryList(Integer page, Integer size, String orderby, String sort) {
+
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<Category> categoryList;
+
+        categoryList = categoryQueryRepository.findCategoryList(pageable);
+        return CategoryMapper.pageToGetCategoryListDto(categoryList);
+    }
 
     @Transactional
     public CategoryUpdateResponseDto updateCategory(String categoryId, CategoryUpdateRequestDto categoryUpdateRequestDto){
