@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.review.controller;
 
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
+import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetListDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.service.ReviewService;
@@ -26,6 +27,25 @@ public class ReviewServiceController {
                         .message("SUCCESS")
                         .code(HttpStatus.OK.value())
                         .data(reviewSaveResponseDto)
+                        .build()
+        );
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<CommonDto<ReviewGetListDto>> getReviewList(
+            @RequestParam("storeId") String storeId,
+            @RequestParam("page") Integer page,
+            @RequestParam("size") Integer size,
+            @RequestParam("orderby") String orderby,
+            @RequestParam("sort") String sort
+    ) {
+        ReviewGetListDto reviewList = reviewService.getReviewList(storeId, page, size, orderby, sort);
+
+        return ResponseEntity.ok(
+                CommonDto.<ReviewGetListDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(reviewList)
                         .build()
         );
     }

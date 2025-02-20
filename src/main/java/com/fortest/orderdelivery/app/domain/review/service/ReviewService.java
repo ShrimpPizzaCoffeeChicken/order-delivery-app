@@ -2,15 +2,20 @@ package com.fortest.orderdelivery.app.domain.review.service;
 
 import com.fortest.orderdelivery.app.domain.category.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
+import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetListDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.entity.Review;
 import com.fortest.orderdelivery.app.domain.review.mapper.ReviewMapper;
+import com.fortest.orderdelivery.app.domain.review.repository.ReviewQueryRepository;
 import com.fortest.orderdelivery.app.domain.review.repository.ReviewRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +26,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
+    private final ReviewQueryRepository reviewQueryRepository;
     private final MessageSource messageSource;
 
     @Transactional
@@ -65,6 +71,15 @@ public class ReviewService {
 //                })
 //                .block();
 //    }
+
+    public ReviewGetListDto getReviewList(String storeId, Integer page, Integer size, String orderby, String sort) {
+
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<Review> reviewList;
+
+        reviewList = reviewQueryRepository.findReviewList(storeId, pageable);
+        return ReviewMapper.pageToGetReviewListDto(reviewList);
+    }
 
     @Transactional
     public ReviewDeleteResponseDto deleteReview(String reviewId, Long userId){
