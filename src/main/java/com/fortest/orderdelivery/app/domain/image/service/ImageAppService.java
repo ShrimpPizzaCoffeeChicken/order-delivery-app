@@ -1,7 +1,9 @@
 package com.fortest.orderdelivery.app.domain.image.service;
 
+import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.fortest.orderdelivery.app.domain.image.mapper.ImageMapper;
+import com.fortest.orderdelivery.app.domain.image.repository.ImageQueryRepository;
 import com.fortest.orderdelivery.app.domain.image.repository.ImageRepository;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingResponseDto;
@@ -19,8 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ImageAppService {
 
-    private final ImageRepository imageRepository;
     private final ImageService imageService;
+    private final ImageRepository imageRepository;
+    private final ImageQueryRepository imageQueryRepository;
 
     // TODO : updateBy 코드 추가
     @Transactional
@@ -71,4 +74,13 @@ public class ImageAppService {
         return ImageMapper.toMenuOptionImageMappingResponseDto(updatedImageIdList, result);
     }
 
+    // TODO : deleteBy 코드 추가
+    public ImageResponseDto deleteImageOnMenuOptionDelete(String optionId) {
+        List<Image> imageList = imageQueryRepository.getImageListByMenuOptionId(optionId);
+        List<String> imageIdList = imageList.stream().map(Image::getId).toList();
+
+        List<String> deleteImageIdList = imageService.deleteImageFromS3(imageIdList);
+
+        return ImageMapper.toImageResponseDto(deleteImageIdList);
+    }
 }

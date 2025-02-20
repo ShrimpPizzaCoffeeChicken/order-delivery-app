@@ -66,7 +66,7 @@ public class ImageServiceController {
     @PatchMapping("/menus")
     public ResponseEntity<CommonDto<ImageResponseDto>> deleteImageFromS3(@RequestBody
     MenuImageRequestDto menuImageRequestDto) {
-        ImageResponseDto responseDto = imageService.deleteImageFromS3(menuImageRequestDto);
+        ImageResponseDto responseDto = imageService.deleteImageOnUpdate(menuImageRequestDto);
 
         return ResponseEntity.ok(CommonDto.<ImageResponseDto>builder()
             .message("사진 삭제 완료")

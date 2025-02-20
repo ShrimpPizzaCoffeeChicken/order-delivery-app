@@ -152,8 +152,14 @@ public class ImageService {
     }
 
     @Transactional
-    public ImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
+    public ImageResponseDto deleteImageOnUpdate(MenuImageRequestDto requestDto) {
         List<String> imageIdList = requestDto.getImageIdList();
+        List<String> deleteImageIdList = deleteImageFromS3(imageIdList);
+
+        return ImageMapper.toImageResponseDto(deleteImageIdList);
+    }
+
+    public List<String> deleteImageFromS3(List<String> imageIdList) {
         List<String> deleteImageIdList = new ArrayList<>();
 
         if (!Objects.isNull(imageIdList) && !imageIdList.isEmpty()) {
@@ -174,8 +180,7 @@ public class ImageService {
                 );
             }
         }
-
-        return ImageMapper.toImageResponseDto(deleteImageIdList);
+        return deleteImageIdList;
     }
 
 
