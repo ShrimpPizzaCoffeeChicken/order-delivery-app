@@ -1,6 +1,6 @@
 package com.fortest.orderdelivery.app.domain.menu.mapper;
 
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
@@ -19,8 +19,8 @@ public class MenuOptionMapper {
             .build();
     }
 
-    public static MenuOptionSaveResponseDto toMenuOptionSaveResponseDto(MenuOption menuOption) {
-        return MenuOptionSaveResponseDto.builder()
+    public static MenuOptionResponseDto toMenuOptionSaveResponseDto(MenuOption menuOption) {
+        return MenuOptionResponseDto.builder()
             .optionId(menuOption.getId())
             .build();
     }

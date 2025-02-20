@@ -117,8 +117,10 @@ public class ImageService {
 
             throwByRespCode(commonDto.getCode());
 
+            MenuOption menuOption = commonDto.getData().getMenuOptionList().get(0);
+
             uploadImageToS3(multipartFileList, imageIdList, sequence,
-                null, commonDto.getData().getMenuOptionList().get(0));
+                menuOption.getMenu(), menuOption);
         }
 
         return ImageMapper.toImageResponseDto(imageIdList);
@@ -152,8 +154,16 @@ public class ImageService {
     }
 
     @Transactional
-    public ImageResponseDto deleteImageFromS3(MenuImageRequestDto requestDto) {
+    public ImageResponseDto deleteImageOnUpdate(MenuImageRequestDto requestDto) {
         List<String> imageIdList = requestDto.getImageIdList();
+        List<String> deleteImageIdList = deleteImageFromS3(imageIdList);
+
+        return ImageMapper.toImageResponseDto(deleteImageIdList);
+    }
+
+    // TODO : deleteBy 추가
+    @Transactional
+    public List<String> deleteImageFromS3(List<String> imageIdList) {
         List<String> deleteImageIdList = new ArrayList<>();
 
         if (!Objects.isNull(imageIdList) && !imageIdList.isEmpty()) {
@@ -166,7 +176,9 @@ public class ImageService {
                     .withKeys(keysToDelete)
                     .withQuiet(false));
 
-                imageIdList.forEach(id -> deleteImageIdList.add(deleteImage(id)));
+                deleteImageIdList = imageQueryRepository.deleteImagesAndReturn(imageIdList, 1L).stream()
+                        .map(Image::getId)
+                        .toList();
 
             } catch (AmazonServiceException e) {
                 throw new BusinessLogicException(
@@ -174,8 +186,7 @@ public class ImageService {
                 );
             }
         }
-
-        return ImageMapper.toImageResponseDto(deleteImageIdList);
+        return deleteImageIdList;
     }
 
 

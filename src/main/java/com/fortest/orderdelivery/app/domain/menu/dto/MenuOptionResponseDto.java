@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MenuOptionSaveResponseDto {
+public class MenuOptionResponseDto {
 
     @JsonProperty("option-id")
     String optionId;
