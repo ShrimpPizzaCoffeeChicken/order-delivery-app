@@ -71,8 +71,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/service/users/protected-resource").authenticated()
                         .requestMatchers("/api/service/users/refresh").permitAll() // Refresh Token 사용 시 인증 필요
                         .requestMatchers("/api/service/users/**").permitAll() // 회원 관련 API는 인증 없이 접근 가능
-                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
-                //                .anyRequest().permitAll() // 그 외 요청은 인증 필요
+//                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
+                                .anyRequest().permitAll() // 그 외 요청은 인증 필요
         );
 
         http.formLogin(form -> form.disable());

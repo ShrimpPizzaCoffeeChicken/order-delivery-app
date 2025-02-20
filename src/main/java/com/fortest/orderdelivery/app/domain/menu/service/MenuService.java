@@ -137,7 +137,14 @@ public class MenuService {
     }
 
     public MenuGetResponseDto getMenu(String menuId) {
-       return menuQueryRepository.getMenuDetails(menuId);
+       MenuGetResponseDto menuGetResponseDto = menuQueryRepository.getMenuDetails(menuId);
+
+       if(Objects.isNull(menuGetResponseDto)) {
+           throw new NotFoundException(
+               messageUtil.getMessage("not-found.menu"));
+       }
+
+       return menuGetResponseDto;
     }
 
     /**
