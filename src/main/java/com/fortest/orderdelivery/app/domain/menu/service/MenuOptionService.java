@@ -1,14 +1,13 @@
 package com.fortest.orderdelivery.app.domain.menu.service;
 
+import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingResponseDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
@@ -40,14 +39,15 @@ import reactor.util.retry.Retry;
 public class MenuOptionService {
 
     private static final String MENU_APP_URL = "http://{url}:{port}/api/app/menus";
-    private static final String IMAGE_APP_URL = "http://{url}:{port}/api/app/images/menus/options";
+    private static final String IMAGE_UPDATE_APP_URL = "http://{url}:{port}/api/app/images/options";
+    private static final String IMAGE_DELETE_APP_URL = "http://{url}:{port}/api/app/images/options/{optionId}";
 
     private final WebClient webClient;
     private final MessageUtil messageUtil;
     private final MenuOptionRepository menuOptionRepository;
 
     // TODO : createdBy 추가
-    public MenuOptionSaveResponseDto saveMenuOption(
+    public MenuOptionResponseDto saveMenuOption(
         MenuOptionsSaveRequestDto menuOptionsSaveRequestDto, String menuId) {
 
         //메뉴 유효한지 확인 후 객체 가져오기
@@ -96,7 +96,7 @@ public class MenuOptionService {
 
     // TODO : updatedBy 변경
     @Transactional
-    public MenuOptionSaveResponseDto updateMenuOption(
+    public MenuOptionResponseDto updateMenuOption(
         MenuOptionUpdateRequestDto menuOptionUpdateRequestDto,
         String menuOptionId) {
         MenuOption menuOption = getMenuOptionById(menuOptionId);
@@ -106,11 +106,56 @@ public class MenuOptionService {
             menuOptionUpdateRequestDto.getDescription(),
             menuOptionUpdateRequestDto.getPrice(),
             ExposeStatus.valueOf(menuOptionUpdateRequestDto.getExposeStatus()));
-        menuOption.isUpdatedNow(1L);
 
+        menuOption.isUpdatedNow(1L);
         MenuOption savedMenuOption = menuOptionRepository.save(menuOption);
 
-        return MenuMapper.toMenuOptionSaveResponseDto(savedMenuOption);
+        return MenuMapper.toMenuOptionResponseDto(savedMenuOption);
+    }
+
+    // TODO : deleteBy 변경
+    @Transactional
+    public MenuOptionResponseDto deleteMenuOption(String optionId) {
+        CommonDto<ImageResponseDto> commonDto = deleteMenuOptionImageFromApp(optionId);
+
+        if (Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
+            throw new BusinessLogicException(
+                messageUtil.getMessage("s3.image.delete.failure"));
+        }
+
+        throwByRespCode(commonDto.getCode());
+
+        MenuOption menuOption = getMenuOptionById(optionId);
+        menuOption.isDeletedNow(1L);
+        MenuOption savedMenuOption = menuOptionRepository.save(menuOption);
+
+        return MenuMapper.toMenuOptionResponseDto(savedMenuOption);
+    }
+
+    /**
+     * 이미지 서비스에 메뉴 옵션 Id로 메뉴 옵션 이미지 삭제 요청
+     *
+     * @param optionId
+     * @return CommonDto<ImageResponseDto> : 요청 실패 시 null
+     */
+    public CommonDto<ImageResponseDto> deleteMenuOptionImageFromApp(String optionId) {
+
+        String targetUrl = IMAGE_DELETE_APP_URL
+            .replace("{url}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{optionId}", optionId);
+
+        return webClient.delete()
+            .uri(targetUrl)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
     }
 
     /**
@@ -152,7 +197,7 @@ public class MenuOptionService {
     public CommonDto<MenuOptionImageMappingResponseDto> saveMenuAndMenuOptionIdToImage(
         MenuOptionImageMappingRequestDto requestDto) {
 
-        String targetUrl = IMAGE_APP_URL
+        String targetUrl = IMAGE_UPDATE_APP_URL
             .replace("{url}", "localhost")
             .replace("{port}", "8082");
 

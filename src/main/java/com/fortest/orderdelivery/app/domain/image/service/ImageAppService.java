@@ -75,6 +75,7 @@ public class ImageAppService {
     }
 
     // TODO : deleteBy 코드 추가
+    @Transactional
     public ImageResponseDto deleteImageOnMenuOptionDelete(String optionId) {
         List<Image> imageList = imageQueryRepository.getImageListByMenuOptionId(optionId);
         List<String> imageIdList = imageList.stream().map(Image::getId).toList();
@@ -85,6 +86,7 @@ public class ImageAppService {
     }
 
     // TODO : deleteBy 코드 추가
+    @Transactional
     public ImageResponseDto deleteImageOnMenuDelete(String menuId) {
         List<Image> imageList = imageQueryRepository.getImageListByMenuId(menuId);
         List<String> imageIdList = imageList.stream().map(Image::getId).toList();

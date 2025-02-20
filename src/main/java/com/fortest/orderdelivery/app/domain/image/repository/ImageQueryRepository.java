@@ -4,6 +4,7 @@ import static com.fortest.orderdelivery.app.domain.image.entity.QImage.image;
 
 import com.fortest.orderdelivery.app.domain.image.entity.Image;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -58,5 +59,21 @@ public class ImageQueryRepository {
                 image.deletedAt.isNull()
             )
             .fetch();
+    }
+
+    public List<Image> deleteImagesAndReturn(List<String> imageIdList, Long userId) {
+        List<Image> imagesToDelete = queryFactory
+            .selectFrom(image)
+            .where(image.id.in(imageIdList))
+            .fetch();
+
+        queryFactory
+            .update(image)
+            .set(image.deletedAt, LocalDateTime.now())
+            .set(image.deletedBy, userId)
+            .where(image.id.in(imageIdList))
+            .execute();
+
+        return imagesToDelete;
     }
 }

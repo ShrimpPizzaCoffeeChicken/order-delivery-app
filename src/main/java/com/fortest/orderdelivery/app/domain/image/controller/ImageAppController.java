@@ -40,7 +40,7 @@ public class ImageAppController {
             .build());
     }
 
-    @PatchMapping("/menus/options")
+    @PatchMapping("/options")
     public ResponseEntity<CommonDto<MenuOptionImageMappingResponseDto>> updateMenuOptionId(@RequestBody
     MenuOptionImageMappingRequestDto menuOptionImageRequestDto) {
 

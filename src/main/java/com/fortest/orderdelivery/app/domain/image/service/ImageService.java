@@ -161,6 +161,8 @@ public class ImageService {
         return ImageMapper.toImageResponseDto(deleteImageIdList);
     }
 
+    // TODO : deleteBy 추가
+    @Transactional
     public List<String> deleteImageFromS3(List<String> imageIdList) {
         List<String> deleteImageIdList = new ArrayList<>();
 
@@ -174,7 +176,9 @@ public class ImageService {
                     .withKeys(keysToDelete)
                     .withQuiet(false));
 
-                imageIdList.forEach(id -> deleteImageIdList.add(deleteImage(id)));
+                deleteImageIdList = imageQueryRepository.deleteImagesAndReturn(imageIdList, 1L).stream()
+                        .map(Image::getId)
+                        .toList();
 
             } catch (AmazonServiceException e) {
                 throw new BusinessLogicException(
