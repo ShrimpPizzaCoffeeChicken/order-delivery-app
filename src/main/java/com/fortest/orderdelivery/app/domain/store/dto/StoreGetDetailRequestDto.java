@@ -6,20 +6,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Getter
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class StoreUpdateRequestDto {
-    @JsonProperty("store-name")
-    private String storeName;
-
+@AllArgsConstructor
+public class StoreGetDetailRequestDto {
     @JsonProperty("area-id")
     private String areaId;
-
-    @JsonProperty("detail-address")
-    private String detailAddress;
-
-    @JsonProperty("owner-name")
-    private String ownerName;
 }

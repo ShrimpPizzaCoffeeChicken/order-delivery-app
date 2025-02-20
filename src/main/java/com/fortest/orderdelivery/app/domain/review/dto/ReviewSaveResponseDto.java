@@ -1,4 +1,4 @@
-package com.fortest.orderdelivery.app.domain.store.dto;
+package com.fortest.orderdelivery.app.domain.review.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class StoreDeleteResponseDto {
-    @JsonProperty("store-id")
-    private String storeId;
+public class ReviewSaveResponseDto {
+
+    @JsonProperty("review-id")
+    private String reviewId;
 }

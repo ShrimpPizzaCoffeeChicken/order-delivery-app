@@ -30,6 +30,19 @@ public class StoreServiceController {
         );
     }
 
+    @GetMapping("/stores/{storeId}")
+    public ResponseEntity<CommonDto<StoreGetDetailResponseDto>> getStoreDetail (@PathVariable("storeId") String storeId) {
+        StoreGetDetailResponseDto storeDetailResponseDto = storeService.getStoreDetail(storeId);
+
+        return ResponseEntity.ok(
+                CommonDto.<StoreGetDetailResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(storeDetailResponseDto)
+                        .build()
+        );
+    }
+
     @PatchMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateStore(@PathVariable String storeId, @RequestBody StoreUpdateRequestDto storeUpdateRequestDto){
         StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto);

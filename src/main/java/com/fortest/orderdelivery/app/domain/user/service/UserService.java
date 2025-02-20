@@ -2,6 +2,7 @@ package com.fortest.orderdelivery.app.domain.user.service;
 
 import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
+import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.repository.RoleTypeRepository;
@@ -110,6 +111,32 @@ public class UserService {
         removeRefreshTokenCookie(response);
 
         return new CommonDto<>("로그아웃 완료", HttpStatus.OK.value(), "로그아웃 성공");
+    }
+
+    @Transactional
+    public void updateUser(Long userId, UserUpdateRequestDto requestDto, String loggedInUsername) {
+        log.info("서비스");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        if (!user.getUsername().equals(loggedInUsername)) {
+            throw new SecurityException("본인만 정보를 수정할 수 있습니다.");
+        }
+
+        // 변경할 값이 있는 경우만 업데이트
+        if (requestDto.getNickname() != null) {
+            user.setNickname(requestDto.getNickname());
+        }
+
+        if (requestDto.getEmail() != null) {
+            user.setEmail(requestDto.getEmail());
+        }
+
+        if (requestDto.getPassword() != null && !requestDto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        }
+
+        userRepository.save(user);
     }
 
     private void removeRefreshTokenCookie(HttpServletResponse response) {
