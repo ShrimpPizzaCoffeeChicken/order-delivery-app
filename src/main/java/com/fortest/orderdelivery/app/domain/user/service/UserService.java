@@ -10,7 +10,6 @@ import com.fortest.orderdelivery.app.domain.user.repository.UserRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
-import com.fortest.orderdelivery.app.global.exception.UnauthorizedException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
