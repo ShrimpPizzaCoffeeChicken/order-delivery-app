@@ -125,8 +125,8 @@ public class MenuQueryRepository {
             .orderBy(image.sequence.asc())
             .fetch();
 
-        List<MenuGetResponseDto.OptionList> optionList = queryFactory
-            .select(Projections.constructor(MenuGetResponseDto.OptionList.class,
+        List<MenuGetResponseDto.OptionQueryList> optionList = queryFactory
+            .select(Projections.constructor(MenuGetResponseDto.OptionQueryList.class,
                 menuOption.name,
                 menuOption.price
             ))

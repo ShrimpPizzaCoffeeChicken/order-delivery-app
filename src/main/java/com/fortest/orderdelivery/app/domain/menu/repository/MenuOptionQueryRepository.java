@@ -20,7 +20,11 @@ public class MenuOptionQueryRepository {
             .selectFrom(menuOption)
             .leftJoin(menuOption.menu, menu)
             .fetchJoin()
-            .where(menuOption.id.in(menuOptionIdList))
+            .where(
+                menuOption.id.in(menuOptionIdList),
+                menu.deletedAt.isNull(),
+                menuOption.deletedAt.isNull()
+            )
             .fetch();
     }
 
