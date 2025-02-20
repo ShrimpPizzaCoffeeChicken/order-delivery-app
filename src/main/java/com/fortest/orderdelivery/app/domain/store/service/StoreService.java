@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.store.service;
 
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
+import com.fortest.orderdelivery.app.domain.area.repository.AreaQueryRepository;
 import com.fortest.orderdelivery.app.domain.area.repository.AreaRepository;
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
@@ -10,23 +11,36 @@ import com.fortest.orderdelivery.app.domain.store.repository.StoreRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
-
 @Service
 @RequiredArgsConstructor
 public class StoreService {
-    private final StoreRepository storeRepository;
-    private final AreaRepository areaRepository;
-    private final StoreQueryRepository storeQueryRepository;
-    private final MessageSource messageSource;
+
     private final MessageUtil messageUtil;
+    private final StoreRepository storeRepository;
+    private final StoreQueryRepository storeQueryRepository;
+    private final AreaRepository areaRepository;
+    private final AreaQueryRepository areaQueryRepository;
+
+    @Transactional
+    public StoreSearchResponseDto searchStore (Integer page, Integer size, String orderby, String sort, String search,
+                                               String categoryId,
+                                               String city, String district, String street) {
+
+        // 지역의 일부 조건이 일치하는 모든 store 를 반환
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<Store> pageStore = storeQueryRepository.findStoreList(pageable, categoryId, city, district, street, search);
+
+        return StoreMapper.pageToSearchResponseDto(pageStore, search);
+    }
 
     @Transactional
     public StoreSaveResponseDto saveStore(StoreSaveRequestDto storeSaveRequestDto, Long userId) {
@@ -36,13 +50,13 @@ public class StoreService {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getUserId(userId); // api 요청
         if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
         }
         throwByRespCode(validUserResponse.getCode());
         String username = validUserResponse.getData().getUsername();
 
         Area area = areaRepository.findById(areaId)
-                .orElseThrow(() -> new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA)));
+                .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
         Store newStore = StoreMapper.toStore(storeSaveRequestDto, area);
         Store savedStore = storeRepository.save(newStore);
@@ -96,10 +110,10 @@ public class StoreService {
         String ownerName = storeUpdateRequestDto.getOwnerName();
 
         Area area = areaRepository.findById(areaId)
-                .orElseThrow(() -> new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA)));
+                .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
         Store store = storeRepository.findById(storeId).orElseThrow(()->
-                new BusinessLogicException(messageSource.getMessage( "api.call.client-error",null, Locale.KOREA)));
+                new BusinessLogicException(messageUtil.getMessage( "api.call.client-error")));
 
         store.update(storeName, area, detailAddress, ownerName);
 
@@ -110,7 +124,7 @@ public class StoreService {
     public StoreDeleteResponseDto deleteStore(String storeId, Long userId){
 
         Store store = storeRepository.findById(storeId).orElseThrow(()->
-                new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+                new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
         store.isDeletedNow(userId);
 
@@ -121,10 +135,10 @@ public class StoreService {
         int firstNum = httpStatusCode / 100;
         switch (firstNum) {
             case 4 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
+                throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
             }
             case 5 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
+                throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
             }
         }
     }

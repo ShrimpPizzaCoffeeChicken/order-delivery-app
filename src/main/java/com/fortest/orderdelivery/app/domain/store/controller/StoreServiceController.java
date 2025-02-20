@@ -16,6 +16,28 @@ public class StoreServiceController {
 
     private final StoreService storeService;
 
+    @GetMapping("/stores/search")
+    public ResponseEntity<CommonDto<StoreSearchResponseDto>> searchStore(
+            @RequestParam("page") Integer page,
+            @RequestParam("size") Integer size,
+            @RequestParam("orderby") String orderby,
+            @RequestParam("sort") String sort,
+            @RequestParam("search") String search,
+            @RequestParam("category-id") String categoryId,
+            @RequestParam("city") String city,
+            @RequestParam("district") String district,
+            @RequestParam("street") String street
+    ) {
+        StoreSearchResponseDto storeSearchResponseDto = storeService.searchStore(page, size, orderby, sort, search, categoryId, city, district, street);
+        return ResponseEntity.ok(
+                CommonDto.<StoreSearchResponseDto>builder()
+                        .message("SUCCESS")
+                        .code(HttpStatus.OK.value())
+                        .data(storeSearchResponseDto)
+                        .build()
+        );
+    }
+
     @PostMapping("/stores")
     public ResponseEntity<CommonDto<StoreSaveResponseDto>> saveStore(@RequestBody StoreSaveRequestDto storeSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함

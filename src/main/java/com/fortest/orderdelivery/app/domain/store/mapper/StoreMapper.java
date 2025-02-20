@@ -3,9 +3,11 @@ package com.fortest.orderdelivery.app.domain.store.mapper;
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
+import org.springframework.data.domain.Page;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StoreMapper {
 
@@ -97,6 +99,32 @@ public class StoreMapper {
                 .storeId(store.getId())
                 .storeName(store.getName())
                 .menuList(afterMenuDtoList)
+                .build();
+    }
+
+    public static StoreSearchResponseDto pageToSearchResponseDto (Page<Store> page, String search) {
+        StoreSearchResponseDto.StoreSearchResponseDtoBuilder builder = StoreSearchResponseDto.builder();
+        builder = builder
+                .search(search == null ? "" : search)
+                .totalContents(page.getTotalElements())
+                .size(page.getSize())
+                .currentPage(page.getNumber() + 1);
+        List<StoreSearchResponseDto.storeDto> storeDtoList = page.getContent().stream()
+                .map(StoreMapper::entityToPageStoreDto)
+                .collect(Collectors.toList());
+
+        return builder
+                .storeList(storeDtoList)
+                .build();
+    }
+
+    public static StoreSearchResponseDto.storeDto entityToPageStoreDto(Store store) {
+        return StoreSearchResponseDto.storeDto.builder()
+                .storeId(store.getName())
+                .storeName(store.getName())
+                .area(store.getArea().getPlainAreaName())
+                .detailAddress(store.getDetailAddress())
+                .ownerName(store.getOwnerName())
                 .build();
     }
 }
