@@ -28,6 +28,16 @@ public class StoreMapper {
                 .build();
     }
 
+    public static StoreGetDetailResponseDto toStoreGetDetailResponseDto(Store store) {
+        return StoreGetDetailResponseDto.builder()
+                .storeId(store.getId())
+                .storeName(store.getName())
+                .areaId(store.getArea().getId())
+                .detailAddress(store.getDetailAddress())
+                .ownerName(store.getOwnerName())
+                .build();
+    }
+
     public static StoreUpdateResponseDto toStoreUpdateResponseDto(Store store, Area area) {
         return StoreUpdateResponseDto.builder()
                 .storeId(store.getId())

@@ -5,9 +5,12 @@ import com.fortest.orderdelivery.app.domain.area.repository.AreaRepository;
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
 import com.fortest.orderdelivery.app.domain.store.mapper.StoreMapper;
+import com.fortest.orderdelivery.app.domain.store.repository.StoreQueryRepository;
 import com.fortest.orderdelivery.app.domain.store.repository.StoreRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -21,7 +24,9 @@ import java.util.Locale;
 public class StoreService {
     private final StoreRepository storeRepository;
     private final AreaRepository areaRepository;
+    private final StoreQueryRepository storeQueryRepository;
     private final MessageSource messageSource;
+    private final MessageUtil messageUtil;
 
     @Transactional
     public StoreSaveResponseDto saveStore(StoreSaveRequestDto storeSaveRequestDto, Long userId) {
@@ -74,6 +79,15 @@ public class StoreService {
 //    }
 
     @Transactional
+    public StoreGetDetailResponseDto getStoreDetail(String storeId){
+
+        Store store = storeQueryRepository.findStoreDetail(storeId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.store")));
+
+        return StoreMapper.toStoreGetDetailResponseDto(store);
+    }
+
+    @Transactional
     public StoreUpdateResponseDto updateStore(String storeId, StoreUpdateRequestDto storeUpdateRequestDto){
 
         String storeName = storeUpdateRequestDto.getStoreName();
@@ -94,6 +108,7 @@ public class StoreService {
 
     @Transactional
     public StoreDeleteResponseDto deleteStore(String storeId, Long userId){
+
         Store store = storeRepository.findById(storeId).orElseThrow(()->
                 new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
 
