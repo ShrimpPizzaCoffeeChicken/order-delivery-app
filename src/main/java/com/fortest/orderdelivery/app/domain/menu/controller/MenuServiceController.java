@@ -2,13 +2,14 @@ package com.fortest.orderdelivery.app.domain.menu.controller;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,11 +27,11 @@ public class MenuServiceController {
     private final MenuService menuService;
 
     @PostMapping
-    public ResponseEntity<CommonDto<MenuSaveResponseDto>> saveMenu(
+    public ResponseEntity<CommonDto<MenuResponseDto>> saveMenu(
         @RequestBody MenuSaveRequestDto menuSaveRequestDto) {
-        MenuSaveResponseDto responseDto = menuService.saveMenu(menuSaveRequestDto);
+        MenuResponseDto responseDto = menuService.saveMenu(menuSaveRequestDto);
 
-        return ResponseEntity.ok(CommonDto.<MenuSaveResponseDto>builder()
+        return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
             .message("메뉴 등록 완료")
             .code(HttpStatus.OK.value())
             .data(responseDto)
@@ -56,13 +57,13 @@ public class MenuServiceController {
     }
 
     @PatchMapping("/{menuId}")
-    public ResponseEntity<CommonDto<MenuSaveResponseDto>> updateMenu(
+    public ResponseEntity<CommonDto<MenuResponseDto>> updateMenu(
         @RequestBody MenuUpdateRequestDto menuUpdateRequestDto,
         @PathVariable("menuId") String menuId
     ) {
-        MenuSaveResponseDto responseDto = menuService.updateMenu(menuUpdateRequestDto, menuId);
+        MenuResponseDto responseDto = menuService.updateMenu(menuUpdateRequestDto, menuId);
 
-        return ResponseEntity.ok(CommonDto.<MenuSaveResponseDto>builder()
+        return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
             .message("메뉴 수정 완료")
             .code(HttpStatus.OK.value())
             .data(responseDto)
@@ -82,6 +83,19 @@ public class MenuServiceController {
 
         return ResponseEntity.ok(CommonDto.<MenuListGetResponseDto>builder()
             .message("메뉴 리스트 검색 완료")
+            .code(HttpStatus.OK.value())
+            .data(responseDto)
+            .build());
+    }
+
+    @DeleteMapping("/{menuId}")
+    public ResponseEntity<CommonDto<MenuResponseDto>> deleteMenu(
+        @PathVariable("menuId") String menuId
+    ) {
+        MenuResponseDto responseDto = menuService.deleteMenu(menuId);
+
+        return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
+            .message("메뉴 삭제 완료")
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
