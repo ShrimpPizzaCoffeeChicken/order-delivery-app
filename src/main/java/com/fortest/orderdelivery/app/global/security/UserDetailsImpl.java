@@ -21,6 +21,11 @@ public class UserDetailsImpl implements UserDetails {
         return user;
     }
 
+    // userId를 가져오는 메서드 (컨트롤러에서 편리하게 사용)
+    public Long getUserId() {
+        return user.getId();
+    }
+
     @Override
     public String getPassword() {
         return user.getPassword();
@@ -34,15 +39,18 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         RoleType roleType = user.getRoleType();
-        String authority = user.getRoleType().getName();
+        String authority = roleType.getName(); // DB에서 저장된 값
 
-        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority("ROLE_" + authority);
+        //ROLE_ 접두사 처리 (팀원과 협의 필요)
+        String roleWithPrefix = authority.startsWith("ROLE_") ? authority : "ROLE_" + authority;
+
+        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(roleWithPrefix);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(simpleGrantedAuthority);
 
         return authorities;
-    }
-
+    } //컨트롤러에서 userDetails.getAuthorities()를 호출하면, 유저의 권한을 가져올 수 있음
+    // DB에 저장된 CUSTOMER, OWNER 같은 값을 ROLE_CUSTOMER, ROLE_OWNER처럼 변환하여 Spring Security에서 사용할 수 있도록 함.
 
     @Override
     public boolean isAccountNonExpired() {
@@ -62,5 +70,14 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    // 추가: 디버깅을 위한 toString() 메서드
+    @Override
+    public String toString() {
+        return "UserDetailsImpl{" +
+                "username='" + user.getUsername() + '\'' +
+                ", role='" + user.getRoleType().getName() + '\'' +
+                '}';
     }
 }

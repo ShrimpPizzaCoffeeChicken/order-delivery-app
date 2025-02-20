@@ -6,7 +6,7 @@ import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
-import com.fortest.orderdelivery.app.global.exception.UnauthorizedException;
+import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/service/")
@@ -35,14 +36,14 @@ public class UserServiceController {
 
     // 회원가입
     @PostMapping("/users/signup")
-    public ResponseEntity<CommonDto<Void>> signup(@RequestBody SignupRequestDto requestDto){
+    public ResponseEntity<CommonDto<Void>> signup(@RequestBody SignupRequestDto requestDto) {
         User user = userService.signup(requestDto);
         String successMessage = user.getNickname() + "님의 회원가입이 완료되었습니다.";
 
         userService.isCreatedBy(user);
 
         return ResponseEntity.ok(
-                CommonDto.<Void> builder()
+                CommonDto.<Void>builder()
                         .code(HttpStatus.OK.value())
                         .message(successMessage)
                         .data(null)
@@ -66,7 +67,7 @@ public class UserServiceController {
             @PathVariable("userId") Long userId,
             @RequestBody UserUpdateRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
-log.info("컨트롤러");
+        log.info("컨트롤러");
         // JWT에서 가져온 username
         String loggedInUsername = userDetails.getUsername();
 
@@ -90,7 +91,7 @@ log.info("컨트롤러");
 
         // 본인이 맞는지 검증
         if (!targetUserId.equals(requesterUserId.toString())) {
-            throw new UnauthorizedException("본인 계정만 탈퇴할 수 있습니다.");
+            throw new BusinessLogicException("본인 계정만 탈퇴할 수 있습니다.");
         }
 
         // 회원 탈퇴 실행 (삭제한 userId 저장)
@@ -102,7 +103,6 @@ log.info("컨트롤러");
                 .data(null)
                 .build());
     }
-
 
 
 }
