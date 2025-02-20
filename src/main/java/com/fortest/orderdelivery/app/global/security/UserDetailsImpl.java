@@ -2,13 +2,14 @@ package com.fortest.orderdelivery.app.global.security;
 
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
+@Slf4j
 public class UserDetailsImpl implements UserDetails {
 
     private final User user;
@@ -39,18 +40,14 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         RoleType roleType = user.getRoleType();
-        String authority = roleType.getName(); // DB에서 저장된 값
+        String authority = "ROLE_"+roleType.getName(); // DB에서 저장된 값
 
-        //ROLE_ 접두사 처리 (팀원과 협의 필요)
-        String roleWithPrefix = authority.startsWith("ROLE_") ? authority : "ROLE_" + authority;
-
-        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(roleWithPrefix);
+        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(simpleGrantedAuthority);
 
         return authorities;
-    } //컨트롤러에서 userDetails.getAuthorities()를 호출하면, 유저의 권한을 가져올 수 있음
-    // DB에 저장된 CUSTOMER, OWNER 같은 값을 ROLE_CUSTOMER, ROLE_OWNER처럼 변환하여 Spring Security에서 사용할 수 있도록 함.
+    }
 
     @Override
     public boolean isAccountNonExpired() {

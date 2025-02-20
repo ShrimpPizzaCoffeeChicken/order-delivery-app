@@ -6,9 +6,14 @@ import com.fortest.orderdelivery.app.domain.area.dto.AreaSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
 import com.fortest.orderdelivery.app.domain.area.service.AreaService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/service")
@@ -19,7 +24,12 @@ public class AreaServiceController {
     private final AreaService areaService;
 
     @PostMapping("/areas")
-    public ResponseEntity<CommonDto<AreaSaveResponseDto>> saveArea(@RequestBody AreaSaveRequestDto createDto) {
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<CommonDto<AreaSaveResponseDto>> saveArea(@RequestBody AreaSaveRequestDto createDto,@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        if (userDetails == null) {
+            throw new BusinessLogicException("로그인한 사용자 정보가 없습니다.");
+        }
+        Long userId = userDetails.getUserId(); // 🔥 유저의 ID 가져오기
         // TODO : 회원 ID 획득 해야함
         Area area = areaService.saveArea(createDto, 123L);
         AreaSaveResponseDto responseDto = AreaSaveResponseDto.builder()
@@ -35,7 +45,7 @@ public class AreaServiceController {
                         .code(HttpStatus.OK.value())
                         .data(responseDto)
                         .build()
-                );
+        );
     }
 
     @GetMapping("/areas")
