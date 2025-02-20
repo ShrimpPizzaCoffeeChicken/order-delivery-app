@@ -6,6 +6,8 @@ import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.exception.UnauthorizedException;
+import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -78,6 +80,29 @@ log.info("컨트롤러");
                         .build()
         );
     }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<CommonDto<Void>> deleteUser(
+            @PathVariable("userId") String targetUserId, // 탈퇴할 대상 userId
+            @AuthenticationPrincipal UserDetailsImpl userDetails // 현재 로그인한 사용자 정보 가져오기
+    ) {
+        Long requesterUserId = userDetails.getUserId(); // 로그인한 사용자의 userId 가져오기
+
+        // 본인이 맞는지 검증
+        if (!targetUserId.equals(requesterUserId.toString())) {
+            throw new UnauthorizedException("본인 계정만 탈퇴할 수 있습니다.");
+        }
+
+        // 회원 탈퇴 실행 (삭제한 userId 저장)
+        userService.deleteUser(targetUserId, requesterUserId);
+
+        return ResponseEntity.ok(CommonDto.<Void>builder()
+                .message("회원 탈퇴 완료")
+                .code(HttpStatus.OK.value())
+                .data(null)
+                .build());
+    }
+
 
 
 }

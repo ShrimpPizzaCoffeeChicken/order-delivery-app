@@ -9,6 +9,8 @@ import com.fortest.orderdelivery.app.domain.user.repository.RoleTypeRepository;
 import com.fortest.orderdelivery.app.domain.user.repository.UserRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.exception.UnauthorizedException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -137,6 +139,21 @@ public class UserService {
         }
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(String targetUserId, Long requesterUserId) {
+        //탈퇴 대상 회원 조회 (소프트 삭제된 회원은 제외)
+        User user = userRepository.findByIdAndDeletedAtIsNull(Long.parseLong(targetUserId))
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
+
+        //요청한 유저가 본인이 맞는지 다시 검증 (이중 체크)
+//        if (!user.getId().equals(requesterUserId)) {
+//            throw new UnauthorizedException("본인 계정만 탈퇴할 수 있습니다.");
+//        }
+
+        //소프트 삭제 처리 (삭제한 userId 기록)
+        user.softDelete(requesterUserId);
     }
 
     private void removeRefreshTokenCookie(HttpServletResponse response) {
