@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -70,12 +71,13 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/service/users/login", "/api/service/users/signup","/api/service/users/logout").permitAll() // 로그인 & 회원가입만 인증 없이 허용
                         .requestMatchers("/api/service/users/protected-resource").authenticated()
                         .requestMatchers("/api/service/users/refresh").permitAll() // Refresh Token 사용 시 인증 필요
-                        .requestMatchers("/api/service/users/**").permitAll() // 회원 관련 API는 인증 없이 접근 가능
+                        .requestMatchers(HttpMethod.DELETE, "/api/service/users/{userId}").authenticated()
+                //        .requestMatchers("/api/service/users/**").permitAll() // 회원 관련 API는 인증 없이 접근 가능
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 //                .anyRequest().permitAll() // 그 외 요청은 인증 필요
         );
 
-        http.formLogin(form -> form.disable());
+        http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

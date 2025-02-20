@@ -55,4 +55,9 @@ public class User extends BaseDataEntity {
         this.password = password;
     }
 
+    public void softDelete(Long deletedByUserId) {
+        this.isDeletedNow(deletedByUserId); // BaseDataEntity의 메서드 호출
+    }
+
+
 }
