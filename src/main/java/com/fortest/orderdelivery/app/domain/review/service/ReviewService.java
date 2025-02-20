@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.review.service;
 
 import com.fortest.orderdelivery.app.domain.category.dto.UserResponseDto;
+import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.entity.Review;
@@ -64,6 +65,16 @@ public class ReviewService {
 //                })
 //                .block();
 //    }
+
+    @Transactional
+    public ReviewDeleteResponseDto deleteReview(String reviewId, Long userId){
+        Review review = reviewRepository.findById(reviewId).orElseThrow(()->
+                new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+
+        review.isDeletedNow(userId);
+
+        return ReviewMapper.toReviewDeleteResponseDto(review);
+    }
 
     private void throwByRespCode(int httpStatusCode) {
         int firstNum = httpStatusCode / 100;
