@@ -16,6 +16,19 @@ public class StoreServiceController {
 
     private final StoreService storeService;
 
+    @PatchMapping("/stores/{storeId}/categories")
+    public ResponseEntity<CommonDto<StoreUpdateCategoryResponseDto>> updateCategory(@PathVariable("storeId") String storeId, @RequestBody StoreUpdateCategoryRequestDto requestDto) {
+        // TODO : 유저 정보 획득
+        StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, 123L, requestDto);
+        return ResponseEntity.ok(
+                CommonDto.<StoreUpdateCategoryResponseDto>builder()
+                        .message("SUCCESS")
+                        .code(HttpStatus.OK.value())
+                        .data(responseDto)
+                        .build()
+        );
+    }
+
     @GetMapping("/stores/search")
     public ResponseEntity<CommonDto<StoreSearchResponseDto>> searchStore(
             @RequestParam("page") Integer page,

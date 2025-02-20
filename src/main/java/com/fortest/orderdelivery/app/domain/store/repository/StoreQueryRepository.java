@@ -29,6 +29,19 @@ public class StoreQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
+    public Optional<Store> findForCategory (String storeId) {
+        return Optional.ofNullable(
+                jpaQueryFactory
+                        .selectFrom(store)
+                        .join(store.categoryStoreList, categoryStore).fetchJoin()
+                        .join(categoryStore.category, category)
+                        .where(
+                                store.deletedAt.isNull()
+                        )
+                        .fetchOne()
+        );
+    }
+
     /**
      * 가게 목록 검색
      * @param pageable
