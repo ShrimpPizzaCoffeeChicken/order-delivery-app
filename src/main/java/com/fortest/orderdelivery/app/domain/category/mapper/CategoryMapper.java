@@ -1,10 +1,11 @@
 package com.fortest.orderdelivery.app.domain.category.mapper;
 
-import com.fortest.orderdelivery.app.domain.category.dto.CategoryDeleteResponseDto;
-import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveRequestDto;
-import com.fortest.orderdelivery.app.domain.category.dto.CategorySaveResponseDto;
-import com.fortest.orderdelivery.app.domain.category.dto.CategoryUpdateResponseDto;
+import com.fortest.orderdelivery.app.domain.category.dto.*;
 import com.fortest.orderdelivery.app.domain.category.entity.Category;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CategoryMapper {
 
@@ -20,6 +21,26 @@ public class CategoryMapper {
             .categoryId(category.getId())
             .categoryName(category.getName())
             .build();
+    }
+
+    public static CategoryGetListDto pageToGetCategoryListDto(Page<Category> page) {
+        CategoryGetListDto.CategoryGetListDtoBuilder builder = CategoryGetListDto.builder();
+        builder = builder
+                .totalContents(page.getTotalElements())
+                .size(page.getSize())
+                .currentPage(page.getNumber() + 1);
+        List<CategoryGetListDto.CategoryDto> categoryDtoList = page.getContent().stream()
+                .map(CategoryMapper::entityToCategoryListDtoElement)
+                .collect(Collectors.toList());
+        builder = builder.categoryList(categoryDtoList);
+        return builder.build();
+    }
+
+    public static CategoryGetListDto.CategoryDto entityToCategoryListDtoElement(Category category) {
+        return CategoryGetListDto.CategoryDto.builder()
+                .categoryId(category.getId())
+                .categoryName(category.getName())
+                .build();
     }
 
     public static CategoryUpdateResponseDto toCategoryUpdateResponseDto(Category category) {

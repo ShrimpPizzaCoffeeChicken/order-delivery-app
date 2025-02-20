@@ -1,6 +1,5 @@
 package com.fortest.orderdelivery.app.domain.user.controller;
 
-import com.fortest.orderdelivery.app.domain.store.service.StoreService;
 import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
@@ -51,4 +50,10 @@ public class UserServiceController {
     public ResponseEntity<CommonDto<Map<String, Object>>> checkUsername(@RequestParam(name = "username") String username) {
         return ResponseEntity.ok(userService.checkUsernameAvailability(username));
     }
+
+    @PostMapping("/users/logout")
+    public CommonDto<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        return userService.logout(request, response);
+    }
+
 }

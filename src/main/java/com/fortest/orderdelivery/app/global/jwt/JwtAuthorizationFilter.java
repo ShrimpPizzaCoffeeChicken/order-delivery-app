@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @Slf4j(topic = "JWT 검증 및 인가")
 @RequiredArgsConstructor
@@ -27,29 +28,40 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
+        // Access Token 가져오기
+        String accessToken = jwtUtil.getAccessTokenFromHeader(req);
 
-        String tokenValue = jwtUtil.getRefreshTokenFromCookie(req);
+        String refreshToken = jwtUtil.getRefreshTokenFromCookie(req);
 
-        if (StringUtils.hasText(tokenValue)) {
+        if (StringUtils.hasText(accessToken)) {
+            if (!jwtUtil.validateToken(accessToken)) {
+                log.error("Access Token이 만료됨");
 
-            if (!jwtUtil.validateToken(tokenValue)) {
-                log.error("Token Error");
+                // 만료된 경우, 401 응답을 JSON으로 반환
+                res.setContentType("application/json");
+                res.setCharacterEncoding("UTF-8");
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+                PrintWriter writer = res.getWriter();
+                writer.write("{ \"message\": \"Access Token Expired\", \"code\": 401 }");
+                writer.flush();
                 return;
             }
 
-            Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
-            log.info("JWT에서 추출한 username: " + info.getSubject());
+            Claims info = jwtUtil.getUserInfoFromToken(accessToken);
 
             try {
                 setAuthentication(info.getSubject());
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.error("인증 실패: " + e.getMessage());
                 return;
             }
         }
 
+        // 다음 필터 실행
         filterChain.doFilter(req, res);
     }
+
 
     // 인증 처리
     public void setAuthentication(String username) {

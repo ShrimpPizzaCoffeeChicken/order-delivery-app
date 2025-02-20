@@ -4,7 +4,6 @@ import com.fortest.orderdelivery.app.domain.category.dto.*;
 import com.fortest.orderdelivery.app.domain.category.service.CategoryService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +25,24 @@ public class CategoryServiceController {
                         .message("SUCCESS")
                         .code(HttpStatus.OK.value())
                         .data(categorySaveResponseDto)
+                        .build()
+        );
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<CommonDto<CategoryGetListDto>> getCategoryList(
+            @RequestParam("page") Integer page,
+            @RequestParam("size") Integer size,
+            @RequestParam("orderby") String orderby,
+            @RequestParam("sort") String sort
+    ) {
+        CategoryGetListDto categoryList = categoryService.getCategoryList(page, size, orderby, sort);
+
+        return ResponseEntity.ok(
+                CommonDto.<CategoryGetListDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(categoryList)
                         .build()
         );
     }

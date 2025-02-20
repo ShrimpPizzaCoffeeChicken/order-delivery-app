@@ -1,23 +1,29 @@
 package com.fortest.orderdelivery.app.domain.ai.service;
 
+import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestGetListResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.dto.StoreResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.entity.AiRequest;
 import com.fortest.orderdelivery.app.domain.ai.mapper.AiRequestMapper;
+import com.fortest.orderdelivery.app.domain.ai.repository.AiRequestQueryRepository;
 import com.fortest.orderdelivery.app.domain.ai.repository.AiRequestRepository;
 import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -32,6 +38,7 @@ public class AiRequestService {
     private final MessageUtil messageUtil;
     private final WebClient webClient;
     private final AiRequestRepository aiRequestRepository;
+    private final AiRequestQueryRepository aiRequestQueryRepository;
 
     @Value("${app.api.ai.key}")
     private String apiKey;
@@ -43,6 +50,50 @@ public class AiRequestService {
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}";
 
+    /**
+     * 검색을 시도한 유저의 주문 목록을 검색
+     * @param storeId : 조회할 가게 ID
+     * @param page
+     * @param size
+     * @param orderby : 정렬 기준 필드 명
+     * @param sort : DESC or ASC
+     * @param search : 질문에 포함된 키워드 (포함 조건)
+     * @param userId : 접속한 유저 ID
+     * @return
+     */
+    @Transactional
+    public AiRequestGetListResponseDto getAiRequestList(String storeId, Integer page, Integer size, String orderby, String sort, String search, Long userId) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validUserResponse.getCode());
+        String username = validUserResponse.getData().getUsername();
+
+        // TODO : 가게 정보 검색
+        CommonDto<StoreResponseDto> validStoreFromApp = getValidStoreFromApp(storeId);
+        if (validStoreFromApp == null || validStoreFromApp.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validStoreFromApp.getCode());
+        StoreResponseDto storeData = validStoreFromApp.getData();
+
+        if ( !storeData.getOwnerName().equals(username)) {
+            throw new NotValidRequestException(messageUtil.getMessage("app.airequest.not-valid-user"));
+        }
+
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<AiRequest> aiRequestPage;
+        if (search == null || search.isBlank() || search.isEmpty()) {
+            aiRequestPage = aiRequestQueryRepository.findAiRequestList(pageable, storeId);
+        } else {
+            aiRequestPage = aiRequestQueryRepository.findAiRequestListUsingSearch(pageable, storeId, search);
+        }
+        return AiRequestMapper.pageToGetListResponseDto(aiRequestPage, search);
+    }
+
+    @Transactional
     public AiRequestSaveResponseDto saveAiRequest (AiRequestSaveRequestDto requestDto, Long userId) {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
