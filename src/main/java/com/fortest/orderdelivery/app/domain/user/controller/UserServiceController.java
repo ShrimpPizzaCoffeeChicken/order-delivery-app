@@ -1,6 +1,5 @@
 package com.fortest.orderdelivery.app.domain.user.controller;
 
-import com.fortest.orderdelivery.app.domain.store.service.StoreService;
 import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
@@ -26,7 +25,6 @@ public class UserServiceController {
     // 토큰 재발급
     @PostMapping("/users/refresh")
     public ResponseEntity<CommonDto<LoginResponseDto>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        log.info("컨트롤러----------------==========================");
         return ResponseEntity.ok(userService.refreshToken(request, response));
     }
 
