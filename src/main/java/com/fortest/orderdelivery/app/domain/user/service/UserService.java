@@ -10,6 +10,7 @@ import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +95,31 @@ public class UserService {
 
         //응답 객체 생성 및 반환
         return new CommonDto<>(message, status.value(), responseData);
+    }
+
+    @Transactional
+    public CommonDto<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        // 현재 쿠키에서 Refresh Token 가져오기
+        String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
+
+        if (refreshToken == null) {
+            return new CommonDto<>("Refresh Token이 존재하지 않습니다.", HttpStatus.BAD_REQUEST.value(), null);
+        }
+
+        // Refresh Token 삭제 (쿠키에서 제거)
+        removeRefreshTokenCookie(response);
+
+        return new CommonDto<>("로그아웃 완료", HttpStatus.OK.value(), "로그아웃 성공");
+    }
+
+    private void removeRefreshTokenCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(JwtUtil.REFRESH_TOKEN_COOKIE, null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // 쿠키 만료 설정
+
+        response.addCookie(cookie);
     }
 
 
