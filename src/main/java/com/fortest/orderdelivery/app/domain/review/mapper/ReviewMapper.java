@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.review.mapper;
 
+import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.entity.Review;
@@ -16,6 +17,12 @@ public class ReviewMapper {
 
     public static ReviewSaveResponseDto toReviewSaveResponseDto(Review review) {
         return ReviewSaveResponseDto.builder()
+                .reviewId(review.getId())
+                .build();
+    }
+
+    public static ReviewDeleteResponseDto toReviewDeleteResponseDto(Review review) {
+        return ReviewDeleteResponseDto.builder()
                 .reviewId(review.getId())
                 .build();
     }

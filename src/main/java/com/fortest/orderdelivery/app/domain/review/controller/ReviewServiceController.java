@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.review.controller;
 
+import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.service.ReviewService;
@@ -7,10 +8,7 @@ import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/service")
@@ -32,4 +30,16 @@ public class ReviewServiceController {
         );
     }
 
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<CommonDto<ReviewDeleteResponseDto>> deleteReview(@PathVariable String reviewId){
+        ReviewDeleteResponseDto reviewDeleteResponseDto = reviewService.deleteReview(reviewId, 123L);
+
+        return ResponseEntity.ok(
+                CommonDto.<ReviewDeleteResponseDto>builder()
+                        .message("SUCCESS")
+                        .code(HttpStatus.OK.value())
+                        .data(reviewDeleteResponseDto)
+                        .build()
+        );
+    }
 }
