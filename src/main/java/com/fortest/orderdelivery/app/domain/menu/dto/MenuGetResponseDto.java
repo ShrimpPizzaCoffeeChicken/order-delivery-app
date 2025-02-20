@@ -21,13 +21,13 @@ public class MenuGetResponseDto {
     @JsonProperty("menu-image-url")
     private List<String> menuImageUrl;
     @JsonProperty("option-list")
-    private List<OptionList> optionList;
+    private List<OptionQueryList> optionList;
 
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class OptionList {
+    public static class OptionQueryList {
         @JsonProperty("option-name")
         private String optionName;
         @JsonProperty("option-price")

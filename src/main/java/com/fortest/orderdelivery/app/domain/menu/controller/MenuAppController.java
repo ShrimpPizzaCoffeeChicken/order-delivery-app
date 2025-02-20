@@ -1,5 +1,7 @@
 package com.fortest.orderdelivery.app.domain.menu.controller;
 
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidRequestDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuAppService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -8,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +31,19 @@ public class MenuAppController {
             .message("메뉴 객체 응답 완료")
             .code(HttpStatus.OK.value())
             .data(response)
+            .build());
+    }
+
+    @GetMapping("/options/valid")
+    public ResponseEntity<CommonDto<MenuAndOptionValidResponseDto>> validateMenuAndOption(
+        @RequestBody MenuAndOptionValidRequestDto menuAndOptionValidRequestDto
+    ) {
+        MenuAndOptionValidResponseDto responseDto = menuAppService.validateMenuAndOption(menuAndOptionValidRequestDto);
+
+        return ResponseEntity.ok(CommonDto.<MenuAndOptionValidResponseDto>builder()
+            .message("메뉴 옵션 검증 완료")
+            .code(HttpStatus.OK.value())
+            .data(responseDto)
             .build());
     }
 

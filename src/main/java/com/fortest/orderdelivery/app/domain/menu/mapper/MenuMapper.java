@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.menu.mapper;
 
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetQueryDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
@@ -61,13 +62,24 @@ public class MenuMapper {
             .build();
     }
 
-    public static MenuGetResponseDto toMenuGetResponseDto(MenuGetQueryDto menuGetQueryDto, List<String> imageUrlList, List<MenuGetResponseDto.OptionList> optionList) {
+    public static MenuGetResponseDto toMenuGetResponseDto(MenuGetQueryDto menuGetQueryDto, List<String> imageUrlList, List<MenuGetResponseDto.OptionQueryList> optionList) {
         return MenuGetResponseDto.builder()
             .menuName(menuGetQueryDto.getMenuName())
             .menuDescription(menuGetQueryDto.getMenuDescription())
             .menuPrice(menuGetQueryDto.getMenuPrice())
             .menuImageUrl(imageUrlList)
             .optionList(optionList)
+            .build();
+    }
+
+    public static MenuAndOptionValidResponseDto toMenuAndOptionValidResponseDto(
+        List<MenuAndOptionValidResponseDto.MenuList> menuLists,
+        Boolean result
+        ) {
+
+        return MenuAndOptionValidResponseDto.builder()
+            .result(result)
+            .menuList(menuLists)
             .build();
     }
 }
