@@ -1,4 +1,4 @@
-package com.fortest.orderdelivery.app.domain.order.dto;
+package com.fortest.orderdelivery.app.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserResponseDto {
 
+        private Long userId;
         private String username;
         private String nickname;
         private String email;

@@ -2,15 +2,18 @@ package com.fortest.orderdelivery.app.domain.user.service;
 
 import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
+import com.fortest.orderdelivery.app.domain.user.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
+import com.fortest.orderdelivery.app.domain.user.mapper.UserMapper;
 import com.fortest.orderdelivery.app.domain.user.repository.RoleTypeRepository;
 import com.fortest.orderdelivery.app.domain.user.repository.UserRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,10 +33,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final MessageUtil messageUtil;
     private final UserRepository userRepository;
     private final RoleTypeRepository roleTypeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
+    @Transactional
+    public UserResponseDto getUserData(Long findTargetUserId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(findTargetUserId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.user")));
+
+        return UserMapper.entityToUserResponseDto(user);
+    }
 
     // 로그인 관련 기능 (토큰 재발급)
     @Transactional
