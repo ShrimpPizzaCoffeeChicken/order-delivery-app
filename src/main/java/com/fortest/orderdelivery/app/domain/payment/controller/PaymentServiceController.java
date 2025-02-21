@@ -1,8 +1,6 @@
 package com.fortest.orderdelivery.app.domain.payment.controller;
 
-import com.fortest.orderdelivery.app.domain.payment.dto.PaymentGetListResponseDto;
-import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.payment.dto.*;
 import com.fortest.orderdelivery.app.domain.payment.service.PaymentService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +50,7 @@ public class PaymentServiceController {
         );
     }
 
-    @DeleteMapping("/payment/{paymentId}")
+    @DeleteMapping("/payments/{paymentId}")
     public ResponseEntity<CommonDto<Map<String, String>>> deletePayment(@PathVariable("paymentId") String paymentId) {
         String deletePaymentId = paymentService.deletePayment(paymentId, 123L);
         Map<String, String> data = Map.of("payment-id", deletePaymentId);
@@ -62,6 +60,19 @@ public class PaymentServiceController {
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(data)
+                        .build()
+        );
+    }
+
+    @PatchMapping("/payments/{paymentId}")
+    public ResponseEntity<CommonDto<PaymentUpdateStatusResponseDto>> updateStatus(@PathVariable("paymentId") String paymentId, @RequestBody PaymentUpdateStatusRequestDto requestDto) {
+        PaymentUpdateStatusResponseDto responseDto = paymentService.updateStatus(123L, paymentId, requestDto);
+
+        return ResponseEntity.ok(
+                CommonDto.<PaymentUpdateStatusResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(responseDto)
                         .build()
         );
     }

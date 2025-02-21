@@ -1,4 +1,4 @@
-package com.fortest.orderdelivery.app.domain.order.dto;
+package com.fortest.orderdelivery.app.domain.payment.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderStatusUpdateResponseDto {
+public class PaymentUpdateStatusResponseDto {
     @JsonProperty("before-status")
     private String beforeStatus;
     @JsonProperty("after-status")

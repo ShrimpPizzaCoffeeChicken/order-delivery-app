@@ -2,10 +2,7 @@ package com.fortest.orderdelivery.app.domain.payment.service;
 
 import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
-import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
-import com.fortest.orderdelivery.app.domain.payment.dto.PaymentGetListResponseDto;
-import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.payment.dto.*;
 import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
 import com.fortest.orderdelivery.app.domain.payment.entity.PaymentAgent;
 import com.fortest.orderdelivery.app.domain.payment.mapper.PaymentMapper;
@@ -39,6 +36,28 @@ public class PaymentService {
 
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String ORDER_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
+
+    @Transactional
+    public PaymentUpdateStatusResponseDto updateStatus (Long userId, String paymentId, PaymentUpdateStatusRequestDto requestDto) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validUserResponse.getCode());
+
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.user")));
+
+        Payment.Status beforeStatus = payment.getStatus();
+        String toStatusString = requestDto.getTo();
+        Payment.Status toStatus = Payment.getStatusByString(toStatusString);
+
+        payment.updateStatus(toStatus);
+        payment.isUpdatedNow(userId);
+
+        return new PaymentUpdateStatusResponseDto(beforeStatus.name(), toStatus.name());
+    }
 
     @Transactional
     public PaymentSaveResponseDto saveEntry (PaymentSaveRequestDto saveRequestDto) {
