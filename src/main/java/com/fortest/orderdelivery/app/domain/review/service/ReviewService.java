@@ -1,8 +1,10 @@
 package com.fortest.orderdelivery.app.domain.review.service;
 
 import com.fortest.orderdelivery.app.domain.category.dto.UserResponseDto;
+import com.fortest.orderdelivery.app.domain.review.dto.OrderDetailsResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetListDto;
+import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.entity.Review;
@@ -28,6 +30,8 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewQueryRepository reviewQueryRepository;
     private final MessageSource messageSource;
+
+    private static final String ORDER_APP_URL = "http://{url}:{port}/api/app/orders/{orderId}/details";
 
     @Transactional
     public ReviewSaveResponseDto saveReview(ReviewSaveRequestDto reviewSaveRequestDto, Long userId) {
@@ -102,4 +106,42 @@ public class ReviewService {
             }
         }
     }
+
+    public ReviewGetResponseDto getReview(String reviewId) {
+        // TODO : 주문 상세 조회 API 생성 후 테스트
+//        CommonDto<OrderDetailsResponseDto> commonDto = getOrderDetailsFromApp(review.getOrderId());
+//        if(Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
+//            throw new BusinessLogicException("Order is not Valid");
+//        }
+        Review review = reviewRepository.findById(reviewId).orElseThrow(()->
+            new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+
+        return ReviewMapper.toReviewGetResponseDto(review, OrderDetailsResponseDto.builder().build());
+    }
+
+    /**
+     * 주문 서비스에 메뉴리스트, 옵션리스트 요청
+     *
+     * @param orderId
+     * @return CommonDto<OrderDetailsResponseDto> : 요청 실패 시 null
+     */
+//    public CommonDto<OrderDetailsResponseDto> getOrderDetailsFromApp(String orderId) {
+//
+//        String targetUrl = ORDER_APP_URL
+//            .replace("{url}", "localhost")
+//            .replace("{port}", "8082")
+//            .replace("{orderId}", orderId);
+//
+//        return webClient.get()
+//            .uri(targetUrl)
+//            .retrieve()
+//            .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderDetailsResponseDto>>() {
+//            })
+//            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+//            .onErrorResume(throwable -> {
+//                log.error("Fail : {}", targetUrl, throwable);
+//                return Mono.empty();
+//            })
+//            .block();
+//    }
 }

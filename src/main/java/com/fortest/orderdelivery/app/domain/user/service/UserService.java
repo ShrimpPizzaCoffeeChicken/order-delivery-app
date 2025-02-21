@@ -1,14 +1,12 @@
 package com.fortest.orderdelivery.app.domain.user.service;
 
-import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
-import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
-import com.fortest.orderdelivery.app.domain.user.dto.UserResponseDto;
-import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
+import com.fortest.orderdelivery.app.domain.user.dto.*;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.mapper.UserMapper;
 import com.fortest.orderdelivery.app.domain.user.repository.RoleTypeRepository;
 import com.fortest.orderdelivery.app.domain.user.repository.UserRepository;
+import com.fortest.orderdelivery.app.domain.user.repository.UserQueryRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
@@ -35,6 +33,7 @@ public class UserService {
 
     private final MessageUtil messageUtil;
     private final UserRepository userRepository;
+    private final UserQueryRepository userQueryRepository;
     private final RoleTypeRepository roleTypeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -86,6 +85,15 @@ public class UserService {
 
         userRepository.save(user);
         return user;
+    }
+
+    @Transactional
+    public UserGetDetailResponseDto getUserDetail(Long userId){
+
+        User user = userQueryRepository.findUserDetail(userId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.user")));
+
+        return UserMapper.toUserGetDetailResponseDto(user);
     }
 
     @Transactional
