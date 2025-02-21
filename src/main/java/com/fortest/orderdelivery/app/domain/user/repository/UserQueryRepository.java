@@ -1,12 +1,9 @@
 package com.fortest.orderdelivery.app.domain.user.repository;
 
 import com.fortest.orderdelivery.app.domain.user.dto.UserResponseDto;
-import com.fortest.orderdelivery.app.domain.user.entity.QRoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.QUser;
-import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.QueryFactory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -16,7 +13,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.fortest.orderdelivery.app.domain.user.entity.QRoleType.*;
-import static com.fortest.orderdelivery.app.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
 @Repository
@@ -24,6 +20,18 @@ public class UserQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
     private final QUser user = QUser.user;
+
+    public Optional<User> findById(Long userId) {
+        return Optional.ofNullable(
+               jpaQueryFactory
+                       .selectFrom(user)
+                       .join(user.roleType, roleType).fetchJoin()
+                       .where(
+                               user.id.eq(userId)
+                       )
+                       .fetchOne()
+        );
+    }
 
     public Optional<User> findUserDetail (Long userId) {
         return Optional.ofNullable(
@@ -47,12 +55,12 @@ public class UserQueryRepository {
             builder.and(user.nickname.eq(nickname));
         }
         if (roleName != null) {
-            builder.and(user.roleType.name.eq(roleName));
+            builder.and(user.roleType.roleName.stringValue().eq(roleName));
         }
 
         List<User> users = jpaQueryFactory
                 .selectFrom(user)
-                .join(user.roleType, roleType)
+                .join(user.roleType, roleType).fetchJoin()
                 .where(builder)
                 .fetch();
 
@@ -62,7 +70,7 @@ public class UserQueryRepository {
                         .username(u.getUsername())
                         .nickname(u.getNickname())
                         .email(u.getEmail())
-                        .role(u.getRoleType().getName())
+                        .role(u.getRoleType().getRoleName().name())
                         .isPublic(u.getIsPublic())
                         .createdAt(u.getCreatedAt() != null ? u.getCreatedAt().toString() : null)
                         .createdBy(u.getCreatedBy())

@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.order.entity.MenuOptionMenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.MenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.order.repository.OrderRepository;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +77,7 @@ class OrderServiceTest {
                 "totalPrice",
                 "DESC",
                 "testName",
-                123L
+                new User()
         );
         JSONObject jsonObject = new JSONObject(result);
         log.info("{}", jsonObject.toString());
@@ -136,7 +137,7 @@ class OrderServiceTest {
         log.info("targetId = {}", targetIdOwner);
 
         // when
-        OrderGetDetailResponseDto result01 = orderService.getOrderDetail(targetIdOwner, 1L);
+        OrderGetDetailResponseDto result01 = orderService.getOrderDetail(targetIdOwner, new User());
         JSONObject jsonObject = new JSONObject(result01);
         log.info("result = {}", jsonObject);
     }
@@ -164,7 +165,7 @@ class OrderServiceTest {
             log.info(i + "초 경과");
         }
 
-        String deletedId = orderService.deleteOrder(order.getId(), 1L);
+        String deletedId = orderService.deleteOrder(order.getId(), new User());
         Order deletedOrder = orderRepository.findById(deletedId).get();
         log.info("result = {}", deletedOrder.getId());
         log.info("deleted At = {} , deletedBy = {}", deletedOrder.getDeletedAt(), deletedOrder.getDeletedBy());

@@ -9,9 +9,11 @@ import com.fortest.orderdelivery.app.domain.payment.mapper.PaymentMapper;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentAgentRepository;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentQueryRepository;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentRepository;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,23 +30,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class PaymentService {
 
-    private final WebClient webClient;
+    private final ApiGateway apiGateway;
     private final MessageUtil messageUtil;
     private final PaymentRepository paymentRepository;
     private final PaymentQueryRepository paymentQueryRepository;
     private final PaymentAgentRepository paymentAgentRepository;
 
-    private static final String CONTENT_TYPE = "Content-Type";
-    private static final String ORDER_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
-
     @Transactional
-    public PaymentUpdateStatusResponseDto updateStatus (Long userId, String paymentId, PaymentUpdateStatusRequestDto requestDto) {
-        // TODO : 유저 검색
-        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
-        if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validUserResponse.getCode());
+    public PaymentUpdateStatusResponseDto updateStatus (User user, String paymentId, PaymentUpdateStatusRequestDto requestDto) {
 
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.user")));
@@ -54,15 +47,15 @@ public class PaymentService {
         Payment.Status toStatus = Payment.getStatusByString(toStatusString);
 
         payment.updateStatus(toStatus);
-        payment.isUpdatedNow(userId);
+        payment.isUpdatedNow(user.getId());
 
         return new PaymentUpdateStatusResponseDto(beforeStatus.name(), toStatus.name());
     }
 
     @Transactional
-    public PaymentSaveResponseDto saveEntry (PaymentSaveRequestDto saveRequestDto) {
+    public PaymentSaveResponseDto saveEntry (PaymentSaveRequestDto saveRequestDto, User user) {
         try {
-            return savePayment(saveRequestDto);
+            return savePayment(saveRequestDto, user);
         } catch (Exception e) {
             // TODO : 결제 실패 처리
             // TODO : 주문 실패 상태 업데이트 요청
@@ -72,26 +65,23 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentSaveResponseDto savePayment(PaymentSaveRequestDto saveRequestDto) {
+    public PaymentSaveResponseDto savePayment(PaymentSaveRequestDto saveRequestDto, User user) {
 
         // TODO : 주문 정보 요청 : 외부 요청으로 교체 예정
-        CommonDto<OrderValidResponseDto> validOrderFromApp = getValidOrderFromApp(saveRequestDto.getOrderId());
-        if (validOrderFromApp == null || validOrderFromApp.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validOrderFromApp.getCode());
-
+        OrderValidResponseDto validOrder = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId());
         PaymentAgent paymentAgent = paymentAgentRepository.findByName(saveRequestDto.getPaymentAgent())
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
         // 주문 유효성 검사
-        if ( ! Order.OrderStatus.WAIT.name().equals(validOrderFromApp.getData().getOrderStatus()) ) {
+        if ( ! Order.OrderStatus.WAIT.name().equals(validOrder.getOrderStatus()) ) {
             throw new BusinessLogicException(messageUtil.getMessage("app.payment.invalid-order"));
         }
 
-        OrderValidResponseDto validOrder = validOrderFromApp.getData();
         Payment payment = PaymentMapper.saveDtoToEntity(saveRequestDto, paymentAgent, validOrder.getCustomerName(), validOrder.getOrderPrice());
+        payment.isCreatedBy(user.getId());
         paymentRepository.save(payment);
+
+        // TODO : 주문 상태 업데이트
 
         return PaymentMapper.entityToSaveResponseDto(payment);
     }
@@ -103,27 +93,16 @@ public class PaymentService {
      * @param orderby : 정렬 기준 필드 이름
      * @param sort : DESC or ASC
      * @param search : 주문 번호 검색 키워드 (일치 조건)
-     * @param userId : 로그인 유저 ID
+     * @param user : 로그인 유저
      * @return
      */
     @Transactional
-    public PaymentGetListResponseDto getPaymentList (Integer page, Integer size, String orderby, String sort, String search, Long userId) {
-
-        // TODO : 유저 검색
-        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
-        if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validUserResponse.getCode());
-        String username = validUserResponse.getData().getUsername();
+    public PaymentGetListResponseDto getPaymentList (Integer page, Integer size, String orderby, String sort, String search, User user) {
 
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
         Page<Payment> paymentPage;
-        if (search == null || search.isBlank() || search.isEmpty()) {
-            paymentPage = paymentQueryRepository.findPaymentList(pageable, username);
-        } else {
-            paymentPage = paymentQueryRepository.findPaymentListUsingSearch(pageable, username, search);
-        }
+
+        paymentPage = paymentQueryRepository.findPaymentListUsingSearch(pageable, user.getUsername(), search);
         return PaymentMapper.pageToGetOrderListDto(paymentPage, null);
     }
 
@@ -133,79 +112,5 @@ public class PaymentService {
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.payment")));
         payment.isDeletedNow(userId);
         return payment.getId();
-    }
-
-    // TODO : 하단 코드로 교체 예정
-    private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-        String userName = "user" + userId;
-
-        UserResponseDto userDto = UserResponseDto.builder()
-                .username(userName)
-                .build();
-
-        return new CommonDto<>("SUCCESS", HttpStatus.OK.value(), userDto);
-    }
-
-    // private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-    //     String targetUrl = USER_APP_URL
-    //             .replace("{host}", "localhost")
-    //             .replace("{port}", "8082")
-    //             .replace("{userId}", userId);
-    //     return webClient.get()
-    //             .uri(targetUrl)
-    //             .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-    //             .retrieve()
-    //             .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {})
-    //             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-    //             .onErrorResume(throwable -> {
-    //                 log.error("Fail : {}", targetUrl, throwable);
-    //                 return Mono.empty();
-    //             })
-    //             .block();
-    // }
-
-    // TODO : 하단 외부요청 코드로 교체 예정
-    private CommonDto<OrderValidResponseDto> getValidOrderFromApp(String orderId) {
-        OrderValidResponseDto data = OrderValidResponseDto.builder()
-                .orderId(orderId)
-                .orderStatus("WAIT")
-                .build();
-
-        return CommonDto.<OrderValidResponseDto> builder()
-                .code(HttpStatus.OK.value())
-                .message("SUCCESS")
-                .data(data)
-                .build();
-    }
-
-//    private CommonDto<OrderValidResponseDto> getValidOrderFromApp(String orderId) {
-//        String targetUrl = ORDER_APP_URL
-//                .replace("{host}", "localhost")
-//                .replace("{port}", "8082")
-//                .replace("{orderId}", orderId);
-//
-//        return webClient.get()
-//                .uri(targetUrl)
-//                .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderValidResponseDto>>() {})
-//                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-//                .onErrorResume(throwable -> {
-//                    log.error("Fail : {}", targetUrl, throwable);
-//                    return Mono.empty();
-//                })
-//                .block();
-//    }
-
-    private void throwByRespCode(int httpStatusCode) {
-        int firstNum = httpStatusCode / 100;
-        switch (firstNum) {
-            case 4 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
-            }
-            case 5 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-            }
-        }
     }
 }

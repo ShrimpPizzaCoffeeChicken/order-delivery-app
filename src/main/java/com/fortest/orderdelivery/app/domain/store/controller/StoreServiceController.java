@@ -2,6 +2,7 @@ package com.fortest.orderdelivery.app.domain.store.controller;
 
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.service.StoreService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +20,7 @@ public class StoreServiceController {
     @PatchMapping("/stores/{storeId}/categories")
     public ResponseEntity<CommonDto<StoreUpdateCategoryResponseDto>> updateCategory(@PathVariable("storeId") String storeId, @RequestBody StoreUpdateCategoryRequestDto requestDto) {
         // TODO : 유저 정보 획득
-        StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, 123L, requestDto);
+        StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, new User(), requestDto);
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateCategoryResponseDto>builder()
                         .message("SUCCESS")
@@ -54,7 +55,7 @@ public class StoreServiceController {
     @PostMapping("/stores")
     public ResponseEntity<CommonDto<StoreSaveResponseDto>> saveStore(@RequestBody StoreSaveRequestDto storeSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
-        StoreSaveResponseDto storeSaveResponseDto = storeService.saveStore(storeSaveRequestDto, 123L);
+        StoreSaveResponseDto storeSaveResponseDto = storeService.saveStore(storeSaveRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreSaveResponseDto>builder()

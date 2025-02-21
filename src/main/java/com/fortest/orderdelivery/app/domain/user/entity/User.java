@@ -34,7 +34,7 @@ public class User extends BaseDataEntity {
 
     private Boolean isPublic = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)  // RoleType과 연결
     private RoleType roleType;
 

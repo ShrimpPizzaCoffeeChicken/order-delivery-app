@@ -40,7 +40,7 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         RoleType roleType = user.getRoleType();
-        String authority = "ROLE_"+roleType.getName(); // DB에서 저장된 값
+        String authority = "ROLE_"+roleType.getRoleName().name(); // DB에서 저장된 값
 
         SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
@@ -74,7 +74,7 @@ public class UserDetailsImpl implements UserDetails {
     public String toString() {
         return "UserDetailsImpl{" +
                 "username='" + user.getUsername() + '\'' +
-                ", role='" + user.getRoleType().getName() + '\'' +
+                ", role='" + user.getRoleType().getRoleName().name() + '\'' +
                 '}';
     }
 }

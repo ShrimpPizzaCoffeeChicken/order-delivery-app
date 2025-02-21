@@ -1,8 +1,8 @@
 package com.fortest.orderdelivery.app.global.config;
 
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
-import com.fortest.orderdelivery.app.global.jwt.JwtAuthenticationFilter;
-import com.fortest.orderdelivery.app.global.jwt.JwtAuthorizationFilter;
+import com.fortest.orderdelivery.app.global.filter.JwtAuthenticationFilter;
+import com.fortest.orderdelivery.app.global.filter.JwtAuthorizationFilter;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import com.fortest.orderdelivery.app.global.security.CustomAccessDeniedHandler;
 import com.fortest.orderdelivery.app.global.security.UserDetailsServiceImpl;

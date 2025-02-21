@@ -1,7 +1,9 @@
 package com.fortest.orderdelivery.app.domain.order.repository;
 
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
+import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -23,43 +25,26 @@ public class OrderQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    // 사용자의 주문 목록 조회 (검색어 X )
-    public Page<Order> findOrderList(Pageable pageable, String userName) {
-        // 정렬 기준 변환
-        OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, order);
-
-        List<Order> contents = jpaQueryFactory
-                .selectFrom(order)
-                .where(
-                    order.deletedAt.isNull(),
-                    order.customerName.eq(userName)
-                )
-                .orderBy(orderSpecifiers)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-        JPAQuery<Long> countQuery = jpaQueryFactory
-                .select(order.count())
-                .from(order)
-                .where(
-                    order.deletedAt.isNull(),
-                    order.customerName.eq(userName)
-                );
-
-        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
-    }
-
     // 사용자의 주문 목록 조회 (검색어 O )
     public Page<Order> findOrderListUsingSearch(Pageable pageable, String searchKeyword, String userName) {
         // 정렬 기준 변환
         OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, order);
 
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        // 검색 키워드가 있으면 가게 이름으로 사용
+        if (!CommonUtil.checkStringIsEmpty(searchKeyword)) {
+            booleanBuilder.and(order.storeName.contains(searchKeyword));
+        }
+        // 유저 이름이 있으면 해당 유저의 주문 기록만 조회
+        if (!CommonUtil.checkStringIsEmpty(userName)) {
+            booleanBuilder.and(order.customerName.eq(userName));
+        }
+
         List<Order> contents = jpaQueryFactory
                 .selectFrom(order)
                 .where(
                     order.deletedAt.isNull(),
-                    order.storeName.contains(searchKeyword),
-                    order.customerName.eq(userName)
+                    booleanBuilder
                 )
                 .orderBy(orderSpecifiers)
                 .offset(pageable.getOffset())
@@ -70,8 +55,7 @@ public class OrderQueryRepository {
                 .from(order)
                 .where(
                     order.deletedAt.isNull(),
-                    order.storeName.contains(searchKeyword),
-                    order.customerName.eq(userName)
+                    booleanBuilder
                 );
 
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);

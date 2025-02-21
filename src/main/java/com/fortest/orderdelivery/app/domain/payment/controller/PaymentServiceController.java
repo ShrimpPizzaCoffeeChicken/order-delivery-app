@@ -2,6 +2,7 @@ package com.fortest.orderdelivery.app.domain.payment.controller;
 
 import com.fortest.orderdelivery.app.domain.payment.dto.*;
 import com.fortest.orderdelivery.app.domain.payment.service.PaymentService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class PaymentServiceController {
 
     @PostMapping("/payments")
     public ResponseEntity<CommonDto<PaymentSaveResponseDto>> savePayment(@RequestBody PaymentSaveRequestDto saveRequestDto) {
-        PaymentSaveResponseDto responseDto = paymentService.saveEntry(saveRequestDto);
+        PaymentSaveResponseDto responseDto = paymentService.saveEntry(saveRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<PaymentSaveResponseDto> builder()
@@ -40,7 +41,7 @@ public class PaymentServiceController {
             @RequestParam("search") String search
     ) {
 
-        PaymentGetListResponseDto paymentList = paymentService.getPaymentList(page, size, orderby, sort, search, 123L);
+        PaymentGetListResponseDto paymentList = paymentService.getPaymentList(page, size, orderby, sort, search, new User());
         return ResponseEntity.ok(
                 CommonDto.<PaymentGetListResponseDto> builder()
                         .code(HttpStatus.OK.value())
@@ -66,7 +67,7 @@ public class PaymentServiceController {
 
     @PatchMapping("/payments/{paymentId}")
     public ResponseEntity<CommonDto<PaymentUpdateStatusResponseDto>> updateStatus(@PathVariable("paymentId") String paymentId, @RequestBody PaymentUpdateStatusRequestDto requestDto) {
-        PaymentUpdateStatusResponseDto responseDto = paymentService.updateStatus(123L, paymentId, requestDto);
+        PaymentUpdateStatusResponseDto responseDto = paymentService.updateStatus(new User(), paymentId, requestDto);
 
         return ResponseEntity.ok(
                 CommonDto.<PaymentUpdateStatusResponseDto> builder()

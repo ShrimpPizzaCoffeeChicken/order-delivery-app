@@ -20,11 +20,11 @@ public class CategoryStore {
     private Long id;
 
     @JoinColumn(name = "category_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
 
     @JoinColumn(name = "store_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Store store;
 
     public void bindCategory(Category category) {

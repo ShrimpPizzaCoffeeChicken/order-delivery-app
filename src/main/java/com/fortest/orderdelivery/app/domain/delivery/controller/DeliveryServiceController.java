@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListReponseD
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveRequestDto;
 import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveResponseDto;
 import com.fortest.orderdelivery.app.domain.delivery.service.DeliveryService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class DeliveryServiceController {
     @PostMapping("/deliveries")
     public ResponseEntity<CommonDto<DeliverySaveResponseDto>> saveDelivery(@RequestBody DeliverySaveRequestDto requestDto) {
         // TODO : 유저 id 획득
-        DeliverySaveResponseDto responseDto = deliveryService.saveEntry(requestDto, 123L);
+        DeliverySaveResponseDto responseDto = deliveryService.saveEntry(requestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<DeliverySaveResponseDto> builder()
@@ -43,7 +44,7 @@ public class DeliveryServiceController {
             @RequestParam("search") String search
     ) {
         // TODO : 유저 id 획득
-        DeliveryGetListReponseDto deliveryList = deliveryService.getDeliveryList(page, size, orderby, sort, search, 123L);
+        DeliveryGetListReponseDto deliveryList = deliveryService.getDeliveryList(page, size, orderby, sort, search, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<DeliveryGetListReponseDto> builder()
@@ -57,7 +58,7 @@ public class DeliveryServiceController {
     @GetMapping("/deliveries/{deliveryId}")
     public ResponseEntity<CommonDto<DeliveryGetDetailResponseDto>> getDeliveryDetail (@PathVariable("deliveryId") String deliveryId) {
         // TODO : 유저 id 획득
-        DeliveryGetDetailResponseDto deliveryDetail = deliveryService.getDeliveryDetail(deliveryId, 123L);
+        DeliveryGetDetailResponseDto deliveryDetail = deliveryService.getDeliveryDetail(deliveryId, new User());
         return ResponseEntity.ok(
                 CommonDto.<DeliveryGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
@@ -70,7 +71,7 @@ public class DeliveryServiceController {
     @DeleteMapping("/deliveries/{deliveryId}")
     public ResponseEntity<CommonDto<Map<String, String>>> deleteDelivery (@PathVariable("deliveryId") String deliveryId) {
         // TODO : 유저 id 획득
-        String deleteDeliveryId = deliveryService.deleteDelivery(deliveryId, 123L);
+        String deleteDeliveryId = deliveryService.deleteDelivery(deliveryId, new User());
         Map<String, String> data = Map.of("delivery-id", deleteDeliveryId);
 
         return ResponseEntity.ok(

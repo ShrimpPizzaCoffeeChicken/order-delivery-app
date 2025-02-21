@@ -22,7 +22,7 @@ public class Image extends BaseDataEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     private String fileName;
 
     private Integer sequence;

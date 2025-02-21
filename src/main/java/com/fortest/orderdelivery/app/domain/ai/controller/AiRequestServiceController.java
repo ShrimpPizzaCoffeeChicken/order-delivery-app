@@ -4,6 +4,7 @@ import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestGetListResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.service.AiRequestService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ public class AiRequestServiceController {
             @RequestBody AiRequestSaveRequestDto requestDto
     ) {
         // TODO : 유저 id 획득
-        AiRequestSaveResponseDto responseDto = aiRequestService.saveAiRequest(requestDto, 123L);
+        AiRequestSaveResponseDto responseDto = aiRequestService.saveAiRequest(requestDto, new User());
         return ResponseEntity.ok(
                 CommonDto.<AiRequestSaveResponseDto> builder()
                         .code(HttpStatus.OK.value())
@@ -42,7 +43,7 @@ public class AiRequestServiceController {
             @RequestParam("search") String search
     ) {
         // TODO : 유저 id 획득
-        AiRequestGetListResponseDto responseDto = aiRequestService.getAiRequestList(storeId, page, size, orderby, sort, search, 123L);
+        AiRequestGetListResponseDto responseDto = aiRequestService.getAiRequestList(storeId, page, size, orderby, sort, search, new User());
         return ResponseEntity.ok(
                 CommonDto.<AiRequestGetListResponseDto> builder()
                         .code(HttpStatus.OK.value())

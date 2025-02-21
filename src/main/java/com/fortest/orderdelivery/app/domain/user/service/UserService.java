@@ -27,8 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -63,7 +61,7 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
-        String newAccessToken = jwtUtil.createAccessToken(username, user.getRoleType().getName());
+        String newAccessToken = jwtUtil.createAccessToken(username, user.getRoleType().getRoleName().name());
 
         jwtUtil.addAccessTokenToHeader(newAccessToken, response);
 
@@ -76,7 +74,7 @@ public class UserService {
 
     @Transactional
     public User signup(SignupRequestDto requestDto) {
-        RoleType roleType = roleTypeRepository.findByName("CUSTOMER")
+        RoleType roleType = roleTypeRepository.findByRoleName(RoleType.RoleName.CUSTOMER)
                 .orElseThrow(() -> new BusinessLogicException("기본 고객 역할을 찾을 수 없습니다."));
 
         User user = User.builder()

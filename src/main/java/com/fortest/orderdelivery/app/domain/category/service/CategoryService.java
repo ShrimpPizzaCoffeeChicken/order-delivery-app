@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.category.entity.Category;
 import com.fortest.orderdelivery.app.domain.category.mapper.CategoryMapper;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryQueryRepository;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryRepository;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
@@ -21,60 +22,26 @@ import java.util.Locale;
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
+
     private final CategoryRepository categoryRepository;
     private final CategoryQueryRepository categoryQueryRepository;
     private final MessageSource messageSource;
 
     @Transactional
-    public CategorySaveResponseDto saveCategory(CategorySaveRequestDto categorySaveRequestDto, Long userId) {
-        // TODO : 유저 검색
-        CommonDto<UserResponseDto> validUserResponse = getUserId(userId); // api 요청
-        if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
-        }
-        throwByRespCode(validUserResponse.getCode());
-        String username = validUserResponse.getData().getUsername();
+    public CategorySaveResponseDto saveCategory(CategorySaveRequestDto categorySaveRequestDto, User user) {
 
         Category newCategory = CategoryMapper.toCategory(categorySaveRequestDto);
+        newCategory.isCreatedBy(user.getId());
         Category savedCategory = categoryRepository.save(newCategory);
 
         return CategoryMapper.toCategorySaveResponseDto(savedCategory);
     }
 
-    // TODO : 유저 조회 : 하단 코드로 교체 예정
-    public CommonDto<UserResponseDto> getUserId(Long id) {
-        UserResponseDto userDto = UserResponseDto.builder()
-                .id(id)
-                .build();
-
-        return new CommonDto<>("SUCCESS", HttpStatus.OK.value(), userDto);
-    }
-
-//    public CommonDto<UserResponseDto> getUserId(Long id) {
-//        String targetUrl = USER_APP_URL
-//                .replace("{host}", "localhost")
-//                .replace("{port}", "8082")
-//                .replace("{userId}", id);
-//
-//        return webClient.get()
-//                .uri(targetUrl)
-//                .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {})
-//                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시작
-//                .onErrorResume(throwable -> {
-//                    log.error("Fail : {}", targetUrl, throwable);
-//                    return Mono.empty();
-//                })
-//                .block();
-//    }
-
     public CategoryGetListDto getCategoryList(Integer page, Integer size, String orderby, String sort) {
 
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
-        Page<Category> categoryList;
+        Page<Category> categoryList = categoryQueryRepository.findCategoryList(pageable);
 
-        categoryList = categoryQueryRepository.findCategoryList(pageable);
         return CategoryMapper.pageToGetCategoryListDto(categoryList);
     }
 
@@ -99,18 +66,5 @@ public class CategoryService {
         category.isDeletedNow(userId);
 
         return CategoryMapper.toCategoryDeleteResponseDto(category);
-    }
-
-
-    private void throwByRespCode(int httpStatusCode) {
-        int firstNum = httpStatusCode / 100;
-        switch (firstNum) {
-            case 4 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.client-error", null, Locale.KOREA));
-            }
-            case 5 -> {
-                throw new BusinessLogicException(messageSource.getMessage("api.call.server-error", null, Locale.KOREA));
-            }
-        }
     }
 }

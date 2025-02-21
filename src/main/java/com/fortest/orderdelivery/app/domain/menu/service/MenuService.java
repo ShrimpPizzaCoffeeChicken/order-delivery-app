@@ -11,12 +11,15 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
+import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
 import com.fortest.orderdelivery.app.domain.menu.repository.MenuQueryRepository;
 import com.fortest.orderdelivery.app.domain.menu.repository.MenuRepository;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import java.time.Duration;
@@ -40,24 +43,17 @@ import reactor.util.retry.Retry;
 @RequiredArgsConstructor
 public class MenuService {
 
-    private final WebClient webClient;
+    private final ApiGateway apiGateway;
     private final MessageUtil messageUtil;
     private final MenuRepository menuRepository;
     private final MenuQueryRepository menuQueryRepository;
-
-    private static final String STORE_APP_URL = "http://{url}:{port}/api/app/stores/{storeId}";
-    private static final String IMAGE_UPDATE_APP_URL = "http://{url}:{port}/api/app/images/menus";
-    private static final String IMAGE_DELETE_APP_URL = "http://{url}:{port}/api/app/images/menus/{menuId}";
 
     // TODO : deleteBy 넣기
     public MenuResponseDto saveMenu(MenuSaveRequestDto menuSaveRequestDto) {
         String storeId = menuSaveRequestDto.getStoreId();
 
-//        가게 DB 존재 여부 확인 API 생성 후 테스트
-//        CommonDto<StoreValidResponseDto> commonDto = getValidStoreFromApp(storeId);
-//        if(Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
-//            throw new BusinessLogicException("Store is not Valid");
-//        }
+        // 가게 DB 존재 여부 확인
+        apiGateway.getValidStoreFromApp(storeId);
 
         Menu newMenu = MenuMapper.toMenu(menuSaveRequestDto);
         Menu savedMenu = menuRepository.save(newMenu);
@@ -70,28 +66,17 @@ public class MenuService {
                 .menu(savedMenu)
                 .build();
 
-            CommonDto<MenuImageMappingResponseDto> commonDto = saveMenuIdToImage(
-                menuImageRequestDto);
+            MenuImageMappingResponseDto commonDto = apiGateway.saveMenuIdToImage(menuImageRequestDto);
 
-            if (Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
-                throw new BusinessLogicException(
-                    messageUtil.getMessage("image.menu.mapping.failure"));
+            if (!commonDto.getResult()) {
+                throw new BusinessLogicException(messageUtil.getMessage("image.menu.mapping.failure"));
             }
-
-            throwByRespCode(commonDto.getCode());
-
-            if (!commonDto.getData().getResult()) {
-                throw new BusinessLogicException(
-                    messageUtil.getMessage("image.menu.mapping.failure"));
-            }
-
         }
 
         return MenuMapper.toMenuResponseDto(savedMenu);
     }
 
-    public MenuListGetResponseDto getMenuList(String storeId, int page, int size, String orderBy,
-        String sort) {
+    public MenuListGetResponseDto getMenuList(String storeId, int page, int size, String orderBy, String sort) {
         PageRequest pageRequest = JpaUtil.getNormalPageable(page, size, orderBy, sort);
         Page<MenuListDto> menuListPage = menuQueryRepository.getMenuListPage(pageRequest, storeId);
 
@@ -118,22 +103,14 @@ public class MenuService {
 
     // TODO : deleteBy 변경
     @Transactional
-    public MenuResponseDto deleteMenu(String menuId) {
-        CommonDto<ImageResponseDto> commonDto = deleteMenuImageFromApp(menuId);
-
-        if (Objects.isNull(commonDto) || Objects.isNull(commonDto.getData())) {
-            throw new BusinessLogicException(
-                messageUtil.getMessage("s3.image.delete.failure"));
-        }
-
-        throwByRespCode(commonDto.getCode());
+    public MenuResponseDto deleteMenu(String menuId, User user) {
+        apiGateway.deleteMenuImageFromApp(menuId);
 
         Menu menu = getMenuById(menuId);
-        menu.isDeletedNow(1L);
+        menu.isDeletedNow(user.getId());
         Menu savedMenu = menuRepository.save(menu);
 
         return MenuMapper.toMenuResponseDto(savedMenu);
-
     }
 
     public MenuGetResponseDto getMenu(String menuId) {
@@ -147,58 +124,6 @@ public class MenuService {
        return menuGetResponseDto;
     }
 
-    /**
-     * 이미지 서비스에 메뉴 옵션 Id로 메뉴 옵션 이미지 삭제 요청
-     *
-     * @param menuId
-     * @return CommonDto<ImageResponseDto> : 요청 실패 시 null
-     */
-    public CommonDto<ImageResponseDto> deleteMenuImageFromApp(String menuId) {
-
-        String targetUrl = IMAGE_DELETE_APP_URL
-            .replace("{url}", "localhost")
-            .replace("{port}", "8082")
-            .replace("{menuId}", menuId);
-
-        return webClient.delete()
-            .uri(targetUrl)
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
-            })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
-            .onErrorResume(throwable -> {
-                log.error("Fail : {}", targetUrl, throwable);
-                return Mono.empty();
-            })
-            .block();
-    }
-
-    /**
-     * 가게유효성 검사 요청
-     *
-     * @param storeId
-     * @return CommonDto<StoreValidResponseDto> : 요청 실패 시 null
-     */
-//    public CommonDto<StoreValidResponseDto> getValidStoreFromApp(String storeId) {
-//
-//        String targetUrl = STORE_APP_URL
-//            .replace("{url}", "localhost")
-//            .replace("{port}", "8082")
-//            .replace("{storeId}", storeId);
-//
-//        return webClient.get()
-//            .uri(targetUrl)
-//            .retrieve()
-//            .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreValidResponseDto>>() {
-//            })
-//            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-//            .onErrorResume(throwable -> {
-//                log.error("Fail : {}", targetUrl, throwable);
-//                return Mono.empty();
-//            })
-//            .block();
-//    }
-
     public MenuListGetResponseDto searchMenuList(String storeId, int page, int size, String orderBy,
         String sort, String keyword) {
         PageRequest pageRequest = JpaUtil.getNormalPageable(page, size, orderBy, sort);
@@ -207,51 +132,9 @@ public class MenuService {
         return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }
 
-    /**
-     * 이미지에 메뉴 Id update 요청
-     *
-     * @param requestDto
-     * @return CommonDto<Void> : 요청 실패 시 null
-     */
-    public CommonDto<MenuImageMappingResponseDto> saveMenuIdToImage(
-        MenuImageMappingRequestDto requestDto) {
-
-        String targetUrl = IMAGE_UPDATE_APP_URL
-            .replace("{url}", "localhost")
-            .replace("{port}", "8082");
-
-        return webClient.patch()
-            .uri(targetUrl)
-            .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuImageMappingResponseDto>>() {
-            })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-            .onErrorResume(throwable -> {
-                log.error("Fail : {}", targetUrl, throwable);
-                return Mono.empty();
-            })
-            .block();
-    }
-
     public Menu getMenuById(String menuId) {
         return menuRepository.findById(menuId).orElseThrow(
             () -> new NotFoundException(
                 messageUtil.getMessage("not-found.menu")));
-    }
-
-    private void throwByRespCode(int httpStatusCode) {
-        int firstNum = httpStatusCode / 100;
-        switch (firstNum) {
-            case 4 -> {
-                throw new BusinessLogicException(
-                    messageUtil.getMessage("api.call.client-error"));
-            }
-            case 5 -> {
-                throw new BusinessLogicException(
-                    messageUtil.getMessage("api.call.server-error"));
-            }
-        }
     }
 }

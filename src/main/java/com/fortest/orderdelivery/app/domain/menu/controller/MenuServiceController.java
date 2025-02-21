@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -93,7 +94,7 @@ public class MenuServiceController {
     public ResponseEntity<CommonDto<MenuResponseDto>> deleteMenu(
         @PathVariable("menuId") String menuId
     ) {
-        MenuResponseDto responseDto = menuService.deleteMenu(menuId);
+        MenuResponseDto responseDto = menuService.deleteMenu(menuId, new User());
 
         return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
             .message("메뉴 삭제 완료")

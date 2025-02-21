@@ -2,7 +2,9 @@ package com.fortest.orderdelivery.app.domain.category.controller;
 
 import com.fortest.orderdelivery.app.domain.category.dto.*;
 import com.fortest.orderdelivery.app.domain.category.service.CategoryService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +15,17 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CategoryServiceController {
 
+    private final MessageUtil messageUtil;
     private final CategoryService categoryService;
 
     @PostMapping("/categories")
     public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@RequestBody CategorySaveRequestDto categorySaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
-        CategorySaveResponseDto categorySaveResponseDto = categoryService.saveCategory(categorySaveRequestDto, 123L);
+        CategorySaveResponseDto categorySaveResponseDto = categoryService.saveCategory(categorySaveRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<CategorySaveResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(categorySaveResponseDto)
                         .build()
@@ -41,7 +44,7 @@ public class CategoryServiceController {
         return ResponseEntity.ok(
                 CommonDto.<CategoryGetListDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(categoryList)
                         .build()
         );
@@ -53,7 +56,7 @@ public class CategoryServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryUpdateResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(categoryUpdateResponseDto)
                         .build()
@@ -66,7 +69,7 @@ public class CategoryServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryDeleteResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(categoryDeleteResponseDto)
                         .build()

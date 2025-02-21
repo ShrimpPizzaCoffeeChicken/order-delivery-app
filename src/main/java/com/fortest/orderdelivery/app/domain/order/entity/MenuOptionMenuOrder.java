@@ -18,7 +18,7 @@ public class MenuOptionMenuOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100)
+    @Column(length = 50)
     private String menuOptionId;
 
     @Column(length = 100)
@@ -28,7 +28,7 @@ public class MenuOptionMenuOrder {
 
     private Integer menuOptionPrice;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_order_id")
     private MenuOrder menuOrder;
 

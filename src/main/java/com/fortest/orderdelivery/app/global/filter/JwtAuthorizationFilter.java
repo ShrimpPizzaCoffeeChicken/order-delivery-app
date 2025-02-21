@@ -1,5 +1,6 @@
-package com.fortest.orderdelivery.app.global.jwt;
+package com.fortest.orderdelivery.app.global.filter;
 
+import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import com.fortest.orderdelivery.app.global.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;

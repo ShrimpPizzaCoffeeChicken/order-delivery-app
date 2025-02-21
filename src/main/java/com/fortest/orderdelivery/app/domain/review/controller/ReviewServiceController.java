@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.service.ReviewService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ public class ReviewServiceController {
     @PostMapping("/reviews")
     public ResponseEntity<CommonDto<ReviewSaveResponseDto>> saveReview(@RequestBody ReviewSaveRequestDto reviewSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
-        ReviewSaveResponseDto reviewSaveResponseDto = reviewService.saveReview(reviewSaveRequestDto, 123L);
+        ReviewSaveResponseDto reviewSaveResponseDto = reviewService.saveReview(reviewSaveRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewSaveResponseDto>builder()
@@ -53,7 +54,7 @@ public class ReviewServiceController {
 
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<CommonDto<ReviewDeleteResponseDto>> deleteReview(@PathVariable String reviewId){
-        ReviewDeleteResponseDto reviewDeleteResponseDto = reviewService.deleteReview(reviewId, 123L);
+        ReviewDeleteResponseDto reviewDeleteResponseDto = reviewService.deleteReview(reviewId, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewDeleteResponseDto>builder()

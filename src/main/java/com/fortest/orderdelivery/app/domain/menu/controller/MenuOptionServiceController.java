@@ -4,6 +4,7 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuOptionService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,7 @@ public class MenuOptionServiceController {
         @RequestBody MenuOptionUpdateRequestDto menuOptionUpdateRequestDto,
         @PathVariable("optionId") String optionId
     ) {
-        MenuOptionResponseDto responseDto = menuOptionService.updateMenuOption(menuOptionUpdateRequestDto, optionId);
+        MenuOptionResponseDto responseDto = menuOptionService.updateMenuOption(menuOptionUpdateRequestDto, optionId, new User());
 
         return ResponseEntity.ok(CommonDto.<MenuOptionResponseDto>builder()
             .message("메뉴 옵션 수정 완료")
@@ -56,7 +57,7 @@ public class MenuOptionServiceController {
     public ResponseEntity<CommonDto<MenuOptionResponseDto>> deleteMenuOption(
         @PathVariable("optionId") String optionId
     ) {
-        MenuOptionResponseDto responseDto = menuOptionService.deleteMenuOption(optionId);
+        MenuOptionResponseDto responseDto = menuOptionService.deleteMenuOption(optionId, new User());
 
         return ResponseEntity.ok(CommonDto.<MenuOptionResponseDto>builder()
             .message("메뉴 옵션 삭제 완료")

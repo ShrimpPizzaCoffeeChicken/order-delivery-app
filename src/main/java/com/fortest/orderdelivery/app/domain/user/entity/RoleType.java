@@ -19,8 +19,20 @@ public class RoleType {
     private String id;
 
     @Column(length = 50, nullable = false, unique = true)
-    private String name;
+    @Enumerated(value = EnumType.STRING)
+    private RoleName roleName;
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Getter
+    @AllArgsConstructor
+    public enum RoleName {
+        CUSTOMER("일반사용자"),
+        OWNER("가게사장"),
+        MANAGER("매니저"),
+        MASTER("마스터");
+
+        private String message;
+    }
 }

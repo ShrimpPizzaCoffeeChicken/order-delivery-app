@@ -26,7 +26,7 @@ public class Store extends BaseDataEntity {
     private String name;
 
     @JoinColumn(name = "area_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Area area;
 
     @Column(length = 200)

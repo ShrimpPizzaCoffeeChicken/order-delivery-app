@@ -1,4 +1,4 @@
-package com.fortest.orderdelivery.app.global.jwt;
+package com.fortest.orderdelivery.app.global.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fortest.orderdelivery.app.domain.user.dto.LoginRequestDto;
@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -60,7 +61,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         RoleType roleType = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRoleType();
 
-        String accessToken = jwtUtil.createAccessToken(username, roleType.getName());
+        String accessToken = jwtUtil.createAccessToken(username, roleType.getRoleName().name());
         String refreshToken = jwtUtil.createRefreshToken(username);
 
         jwtUtil.addAccessTokenToHeader(accessToken, response);

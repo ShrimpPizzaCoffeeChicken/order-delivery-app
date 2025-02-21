@@ -7,6 +7,7 @@ import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
 import com.fortest.orderdelivery.app.domain.payment.entity.PaymentAgent;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentAgentRepository;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentRepository;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +51,7 @@ class PaymentServiceTest {
                 .status("COMPLETE")
                 .build();
 
-        PaymentSaveResponseDto paymentSaveResponseDto = paymentService.saveEntry(requestDto);
+        PaymentSaveResponseDto paymentSaveResponseDto = paymentService.saveEntry(requestDto, new User());
 
         // then
         log.info("result = {}", paymentSaveResponseDto);
@@ -92,7 +93,7 @@ class PaymentServiceTest {
                 "price",
                 "DESC",
                 null,
-                1L
+                new User()
         );
 
         JSONObject jsonObject = new JSONObject(paymentList);

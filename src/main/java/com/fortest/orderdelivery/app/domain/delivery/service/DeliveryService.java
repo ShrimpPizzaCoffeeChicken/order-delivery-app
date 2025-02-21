@@ -8,23 +8,21 @@ import com.fortest.orderdelivery.app.domain.delivery.entity.Delivery;
 import com.fortest.orderdelivery.app.domain.delivery.mapper.DeliveryMapper;
 import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryQueryRepository;
 import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryRepository;
-import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
-import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
+import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 
 @Slf4j
@@ -32,75 +30,48 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class DeliveryService {
 
-    private final WebClient webClient;
+    private final ApiGateway apiGateway;
     private final MessageUtil messageUtil;
     private final DeliveryRepository deliveryRepository;
     private final DeliveryQueryRepository deliveryQueryRepository;
 
-    private static final String CONTENT_TYPE = "Content-Type";
-    private static final String ORDER_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
-
-    public DeliverySaveResponseDto saveEntry(DeliverySaveRequestDto saveRequestDto, Long userId) {
+    public DeliverySaveResponseDto saveEntry(DeliverySaveRequestDto saveRequestDto, User user) {
         try {
-            return saveDelivery(saveRequestDto, userId);
+            return saveDelivery(saveRequestDto, user);
         } catch (Exception e) {
             // TODO : 배달 등록 실패 처리
-            // TODO : 주문 실패 상태 업데이트 요청
+            // TODO : 주문 상태 업데이트 요청 : 배달 등록 실패
+            // TODO : 결제 상태 업데이트 요청 : 취소요청
             log.error("", e);
             throw new BusinessLogicException(messageUtil.getMessage("app.delivery.delivery-save-fail"));
         }
     }
 
     @Transactional
-    public DeliverySaveResponseDto saveDelivery(DeliverySaveRequestDto saveRequestDto, Long userId) {
+    public DeliverySaveResponseDto saveDelivery(DeliverySaveRequestDto saveRequestDto, User user) {
 
-        // TODO : 유저 검색
-        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
-        if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validUserResponse.getCode());
-        String username = validUserResponse.getData().getUsername();
-
-        // TODO : 주문 검증 : 추후 외부 요청으로 교체 예정
-        CommonDto<OrderValidResponseDto> validOrderFromApp = getValidOrderFromApp(saveRequestDto.getOrderId());
-        if (validOrderFromApp == null || validOrderFromApp.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validOrderFromApp.getCode());
+        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId());
 
         // 주문 유효성 검사
-        if ( ! Order.OrderStatus.PAYED.name().equals(validOrderFromApp.getData().getOrderStatus()) ) {
+        if ( ! Order.OrderStatus.PAYED.name().equals(orderValidDto.getOrderStatus()) ) {
             throw new BusinessLogicException(messageUtil.getMessage("app.delivery.invalid-order"));
         }
 
-        Delivery delivery = DeliveryMapper.saveDtoToEntity(saveRequestDto, username);
+        Delivery delivery = DeliveryMapper.saveDtoToEntity(saveRequestDto, user.getUsername());
         deliveryRepository.save(delivery);
 
         return DeliveryMapper.entityToSaveResponseDto(delivery);
     }
 
     @Transactional
-    public DeliveryGetDetailResponseDto getDeliveryDetail(String deliveryId, Long userId) {
-        // TODO : 유저 검색
-        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
-        if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validUserResponse.getCode());
-        String username = validUserResponse.getData().getUsername();
+    public DeliveryGetDetailResponseDto getDeliveryDetail(String deliveryId, User user) {
 
-        Delivery delivery = deliveryQueryRepository.findDeliveryDetail(deliveryId, username)
+        Delivery delivery = deliveryQueryRepository.findDeliveryDetail(deliveryId, user.getUsername())
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
 
-        // TODO : 주문 검증 : 추후 외부 요청으로 교체 예정
-        CommonDto<OrderValidResponseDto> validOrderFromApp = getValidOrderFromApp(delivery.getOrderId());
-        if (validOrderFromApp == null || validOrderFromApp.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validOrderFromApp.getCode());
+        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(delivery.getOrderId());
 
-        return DeliveryMapper.entityToGetDetailDto(delivery, validOrderFromApp.getData());
+        return DeliveryMapper.entityToGetDetailDto(delivery, orderValidDto);
     }
 
     /**
@@ -110,121 +81,32 @@ public class DeliveryService {
      * @param orderby : 정렬 기준 필드 명
      * @param sort : DESC or ASC
      * @param search : 배달 상태 문자열 키워드건 (일치 조건)
-     * @param userId : 접속한 유저 ID
+     * @param user : 접속한 유저
      * @return
      */
     @Transactional
-    public DeliveryGetListReponseDto getDeliveryList (Integer page, Integer size, String orderby, String sort, String search, Long userId) {
-        // TODO : 유저 검색
-        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
-        if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validUserResponse.getCode());
-        String username = validUserResponse.getData().getUsername();
-
+    public DeliveryGetListReponseDto getDeliveryList (Integer page, Integer size, String orderby, String sort, String search, User user) {
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
         Page<Delivery> deliveryPage;
         if (search == null || search.isBlank() || search.isEmpty()) {
-            deliveryPage = deliveryQueryRepository.findDeliveryList(pageable, username);
+            deliveryPage = deliveryQueryRepository.findDeliveryList(pageable, user.getUsername());
         } else {
-            deliveryPage = deliveryQueryRepository.findDeliveryListUsingSearch(pageable, search, username);
+            deliveryPage = deliveryQueryRepository.findDeliveryListUsingSearch(pageable, search, user.getUsername());
         }
         return DeliveryMapper.entityToGetListDto(deliveryPage, search);
     }
 
     @Transactional
-    public String deleteDelivery(String deliveryId, Long userId) {
-        // TODO : 유저 검색
-        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
-        if (validUserResponse == null || validUserResponse.getData() == null) {
-            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-        }
-        throwByRespCode(validUserResponse.getCode());
-        String username = validUserResponse.getData().getUsername();
+    public String deleteDelivery(String deliveryId, User user) {
 
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
 
-        if (! delivery.getCustomerName().equals(username)) {
+        if (! delivery.getCustomerName().equals(user)) {
             throw new NotValidRequestException(messageUtil.getMessage("app.delivery.not-valid-user"));
         }
 
-        delivery.isDeletedNow(userId);
+        delivery.isDeletedNow(user.getId());
         return delivery.getId();
-    }
-
-    // TODO : 하단 코드로 교체 예정
-    private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-        String userName = "user" + userId;
-
-        UserResponseDto userDto = UserResponseDto.builder()
-                .username(userName)
-                .build();
-
-        return new CommonDto<>("SUCCESS", HttpStatus.OK.value(), userDto);
-    }
-
-    // private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-    //     String targetUrl = USER_APP_URL
-    //             .replace("{host}", "localhost")
-    //             .replace("{port}", "8082")
-    //             .replace("{userId}", userId);
-    //     return webClient.get()
-    //             .uri(targetUrl)
-    //             .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-    //             .retrieve()
-    //             .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {})
-    //             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-    //             .onErrorResume(throwable -> {
-    //                 log.error("Fail : {}", targetUrl, throwable);
-    //                 return Mono.empty();
-    //             })
-    //             .block();
-    // }
-
-    // TODO : 하단 외부요청 코드로 교체 예정
-    private CommonDto<OrderValidResponseDto> getValidOrderFromApp(String orderId) {
-        OrderValidResponseDto data = OrderValidResponseDto.builder()
-                .orderId(orderId)
-                .orderStatus("PAYED")
-                .build();
-
-        return CommonDto.<OrderValidResponseDto> builder()
-                .code(HttpStatus.OK.value())
-                .message("SUCCESS")
-                .data(data)
-                .build();
-    }
-
-//    private CommonDto<OrderValidResponseDto> getValidOrderFromApp(String orderId) {
-//        String targetUrl = ORDER_APP_URL
-//                .replace("{host}", "localhost")
-//                .replace("{port}", "8082")
-//                .replace("{orderId}", orderId);
-//
-//        return webClient.get()
-//                .uri(targetUrl)
-//                .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderValidResponseDto>>() {})
-//                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-//                .onErrorResume(throwable -> {
-//                    log.error("Fail : {}", targetUrl, throwable);
-//                    return Mono.empty();
-//                })
-//                .block();
-//    }
-
-    private void throwByRespCode(int httpStatusCode) {
-        int firstNum = httpStatusCode / 100;
-        switch (firstNum) {
-            case 4 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
-            }
-            case 5 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-            }
-        }
     }
 }

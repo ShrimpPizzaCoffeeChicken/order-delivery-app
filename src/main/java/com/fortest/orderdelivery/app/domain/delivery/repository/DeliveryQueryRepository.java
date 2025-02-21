@@ -1,7 +1,9 @@
 package com.fortest.orderdelivery.app.domain.delivery.repository;
 
 import com.fortest.orderdelivery.app.domain.delivery.entity.Delivery;
+import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.fortest.orderdelivery.app.domain.delivery.entity.QDelivery.*;
+import static com.fortest.orderdelivery.app.domain.order.entity.QOrder.order;
 
 @RequiredArgsConstructor
 @Repository
@@ -54,13 +57,22 @@ public class DeliveryQueryRepository {
         // 정렬 기준 변환
         OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, delivery);
 
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        // 검색 키워드가 있으면 가게 이름으로 사용
+        if (!CommonUtil.checkStringIsEmpty(searchKeyword)) {
+            booleanBuilder.and(delivery.status.eq(Delivery.Status.valueOf(searchKeyword)));
+        }
+        // 유저 이름이 있으면 해당 유저의 주문 기록만 조회
+        if (!CommonUtil.checkStringIsEmpty(userName)) {
+            booleanBuilder.and(delivery.customerName.eq(userName));
+        }
+
         List<Delivery> contents = jpaQueryFactory
                 .select(delivery)
                 .from(delivery)
                 .where(
                         delivery.deletedAt.isNull(),
-                        delivery.customerName.eq(userName),
-                        delivery.status.eq(Delivery.Status.valueOf(searchKeyword))
+                        booleanBuilder
                 )
                 .orderBy(orderSpecifiers)
                 .offset(pageable.getOffset())
@@ -71,8 +83,7 @@ public class DeliveryQueryRepository {
                 .from(delivery)
                 .where(
                         delivery.deletedAt.isNull(),
-                        delivery.customerName.eq(userName),
-                        delivery.status.eq(Delivery.Status.valueOf(searchKeyword))
+                        booleanBuilder
                 );
 
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
@@ -83,6 +94,7 @@ public class DeliveryQueryRepository {
                 jpaQueryFactory
                         .selectFrom(delivery)
                         .where(
+                                delivery.id.eq(deliveryId),
                                 delivery.deletedAt.isNull(),
                                 delivery.customerName.eq(userName)
                         )
