@@ -10,6 +10,7 @@ import com.fortest.orderdelivery.app.domain.user.repository.UserQueryRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
+import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import io.jsonwebtoken.Claims;
@@ -24,7 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -183,6 +187,14 @@ public class UserService {
         cookie.setMaxAge(0); // 쿠키 만료 설정
 
         response.addCookie(cookie);
+    }
+
+    public List<UserResponseDto> searchUsers(String username, String nickname, String roleName) {
+        if (username == null && nickname == null && roleName == null) {
+            throw new NotValidRequestException("검색 조건을 하나 이상 입력하세요.");
+        }
+
+        return userQueryRepository.findUsersByFilters(username, nickname, roleName);
     }
 
 

@@ -1,9 +1,6 @@
 package com.fortest.orderdelivery.app.domain.user.controller;
 
-import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
-import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
-import com.fortest.orderdelivery.app.domain.user.dto.UserGetDetailResponseDto;
-import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
+import com.fortest.orderdelivery.app.domain.user.dto.*;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -19,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -116,6 +114,29 @@ public class UserServiceController {
                 .code(HttpStatus.OK.value())
                 .data(null)
                 .build());
+    }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<CommonDto<List<UserResponseDto>>> searchUsers(
+            @RequestParam(name = "username", required = false) String username,
+            @RequestParam(name = "nickname", required = false) String nickname,
+            @RequestParam(name = "role", required = false) String role) {
+
+        log.info("회원 검색 요청 - username: {}, nickname: {}, role: {}", username, nickname, role);
+
+        List<UserResponseDto> users = userService.searchUsers(username, nickname, role);
+
+//        if (users.isEmpty()) {
+//            throw new NotFoundException("해당 조건에 맞는 회원이 없습니다.");
+//        }
+
+        return ResponseEntity.ok(
+                CommonDto.<List<UserResponseDto>>builder()
+                        .message("회원 검색 성공")
+                        .code(HttpStatus.OK.value())
+                        .data(users)
+                        .build()
+        );
     }
 
 
