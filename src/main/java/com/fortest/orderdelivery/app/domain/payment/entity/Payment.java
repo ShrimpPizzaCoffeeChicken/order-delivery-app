@@ -50,6 +50,10 @@ public class Payment extends BaseDataEntity {
         private String message;
     }
 
+    public void updateStatus (Status status) {
+        this.status = status;
+    }
+
     public static Status getStatusByString (String statusString) {
         return Status.valueOf(statusString);
     }

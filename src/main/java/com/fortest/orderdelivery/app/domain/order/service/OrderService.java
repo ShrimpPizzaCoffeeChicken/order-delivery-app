@@ -58,6 +58,7 @@ public class OrderService {
         String toStatusString = requestDto.getTo();
         Order.OrderStatus toStatus = Order.getOrderStatusByString(toStatusString);
         order.updateStatus(toStatus);
+        order.isUpdatedNow(userId);
 
         // 응답 메세지
         return OrderMapper.entityToStatusUpdateResponseDto(order, beforeStatus);

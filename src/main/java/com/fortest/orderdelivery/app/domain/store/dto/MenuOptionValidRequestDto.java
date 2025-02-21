@@ -13,6 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuOptionValidRequestDto {
+
+    @JsonProperty("store-id")
+    private String storeId;
+
     @JsonProperty("menu-list")
     private List<MenuDto> menuList;
 
