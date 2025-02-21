@@ -42,6 +42,13 @@ public class OrderService {
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
 
     @Transactional
+    public OrderGetDetailDataResponseDto getOderDetailData (String orderId) {
+        Order order = orderQueryRepository.findOrderDetail(orderId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.order")));
+        return OrderMapper.entityToGetDetailDataDto(order);
+    }
+
+    @Transactional
     public OrderStatusUpdateResponseDto updateStatus(Long userId, String orderId, OrderStatusUpdateRequestDto requestDto) {
         // TODO : 유저 검색
         CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
