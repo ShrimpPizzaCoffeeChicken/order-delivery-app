@@ -154,4 +154,11 @@ public class OrderMapper {
                 .updatedAt(CommonUtil.LDTToString(order.getUpdatedAt()))
                 .build();
     }
+
+    public static OrderStatusUpdateResponseDto entityToStatusUpdateResponseDto(Order order, Order.OrderStatus beforeStatus) {
+        return OrderStatusUpdateResponseDto.builder()
+                .beforeStatus(beforeStatus.name())
+                .afterStatus(order.getOrderStatus().name())
+                .build();
+    }
 }
