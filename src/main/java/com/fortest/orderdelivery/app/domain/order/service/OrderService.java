@@ -41,12 +41,34 @@ public class OrderService {
     private static final String USER_APP_URL = "http://{host}:{port}/api/app/user/{userId}";
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
 
+    @Transactional
+    public OrderStatusUpdateResponseDto updateStatus(Long userId, String orderId, OrderStatusUpdateRequestDto requestDto) {
+        // TODO : 유저 검색
+        CommonDto<UserResponseDto> validUserResponse = getValidUserFromApp(userId); // api 요청
+        if (validUserResponse == null || validUserResponse.getData() == null) {
+            throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
+        }
+        throwByRespCode(validUserResponse.getCode());
+
+        // 주문 조회
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.order")));
+        Order.OrderStatus beforeStatus = order.getOrderStatus();
+        // 주문 상태 변경
+        String toStatusString = requestDto.getTo();
+        Order.OrderStatus toStatus = Order.getOrderStatusByString(toStatusString);
+        order.updateStatus(toStatus);
+
+        // 응답 메세지
+        return OrderMapper.entityToStatusUpdateResponseDto(order, beforeStatus);
+    }
+
+
     /**
      * 내부 호출용 데이터
      * @param orderId
      * @return
      */
-    @Transactional
     public OrderGetDataDto getOrderData(String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.order")));

@@ -1,8 +1,6 @@
 package com.fortest.orderdelivery.app.domain.order.controller;
 
-import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailResponseDto;
-import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListResponseDto;
-import com.fortest.orderdelivery.app.domain.order.dto.OrderSaveRequestDto;
+import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
@@ -81,4 +79,18 @@ public class OrderServiceController {
                         .build()
         );
     }
+
+    @PatchMapping("/orders/{orderId}")
+    public ResponseEntity<CommonDto<OrderStatusUpdateResponseDto>> updateStatus(@PathVariable("orderId") String orderId, @RequestBody OrderStatusUpdateRequestDto requestDto) {
+        OrderStatusUpdateResponseDto responseDto = orderService.updateStatus(123L, orderId, requestDto);
+
+        return ResponseEntity.ok(
+                CommonDto.<OrderStatusUpdateResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(responseDto)
+                        .build()
+        );
+    }
+
 }
