@@ -2,6 +2,7 @@ package com.fortest.orderdelivery.app.domain.user.controller;
 
 import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.SignupRequestDto;
+import com.fortest.orderdelivery.app.domain.user.dto.UserGetDetailResponseDto;
 import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
@@ -50,6 +51,19 @@ public class UserServiceController {
                         .build()
         );
 
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<CommonDto<UserGetDetailResponseDto>> getUserDetail (@PathVariable("userId") Long userId) {
+        UserGetDetailResponseDto userDetailResponseDto = userService.getUserDetail(userId);
+
+        return ResponseEntity.ok(
+                CommonDto.<UserGetDetailResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(userDetailResponseDto)
+                        .build()
+        );
     }
 
     @GetMapping("/users/check-username")
