@@ -1,10 +1,13 @@
 package com.fortest.orderdelivery.app.domain.review.mapper;
 
+import com.fortest.orderdelivery.app.domain.review.dto.OrderDetailsResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetListDto;
+import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.entity.Review;
+import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -52,5 +55,17 @@ public class ReviewMapper {
         return ReviewDeleteResponseDto.builder()
                 .reviewId(review.getId())
                 .build();
+    }
+
+    public static ReviewGetResponseDto toReviewGetResponseDto(Review review, OrderDetailsResponseDto responseDto) {
+        return ReviewGetResponseDto.builder()
+            .storeId(review.getStoreId())
+            .storeName(review.getStoreName())
+            .contents(review.getContents())
+            .rate(review.getRate())
+            .createdAt(CommonUtil.LDTToString(review.getCreatedAt()))
+            .updatedAt(CommonUtil.LDTToString(review.getUpdatedAt()))
+            .menuList(responseDto.getMenuList())
+            .build();
     }
 }
