@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.order.controller;
 
 import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDataDto;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailDataResponseDto;
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,18 @@ public class OrderAppController {
                         .code(HttpStatus.OK.value())
                         .message("Success")
                         .data(orderData)
+                        .build()
+        );
+    }
+
+    @GetMapping("/orders/{orderId}/details")
+    public ResponseEntity<CommonDto<OrderGetDetailDataResponseDto>> getOrderDetailData(@PathVariable("orderId") String orderId) {
+        OrderGetDetailDataResponseDto responseDto = orderService.getOderDetailData(orderId);
+        return ResponseEntity.ok(
+                CommonDto.<OrderGetDetailDataResponseDto> builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Success")
+                        .data(responseDto)
                         .build()
         );
     }

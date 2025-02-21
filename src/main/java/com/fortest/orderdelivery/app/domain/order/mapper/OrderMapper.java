@@ -161,4 +161,33 @@ public class OrderMapper {
                 .afterStatus(order.getOrderStatus().name())
                 .build();
     }
+
+    public static OrderGetDetailDataResponseDto entityToGetDetailDataDto(Order order) {
+        List<MenuOrder> menuOrderList = order.getMenuOrderList();
+        ArrayList<OrderGetDetailDataResponseDto.MenuDto> menuDtos = new ArrayList<>();
+        for (MenuOrder menuOrder : menuOrderList) {
+
+            OrderGetDetailDataResponseDto.MenuDto.MenuDtoBuilder menuDtoBuilder = OrderGetDetailDataResponseDto.MenuDto.builder()
+                    .menuName(menuOrder.getMenuName())
+                    .menuCount(menuOrder.getCount());
+
+            List<MenuOptionMenuOrder> menuOptionMenuOrderList = menuOrder.getMenuOptionMenuOrderList();
+            ArrayList<OrderGetDetailDataResponseDto.OptionDto> optionDtos = new ArrayList<>();
+            for (MenuOptionMenuOrder menuOptionMenuOrder : menuOptionMenuOrderList) {
+                optionDtos.add(
+                        OrderGetDetailDataResponseDto.OptionDto.builder()
+                                .optionName(menuOptionMenuOrder.getMenuOptionName())
+                                .optionCount(menuOptionMenuOrder.getMenuOptionCount())
+                                .build()
+                );
+            }
+
+            menuDtos.add(
+                    menuDtoBuilder
+                            .orderList(optionDtos)
+                            .build()
+            );
+        }
+        return OrderGetDetailDataResponseDto.builder().menuList(menuDtos).build();
+    }
 }
