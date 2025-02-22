@@ -9,6 +9,7 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class StoreAppController {
     private final MessageUtil messageUtil;
     private final StoreAppService storeAppService;
 
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping("/{storeId}")
     public ResponseEntity<CommonDto<StoreCheckResponseDto>> getStoreCheck(@PathVariable String storeId) {
         StoreCheckResponseDto storeCheckResponseDto = storeAppService.getStoreCheck(storeId);
@@ -30,6 +32,7 @@ public class StoreAppController {
                 .build());
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping("/{storeId}/menus/valid")
     public ResponseEntity<CommonDto<StoreMenuValidResponseDto>> getStoreMenuValid(@PathVariable("storeId") String storeId,
                                                                                   @RequestParam("data") StoreMenuValidRequestDto requestDto) {

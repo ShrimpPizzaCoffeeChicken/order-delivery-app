@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.store.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class MenuOptionValidRequestDto {
 
+    @Size(min = 1, max = 50, message = "가게 ID는 필수 입력값입니다.")
     @JsonProperty("store-id")
     private String storeId;
 
