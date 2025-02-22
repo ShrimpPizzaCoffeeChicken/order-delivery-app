@@ -6,14 +6,12 @@ import com.fortest.orderdelivery.app.domain.category.mapper.CategoryMapper;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryQueryRepository;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
-import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +44,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryUpdateResponseDto updateCategory(String categoryId, CategoryUpdateRequestDto categoryUpdateRequestDto){
+    public CategoryUpdateResponseDto updateCategory(String categoryId, CategoryUpdateRequestDto categoryUpdateRequestDto, User user){
 
         String categoryName = categoryUpdateRequestDto.getCategoryName();
 
@@ -54,6 +52,8 @@ public class CategoryService {
                 new BusinessLogicException(messageSource.getMessage( "api.call.client-error",null, Locale.KOREA)));
 
         category.update(categoryName);
+
+        category.isUpdatedNow(user.getId());
 
         return CategoryMapper.toCategoryUpdateResponseDto(category);
     }

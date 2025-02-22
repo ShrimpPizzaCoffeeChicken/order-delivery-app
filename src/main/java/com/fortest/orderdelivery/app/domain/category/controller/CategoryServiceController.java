@@ -52,7 +52,7 @@ public class CategoryServiceController {
 
     @PatchMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryUpdateResponseDto>> updateCategory(@PathVariable String categoryId, @RequestBody CategoryUpdateRequestDto categoryUpdateRequestDto){
-        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto);
+        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryUpdateResponseDto>builder()

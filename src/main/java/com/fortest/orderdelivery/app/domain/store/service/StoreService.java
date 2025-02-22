@@ -59,6 +59,7 @@ public class StoreService {
         for (Category newCategory : newCategoryList) {
             CategoryStore categoryStore = new CategoryStore();
             categoryStore.bindCategory(newCategory);
+            newCategory.isUpdatedNow(user.getId());
             categoryStore.bindStore(store);
         }
 
@@ -102,7 +103,7 @@ public class StoreService {
     }
 
     @Transactional
-    public StoreUpdateResponseDto updateStore(String storeId, StoreUpdateRequestDto storeUpdateRequestDto){
+    public StoreUpdateResponseDto updateStore(String storeId, StoreUpdateRequestDto storeUpdateRequestDto, User user){
 
         String storeName = storeUpdateRequestDto.getStoreName();
         String areaId = storeUpdateRequestDto.getAreaId();
@@ -116,6 +117,8 @@ public class StoreService {
                 new BusinessLogicException(messageUtil.getMessage( "api.call.client-error")));
 
         store.update(storeName, area, detailAddress, ownerName);
+
+        store.isUpdatedNow(user.getId());
 
         return StoreMapper.toStoreUpdateResponseDto(store, area);
     }

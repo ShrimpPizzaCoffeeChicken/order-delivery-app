@@ -1,18 +1,11 @@
 package com.fortest.orderdelivery.app.domain.review.service;
 
-import com.fortest.orderdelivery.app.domain.category.dto.UserResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.OrderDetailsResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetListDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.review.dto.*;
 import com.fortest.orderdelivery.app.domain.review.entity.Review;
 import com.fortest.orderdelivery.app.domain.review.mapper.ReviewMapper;
 import com.fortest.orderdelivery.app.domain.review.repository.ReviewQueryRepository;
 import com.fortest.orderdelivery.app.domain.review.repository.ReviewRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
-import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
@@ -20,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +31,7 @@ public class ReviewService {
     public ReviewSaveResponseDto saveReview(ReviewSaveRequestDto reviewSaveRequestDto, User user) {
 
         Review newReview = ReviewMapper.toReview(reviewSaveRequestDto);
+        newReview.isCreatedBy(user.getId());
         Review savedReview = reviewRepository.save(newReview);
 
         return ReviewMapper.toReviewSaveResponseDto(savedReview);

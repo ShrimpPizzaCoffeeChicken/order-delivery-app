@@ -83,7 +83,7 @@ public class StoreServiceController {
 
     @PatchMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateStore(@PathVariable String storeId, @RequestBody StoreUpdateRequestDto storeUpdateRequestDto){
-        StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto);
+        StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateResponseDto>builder()
