@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fortest.orderdelivery.app.domain.user.dto.LoginRequestDto;
 import com.fortest.orderdelivery.app.domain.user.dto.LoginResponseDto;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
@@ -58,11 +59,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
-        RoleType roleType = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRoleType();
+        UserDetailsImpl principal = (UserDetailsImpl) authResult.getPrincipal();
+        User user = principal.getUser();
 
-        String accessToken = jwtUtil.createAccessToken(username, roleType.getRoleName().name());
-        String refreshToken = jwtUtil.createRefreshToken(username);
+        String username = user.getUsername();
+        RoleType roleType = user.getRoleType();
+
+        String accessToken = jwtUtil.createAccessToken(user.getId() ,username, roleType.getRoleName().name());
+        String refreshToken = jwtUtil.createRefreshToken(user.getId(),username);
 
         jwtUtil.addAccessTokenToHeader(accessToken, response);
         jwtUtil.addRefreshTokenToCookie(refreshToken, response);

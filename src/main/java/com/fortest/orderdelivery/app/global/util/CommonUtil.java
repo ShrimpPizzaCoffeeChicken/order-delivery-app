@@ -14,6 +14,10 @@ public class CommonUtil {
         return localDateTime.format(formatter);
     }
 
+    public static LocalDateTime stringToLDT (String ldtString) {
+        return LocalDateTime.parse(ldtString, formatter);
+    }
+
     // 빈문자열 or null 이면 true
     public static boolean checkStringIsEmpty (String target) {
         return target == null || target.isEmpty();

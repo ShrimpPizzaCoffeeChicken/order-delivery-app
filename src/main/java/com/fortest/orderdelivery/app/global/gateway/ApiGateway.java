@@ -5,16 +5,14 @@ import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.*;
 import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidRequestDto;
 import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidResponseDto;
-import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
 import com.fortest.orderdelivery.app.domain.review.dto.OrderDetailsResponseDto;
 import com.fortest.orderdelivery.app.domain.store.dto.MenuOptionValidReponseDto;
 import com.fortest.orderdelivery.app.domain.store.dto.MenuOptionValidRequestDto;
-import com.fortest.orderdelivery.app.domain.store.dto.StoreCheckResponseDto;
+import com.fortest.orderdelivery.app.domain.user.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.ApiCallFailException;
-import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.GetDataFailException;
 import com.fortest.orderdelivery.app.global.exception.UnacceptableHttpCodeException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
@@ -34,8 +32,6 @@ import reactor.util.retry.Retry;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-
-import static com.fortest.orderdelivery.app.global.jwt.JwtUtil.AUTHORIZATION_HEADER;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -499,6 +495,29 @@ public class ApiGateway {
             throw new GetDataFailException(messageUtil.getMessage(dataNullMessageKey));
         }
     }
+
+    /**
+     * userId를 기반으로 유저 정보를 조회하는 메서드
+     */
+    public UserResponseDto getUserByIdFromApp(Long userId) {
+        String targetUrl = USER_APP_URL
+                .replace("{host}", "localhost")
+                .replace("{port}", "8082")
+                .replace("{userId}", userId.toString());
+
+        CommonDto<UserResponseDto> commonResponse = webClient.get()
+                .uri(targetUrl)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>(){})
+                .block();
+
+        String messageKey = "app.user.not-found-user-id";
+        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
+
+        return commonResponse.getData();
+    }
+
+
 
     private void throwByRespCode(int httpStatusCode) {
         int firstNum = httpStatusCode / 100;

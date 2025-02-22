@@ -58,10 +58,14 @@ public class UserService {
 
         Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
         String username = claims.getSubject();
-        User user = userRepository.findByUsername(username)
+
+       // User user = userRepository.findByUsername(username)
+       //         .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUsernameWithRole(username)
                 .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
-        String newAccessToken = jwtUtil.createAccessToken(username, user.getRoleType().getRoleName().name());
+        String newAccessToken = jwtUtil.createAccessToken(user.getId(), username, user.getRoleType().getRoleName().name());
 
         jwtUtil.addAccessTokenToHeader(newAccessToken, response);
 
@@ -73,9 +77,9 @@ public class UserService {
     }
 
     @Transactional
-    public User signup(SignupRequestDto requestDto) {
+    public UserSignupResponseDto signup(SignupRequestDto requestDto) {
         RoleType roleType = roleTypeRepository.findByRoleName(RoleType.RoleName.CUSTOMER)
-                .orElseThrow(() -> new BusinessLogicException("기본 고객 역할을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("not-found.role")));
 
         User user = User.builder()
                 .username(requestDto.getUsername())
@@ -86,7 +90,12 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
-        return user;
+
+        // createdBy 자동 반영
+        user.isCreatedBy(user.getId());
+
+        // User -> UserSignupResponseDto 변환 후 반환
+        return UserMapper.fromUserToUserSignupResponseDto(user);
     }
 
     @Transactional
@@ -100,9 +109,9 @@ public class UserService {
 
     @Transactional
     public void isCreatedBy(User user){
-        User findUser = userRepository.findById(user.getId()).get();
-        findUser.isCreatedBy(findUser.getId());
-        userRepository.save(findUser);
+      //  User findUser = userRepository.findById(user.getId()).get();
+        user.isCreatedBy(user.getId());
+        userRepository.save(user);
     }
 
     @Transactional(readOnly = true)
@@ -114,11 +123,12 @@ public class UserService {
         responseData.put("username", username);
         responseData.put("is-available", isAvailable);
 
-        String message = isAvailable ? "사용 가능한 아이디입니다." : "이미 사용 중인 아이디입니다.";
-        HttpStatus status = isAvailable ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        String messageKey = isAvailable ? "username.available" : "username.taken";
 
         //응답 객체 생성 및 반환
-        return new CommonDto<>(message, status.value(), responseData);
+        return new CommonDto<>(messageUtil.getMessage(messageKey),
+                isAvailable ? HttpStatus.OK.value() : HttpStatus.BAD_REQUEST.value(),
+                responseData);
     }
 
     @Transactional
@@ -138,34 +148,28 @@ public class UserService {
 
     @Transactional
     public void updateUser(Long userId, UserUpdateRequestDto requestDto, String loggedInUsername) {
-        log.info("서비스");
+        log.info("회원 정보 수정 요청 - userId: {}", userId);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("not-found.user"));
 
         if (!user.getUsername().equals(loggedInUsername)) {
-            throw new SecurityException("본인만 정보를 수정할 수 있습니다.");
+            throw new SecurityException(messageUtil.getMessage("update.user.forbidden"));
         }
 
-        // 변경할 값이 있는 경우만 업데이트
-        if (requestDto.getNickname() != null) {
-            user.setNickname(requestDto.getNickname());
-        }
-
-        if (requestDto.getEmail() != null) {
-            user.setEmail(requestDto.getEmail());
-        }
-
+        // 비밀번호 암호화 추가
         if (requestDto.getPassword() != null && !requestDto.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+            requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         }
 
+        user.updateUserInfo(requestDto);
+        user.isUpdatedNow(userId);
         userRepository.save(user);
     }
 
     @Transactional
-    public void deleteUser(String targetUserId, Long requesterUserId) {
+    public void deleteUser(Long targetUserId, Long requesterUserId) {
         //탈퇴 대상 회원 조회 (소프트 삭제된 회원은 제외)
-        User user = userRepository.findByIdAndDeletedAtIsNull(Long.parseLong(targetUserId))
+        User user = userRepository.findByIdAndDeletedAtIsNull(targetUserId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
 
         //요청한 유저가 본인이 맞는지 다시 검증 (이중 체크)

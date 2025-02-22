@@ -37,22 +37,20 @@ public class UserServiceController {
 
     // 회원가입
     @PostMapping("/users/signup")
-    public ResponseEntity<CommonDto<Void>> signup(@RequestBody SignupRequestDto requestDto) {
-        User user = userService.signup(requestDto);
-        String successMessage = user.getNickname() + "님의 회원가입이 완료되었습니다.";
-
-        userService.isCreatedBy(user);
+    public ResponseEntity<CommonDto<UserSignupResponseDto>> signup(@RequestBody SignupRequestDto requestDto) {
+        UserSignupResponseDto responseDto = userService.signup(requestDto);
 
         return ResponseEntity.ok(
-                CommonDto.<Void>builder()
+                CommonDto.<UserSignupResponseDto>builder()
                         .code(HttpStatus.OK.value())
-                        .message(messageUtil.getSuccessMessage())
-                        .data(null)
+                        .message(messageUtil.getMessage("signup.success", responseDto.getNickname()))
+                        .data(responseDto)
                         .build()
         );
 
     }
 
+    //사용자 정보 조회
     @GetMapping("/users/{userId}")
     public ResponseEntity<CommonDto<UserGetDetailResponseDto>> getUserDetail (@PathVariable("userId") Long userId) {
         UserGetDetailResponseDto userDetailResponseDto = userService.getUserDetail(userId);
@@ -72,8 +70,8 @@ public class UserServiceController {
     }
 
     @PostMapping("/users/logout")
-    public CommonDto<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        return userService.logout(request, response);
+    public ResponseEntity<CommonDto<String>> logout(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok(userService.logout(request, response));
     }
 
     @PutMapping("/users/{userId}")
@@ -81,11 +79,11 @@ public class UserServiceController {
             @PathVariable("userId") Long userId,
             @RequestBody UserUpdateRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
-        log.info("컨트롤러");
+        log.info("회원 정보 수정 요청 - userId: {}", userId);
         // JWT에서 가져온 username
-        String loggedInUsername = userDetails.getUsername();
+        //String loggedInUsername = userDetails.getUsername();
 
-        userService.updateUser(userId, requestDto, loggedInUsername);
+        userService.updateUser(userId, requestDto, userDetails.getUsername());
 
         return ResponseEntity.ok(
                 CommonDto.<Void>builder()
@@ -98,18 +96,20 @@ public class UserServiceController {
 
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<CommonDto<Void>> deleteUser(
-            @PathVariable("userId") String targetUserId, // 탈퇴할 대상 userId
+            @PathVariable("userId") Long userId, // 탈퇴할 대상 userId
             @AuthenticationPrincipal UserDetailsImpl userDetails // 현재 로그인한 사용자 정보 가져오기
     ) {
-        Long requesterUserId = userDetails.getUserId(); // 로그인한 사용자의 userId 가져오기
-
-        // 본인이 맞는지 검증
-        if (!targetUserId.equals(requesterUserId.toString())) {
-            throw new BusinessLogicException("본인 계정만 탈퇴할 수 있습니다.");
+//        // 본인이 맞는지 검증
+//        if (!targetUserId.equals(requesterUserId.toString())) {
+//            throw new BusinessLogicException("본인 계정만 탈퇴할 수 있습니다.");
+//        }
+        // 본인 확인 후 탈퇴 수행
+        if (!userId.equals(userDetails.getUserId())) {
+            throw new BusinessLogicException(messageUtil.getMessage("delete.user.forbidden"));
         }
 
         // 회원 탈퇴 실행 (삭제한 userId 저장)
-        userService.deleteUser(targetUserId, requesterUserId);
+        userService.deleteUser(userId, userDetails.getUserId());
 
         return ResponseEntity.ok(CommonDto.<Void>builder()
                 .message(messageUtil.getSuccessMessage())

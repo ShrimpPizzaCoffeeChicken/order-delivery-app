@@ -1,5 +1,7 @@
 package com.fortest.orderdelivery.app.domain.user.entity;
 
+import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,5 +36,13 @@ public class RoleType {
         MASTER("마스터");
 
         private String message;
+
+        public static RoleName getByString (MessageUtil messageUtil, String roleName) {
+            try {
+                return RoleName.valueOf(roleName);
+            } catch (IllegalArgumentException e) {
+                throw new BusinessLogicException(messageUtil.getMessage("app.user.not-found-role-name"));
+            }
+        }
     }
 }

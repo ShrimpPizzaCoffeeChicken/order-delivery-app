@@ -43,12 +43,13 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createAccessToken(String username, String roleName) {
+    public String createAccessToken(Long userId, String username, String roleName) {
         long now = System.currentTimeMillis();
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username)
+                        .claim("userId", userId)
                         .claim(AUTHORIZATION_KEY, roleName)
                         .setIssuedAt(new Date(now))
                         .setExpiration(new Date(now + ACCESS_TOKEN_TIME))
@@ -57,15 +58,17 @@ public class JwtUtil {
     }
 
 
-    public String createRefreshToken(String username) {
+    public String createRefreshToken(Long userId, String username) {
         Date now = new Date();
         return Jwts.builder()
                 .setSubject(username)
+                .claim("userId", userId)
                 .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
                 .setIssuedAt(now)
                 .signWith(key, signatureAlgorithm)
                 .compact();
     }
+
 
     public void addAccessTokenToHeader(String token, HttpServletResponse response) {
         response.setHeader(AUTHORIZATION_HEADER, token);
@@ -107,12 +110,17 @@ public class JwtUtil {
         return false;
     }
 
+
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-    public String getUsernameFromToken(String token) {
-        return getUserInfoFromToken(token).getSubject();
+//    public String getUsernameFromToken(String token) {
+//        return getUserInfoFromToken(token).getSubject();
+//    }
+
+    public Long getUserIdFromToken(String token) {
+        return getUserInfoFromToken(token).get("userId", Long.class);
     }
 
     public String getAccessTokenFromHeader(HttpServletRequest req) {
