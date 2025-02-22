@@ -30,11 +30,11 @@ public class ReviewService {
     @Transactional
     public ReviewSaveResponseDto saveReview(ReviewSaveRequestDto reviewSaveRequestDto, User user) {
 
-        Review newReview = ReviewMapper.toReview(reviewSaveRequestDto);
+        Review newReview = ReviewMapper.reviewSaveRequestDtoToEntity(reviewSaveRequestDto);
         newReview.isCreatedBy(user.getId());
         Review savedReview = reviewRepository.save(newReview);
 
-        return ReviewMapper.toReviewSaveResponseDto(savedReview);
+        return ReviewMapper.entityToReviewSaveResponseDto(savedReview);
     }
 
     public ReviewGetListDto getReviewList(String storeId, Integer page, Integer size, String orderby, String sort) {
@@ -52,7 +52,7 @@ public class ReviewService {
                 new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
         review.isDeletedNow(user.getId());
 
-        return ReviewMapper.toReviewDeleteResponseDto(review);
+        return ReviewMapper.entityToReviewDeleteResponseDto(review);
     }
 
     public ReviewGetResponseDto getReview(String reviewId) {
@@ -61,6 +61,6 @@ public class ReviewService {
 
         OrderDetailsResponseDto commonDto = apiGateway.getOrderDetailsFromApp(review.getOrderId());
 
-        return ReviewMapper.toReviewGetResponseDto(review, commonDto);
+        return ReviewMapper.entityToReviewGetResponseDto(review, commonDto);
     }
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ReviewMapper {
-    public static Review toReview(ReviewSaveRequestDto reviewSaveRequestDto) {
+    public static Review reviewSaveRequestDtoToEntity(ReviewSaveRequestDto reviewSaveRequestDto) {
         return Review.builder()
                 .storeId(reviewSaveRequestDto.getStoreId())
                 .orderId(reviewSaveRequestDto.getOrderId())
@@ -23,7 +23,7 @@ public class ReviewMapper {
                 .build();
     }
 
-    public static ReviewSaveResponseDto toReviewSaveResponseDto(Review review) {
+    public static ReviewSaveResponseDto entityToReviewSaveResponseDto(Review review) {
         return ReviewSaveResponseDto.builder()
                 .reviewId(review.getId())
                 .build();
@@ -51,13 +51,13 @@ public class ReviewMapper {
                 .build();
     }
 
-    public static ReviewDeleteResponseDto toReviewDeleteResponseDto(Review review) {
+    public static ReviewDeleteResponseDto entityToReviewDeleteResponseDto(Review review) {
         return ReviewDeleteResponseDto.builder()
                 .reviewId(review.getId())
                 .build();
     }
 
-    public static ReviewGetResponseDto toReviewGetResponseDto(Review review, OrderDetailsResponseDto responseDto) {
+    public static ReviewGetResponseDto entityToReviewGetResponseDto(Review review, OrderDetailsResponseDto responseDto) {
         return ReviewGetResponseDto.builder()
             .storeId(review.getStoreId())
             .storeName(review.getStoreName())

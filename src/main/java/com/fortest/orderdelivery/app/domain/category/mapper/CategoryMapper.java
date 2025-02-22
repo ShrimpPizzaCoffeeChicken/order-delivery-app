@@ -9,14 +9,14 @@ import java.util.stream.Collectors;
 
 public class CategoryMapper {
 
-    public static Category toCategory(CategorySaveRequestDto categorySaveRequestDto) {
+    public static Category categorySaveRequestDtoToEntity(CategorySaveRequestDto categorySaveRequestDto) {
         return Category.builder()
                 .id(categorySaveRequestDto.getCategoryId())
                 .name(categorySaveRequestDto.getCategoryName())
                 .build();
     }
 
-    public static CategorySaveResponseDto toCategorySaveResponseDto(Category category) {
+    public static CategorySaveResponseDto entityToCategorySaveResponseDto(Category category) {
         return CategorySaveResponseDto.builder()
             .categoryId(category.getId())
             .categoryName(category.getName())
@@ -43,14 +43,14 @@ public class CategoryMapper {
                 .build();
     }
 
-    public static CategoryUpdateResponseDto toCategoryUpdateResponseDto(Category category) {
+    public static CategoryUpdateResponseDto entityToCategoryUpdateResponseDto(Category category) {
         return CategoryUpdateResponseDto.builder()
                 .categoryId(category.getId())
                 .categoryName(category.getName())
                 .build();
     }
 
-    public static CategoryDeleteResponseDto toCategoryDeleteResponseDto(Category category) {
+    public static CategoryDeleteResponseDto entityToCategoryDeleteResponseDto(Category category) {
         return CategoryDeleteResponseDto.builder()
                 .categoryId(category.getId())
                 .build();

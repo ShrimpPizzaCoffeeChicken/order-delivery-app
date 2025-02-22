@@ -28,11 +28,11 @@ public class CategoryService {
     @Transactional
     public CategorySaveResponseDto saveCategory(CategorySaveRequestDto categorySaveRequestDto, User user) {
 
-        Category newCategory = CategoryMapper.toCategory(categorySaveRequestDto);
+        Category newCategory = CategoryMapper.categorySaveRequestDtoToEntity(categorySaveRequestDto);
         newCategory.isCreatedBy(user.getId());
         Category savedCategory = categoryRepository.save(newCategory);
 
-        return CategoryMapper.toCategorySaveResponseDto(savedCategory);
+        return CategoryMapper.entityToCategorySaveResponseDto(savedCategory);
     }
 
     public CategoryGetListDto getCategoryList(Integer page, Integer size, String orderby, String sort) {
@@ -55,7 +55,7 @@ public class CategoryService {
 
         category.isUpdatedNow(user.getId());
 
-        return CategoryMapper.toCategoryUpdateResponseDto(category);
+        return CategoryMapper.entityToCategoryUpdateResponseDto(category);
     }
 
     @Transactional
@@ -65,6 +65,6 @@ public class CategoryService {
 
         category.isDeletedNow(userId);
 
-        return CategoryMapper.toCategoryDeleteResponseDto(category);
+        return CategoryMapper.entityToCategoryDeleteResponseDto(category);
     }
 }

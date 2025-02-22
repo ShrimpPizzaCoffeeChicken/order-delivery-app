@@ -86,11 +86,11 @@ public class StoreService {
         Area area = areaRepository.findById(areaId)
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
-        Store newStore = StoreMapper.toStore(storeSaveRequestDto, area);
+        Store newStore = StoreMapper.storeSaveRequestDtoToEntity(storeSaveRequestDto, area);
         newStore.isCreatedBy(user.getId());
         Store savedStore = storeRepository.save(newStore);
 
-        return StoreMapper.toStoreSaveResponseDto(savedStore, area);
+        return StoreMapper.entityToStoreSaveResponseDto(savedStore, area);
     }
 
     public StoreGetDetailResponseDto getStoreDetail(String storeId){
@@ -98,7 +98,7 @@ public class StoreService {
         Store store = storeQueryRepository.findStoreDetail(storeId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.store")));
 
-        return StoreMapper.toStoreGetDetailResponseDto(store);
+        return StoreMapper.entityToStoreGetDetailResponseDto(store);
     }
 
     @Transactional
@@ -119,7 +119,7 @@ public class StoreService {
 
         store.isUpdatedNow(user.getId());
 
-        return StoreMapper.toStoreUpdateResponseDto(store, area);
+        return StoreMapper.entityToStoreUpdateResponseDto(store, area);
     }
 
     @Transactional
@@ -130,6 +130,6 @@ public class StoreService {
 
         store.isDeletedNow(userId);
 
-        return StoreMapper.toCategoryDeleteResponseDto(store);
+        return StoreMapper.entityToCategoryDeleteResponseDto(store);
     }
 }
