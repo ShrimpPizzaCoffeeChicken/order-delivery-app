@@ -1,7 +1,6 @@
 package com.fortest.orderdelivery.app.domain.user.controller;
 
 import com.fortest.orderdelivery.app.domain.user.dto.*;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
@@ -13,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +28,22 @@ public class UserServiceController {
 
     private final MessageUtil messageUtil;
     private final UserService userService;
+
+    // 회원 권한 업데이트
+    @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
+    @PatchMapping("/users/{userId}/rolls")
+    public ResponseEntity<CommonDto<UserUpdateRollResponseDto>> updateRoll(@PathVariable("userId") Long userId,
+                                                                           @RequestBody UserUpdateRollRequestDto requestDto,
+                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UserUpdateRollResponseDto responseDto = userService.updateRoll(userId, requestDto.getToRoll(), userDetails.getUser());
+        return ResponseEntity.ok(
+                CommonDto.<UserUpdateRollResponseDto>builder()
+                        .code(HttpStatus.OK.value())
+                        .message(messageUtil.getSuccessMessage())
+                        .data(responseDto)
+                        .build()
+        );
+    }
 
     // 토큰 재발급
     @PostMapping("/users/refresh")
