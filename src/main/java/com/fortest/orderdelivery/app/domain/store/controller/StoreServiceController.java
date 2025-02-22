@@ -8,6 +8,7 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -19,6 +20,7 @@ public class StoreServiceController {
     private final MessageUtil messageUtil;
     private final StoreService storeService;
 
+    @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/stores/{storeId}/categories")
     public ResponseEntity<CommonDto<StoreUpdateCategoryResponseDto>> updateCategory(@PathVariable("storeId") String storeId, @RequestBody StoreUpdateCategoryRequestDto requestDto) {
         // TODO : 유저 정보 획득
@@ -32,6 +34,7 @@ public class StoreServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/search")
     public ResponseEntity<CommonDto<StoreSearchResponseDto>> searchStore(
             @RequestParam("page") Integer page,
@@ -54,6 +57,7 @@ public class StoreServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/stores")
     public ResponseEntity<CommonDto<StoreSaveResponseDto>> saveStore(@RequestBody StoreSaveRequestDto storeSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
@@ -68,6 +72,7 @@ public class StoreServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreGetDetailResponseDto>> getStoreDetail (@PathVariable("storeId") String storeId) {
         StoreGetDetailResponseDto storeDetailResponseDto = storeService.getStoreDetail(storeId);
@@ -81,6 +86,7 @@ public class StoreServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateStore(@PathVariable String storeId, @RequestBody StoreUpdateRequestDto storeUpdateRequestDto){
         StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto, new User());
@@ -94,6 +100,7 @@ public class StoreServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @DeleteMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreDeleteResponseDto>> deleteStore(@PathVariable String storeId){
         StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, new User());

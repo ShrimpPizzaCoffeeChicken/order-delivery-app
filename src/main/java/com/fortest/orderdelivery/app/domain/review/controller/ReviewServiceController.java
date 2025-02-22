@@ -12,6 +12,7 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class ReviewServiceController {
     private final MessageUtil messageUtil;
     private final ReviewService reviewService;
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/reviews")
     public ResponseEntity<CommonDto<ReviewSaveResponseDto>> saveReview(@RequestBody ReviewSaveRequestDto reviewSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
@@ -36,6 +38,7 @@ public class ReviewServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews")
     public ResponseEntity<CommonDto<ReviewGetListDto>> getReviewList(
             @RequestParam("storeId") String storeId,
@@ -55,6 +58,7 @@ public class ReviewServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<CommonDto<ReviewDeleteResponseDto>> deleteReview(@PathVariable String reviewId){
         ReviewDeleteResponseDto reviewDeleteResponseDto = reviewService.deleteReview(reviewId, new User());
@@ -68,6 +72,7 @@ public class ReviewServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews/{reviewId}")
     public ResponseEntity<CommonDto<ReviewGetResponseDto>> getReview(@PathVariable String reviewId) {
         ReviewGetResponseDto reviewGetResponseDto = reviewService.getReview(reviewId);
