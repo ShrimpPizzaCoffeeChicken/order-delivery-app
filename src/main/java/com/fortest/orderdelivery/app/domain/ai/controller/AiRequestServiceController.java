@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.service.AiRequestService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class AiRequestServiceController {
 
+    private final MessageUtil messageUtil;
     private final AiRequestService aiRequestService;
 
     @PostMapping("/ai-requests")
@@ -27,7 +29,7 @@ public class AiRequestServiceController {
         return ResponseEntity.ok(
                 CommonDto.<AiRequestSaveResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(responseDto)
                         .build()
         );
@@ -47,7 +49,7 @@ public class AiRequestServiceController {
         return ResponseEntity.ok(
                 CommonDto.<AiRequestGetListResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(responseDto)
                         .build()
         );

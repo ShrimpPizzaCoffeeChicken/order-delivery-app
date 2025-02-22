@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserServiceController {
 
+    private final MessageUtil messageUtil;
     private final UserService userService;
 
     // 토큰 재발급
@@ -44,7 +46,7 @@ public class UserServiceController {
         return ResponseEntity.ok(
                 CommonDto.<Void>builder()
                         .code(HttpStatus.OK.value())
-                        .message(successMessage)
+                        .message(messageUtil.getSuccessMessage())
                         .data(null)
                         .build()
         );
@@ -58,7 +60,7 @@ public class UserServiceController {
         return ResponseEntity.ok(
                 CommonDto.<UserGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(userDetailResponseDto)
                         .build()
         );
@@ -88,7 +90,7 @@ public class UserServiceController {
         return ResponseEntity.ok(
                 CommonDto.<Void>builder()
                         .code(HttpStatus.OK.value())
-                        .message("사용자 정보가 성공적으로 수정되었습니다.")
+                        .message(messageUtil.getSuccessMessage())
                         .data(null)
                         .build()
         );
@@ -110,7 +112,7 @@ public class UserServiceController {
         userService.deleteUser(targetUserId, requesterUserId);
 
         return ResponseEntity.ok(CommonDto.<Void>builder()
-                .message("회원 탈퇴 완료")
+                .message(messageUtil.getSuccessMessage())
                 .code(HttpStatus.OK.value())
                 .data(null)
                 .build());
@@ -132,7 +134,7 @@ public class UserServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<List<UserResponseDto>>builder()
-                        .message("회원 검색 성공")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(users)
                         .build()

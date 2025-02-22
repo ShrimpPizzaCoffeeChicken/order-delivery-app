@@ -59,6 +59,7 @@ public class StoreService {
         for (Category newCategory : newCategoryList) {
             CategoryStore categoryStore = new CategoryStore();
             categoryStore.bindCategory(newCategory);
+            newCategory.isUpdatedNow(user.getId());
             categoryStore.bindStore(store);
         }
 
@@ -85,24 +86,23 @@ public class StoreService {
         Area area = areaRepository.findById(areaId)
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
-        Store newStore = StoreMapper.toStore(storeSaveRequestDto, area);
+        Store newStore = StoreMapper.storeSaveRequestDtoToEntity(storeSaveRequestDto, area);
         newStore.isCreatedBy(user.getId());
         Store savedStore = storeRepository.save(newStore);
 
-        return StoreMapper.toStoreSaveResponseDto(savedStore, area);
+        return StoreMapper.entityToStoreSaveResponseDto(savedStore, area);
     }
 
-    @Transactional
     public StoreGetDetailResponseDto getStoreDetail(String storeId){
 
         Store store = storeQueryRepository.findStoreDetail(storeId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.store")));
 
-        return StoreMapper.toStoreGetDetailResponseDto(store);
+        return StoreMapper.entityToStoreGetDetailResponseDto(store);
     }
 
     @Transactional
-    public StoreUpdateResponseDto updateStore(String storeId, StoreUpdateRequestDto storeUpdateRequestDto){
+    public StoreUpdateResponseDto updateStore(String storeId, StoreUpdateRequestDto storeUpdateRequestDto, User user){
 
         String storeName = storeUpdateRequestDto.getStoreName();
         String areaId = storeUpdateRequestDto.getAreaId();
@@ -117,29 +117,19 @@ public class StoreService {
 
         store.update(storeName, area, detailAddress, ownerName);
 
-        return StoreMapper.toStoreUpdateResponseDto(store, area);
+        store.isUpdatedNow(user.getId());
+
+        return StoreMapper.entityToStoreUpdateResponseDto(store, area);
     }
 
     @Transactional
-    public StoreDeleteResponseDto deleteStore(String storeId, Long userId){
+    public StoreDeleteResponseDto deleteStore(String storeId, User user){
 
         Store store = storeRepository.findById(storeId).orElseThrow(()->
                 new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
-        store.isDeletedNow(userId);
+        store.isDeletedNow(user.getId());
 
-        return StoreMapper.toCategoryDeleteResponseDto(store);
-    }
-
-    private void throwByRespCode(int httpStatusCode) {
-        int firstNum = httpStatusCode / 100;
-        switch (firstNum) {
-            case 4 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
-            }
-            case 5 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-            }
-        }
+        return StoreMapper.entityToCategoryDeleteResponseDto(store);
     }
 }

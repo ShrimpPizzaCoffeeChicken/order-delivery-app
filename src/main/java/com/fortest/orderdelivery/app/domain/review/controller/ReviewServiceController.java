@@ -8,6 +8,7 @@ import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.service.ReviewService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
 public class ReviewServiceController {
+
+    private final MessageUtil messageUtil;
     private final ReviewService reviewService;
 
     @PostMapping("/reviews")
@@ -26,7 +29,7 @@ public class ReviewServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewSaveResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(reviewSaveResponseDto)
                         .build()
@@ -45,8 +48,8 @@ public class ReviewServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewGetListDto> builder()
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
-                        .message("Success")
                         .data(reviewList)
                         .build()
         );
@@ -58,7 +61,7 @@ public class ReviewServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewDeleteResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(reviewDeleteResponseDto)
                         .build()
@@ -71,7 +74,7 @@ public class ReviewServiceController {
 
         return ResponseEntity.ok(
             CommonDto.<ReviewGetResponseDto>builder()
-                .message("SUCCESS")
+                .message(messageUtil.getSuccessMessage())
                 .code(HttpStatus.OK.value())
                 .data(reviewGetResponseDto)
                 .build()

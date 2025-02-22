@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class StoreMapper {
 
-    public static Store toStore(StoreSaveRequestDto storeSaveRequestDto, Area area) {
+    public static Store storeSaveRequestDtoToEntity(StoreSaveRequestDto storeSaveRequestDto, Area area) {
         return Store.builder()
                 .name(storeSaveRequestDto.getStoreName())
                 .area(area)
@@ -22,7 +22,7 @@ public class StoreMapper {
                 .build();
     }
 
-    public static StoreSaveResponseDto toStoreSaveResponseDto(Store store, Area area) {
+    public static StoreSaveResponseDto entityToStoreSaveResponseDto(Store store, Area area) {
         return StoreSaveResponseDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
@@ -32,7 +32,7 @@ public class StoreMapper {
                 .build();
     }
 
-    public static StoreGetDetailResponseDto toStoreGetDetailResponseDto(Store store) {
+    public static StoreGetDetailResponseDto entityToStoreGetDetailResponseDto(Store store) {
         return StoreGetDetailResponseDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
@@ -42,7 +42,7 @@ public class StoreMapper {
                 .build();
     }
 
-    public static StoreUpdateResponseDto toStoreUpdateResponseDto(Store store, Area area) {
+    public static StoreUpdateResponseDto entityToStoreUpdateResponseDto(Store store, Area area) {
         return StoreUpdateResponseDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
@@ -52,13 +52,13 @@ public class StoreMapper {
                 .build();
     }
 
-    public static StoreDeleteResponseDto toCategoryDeleteResponseDto(Store store) {
+    public static StoreDeleteResponseDto entityToCategoryDeleteResponseDto(Store store) {
         return StoreDeleteResponseDto.builder()
                 .storeId(store.getId())
                 .build();
     }
 
-    public static MenuOptionValidRequestDto storeValidReqDtoToMenuValidRedDto (StoreMenuValidRequestDto storeMenuValidRequestDto) {
+    public static MenuOptionValidRequestDto storeValidRequestDtoToMenuValidRedDto(StoreMenuValidRequestDto storeMenuValidRequestDto) {
         List<MenuOptionValidRequestDto.MenuDto> afterMenuDtoList = new ArrayList<>();
         List<StoreMenuValidRequestDto.MenuDto> beforeMenuDtoList = storeMenuValidRequestDto.getMenuList();
         for (StoreMenuValidRequestDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
@@ -79,7 +79,7 @@ public class StoreMapper {
         return MenuOptionValidRequestDto.builder().menuList(afterMenuDtoList).build();
     }
 
-    public static StoreMenuValidResponseDto menuOptionResDtoToStoreValidResDto (Store store, MenuOptionValidReponseDto menuOptionValidReponseDto) {
+    public static StoreMenuValidResponseDto menuOptionResponseDtoToStoreValidResDto(Store store, MenuOptionValidReponseDto menuOptionValidReponseDto) {
         List<StoreMenuValidResponseDto.MenuDto> afterMenuDtoList = new ArrayList<>();
         List<MenuOptionValidReponseDto.MenuDto> beforeMenuDtoList = menuOptionValidReponseDto.getMenuList();
         for (MenuOptionValidReponseDto.MenuDto beforeMenuDto : beforeMenuDtoList) {

@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.store.dto.StoreMenuValidRequestDto;
 import com.fortest.orderdelivery.app.domain.store.dto.StoreMenuValidResponseDto;
 import com.fortest.orderdelivery.app.domain.store.service.StoreAppService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StoreAppController {
 
+    private final MessageUtil messageUtil;
     private final StoreAppService storeAppService;
 
     @GetMapping("/{storeId}")
@@ -22,7 +24,7 @@ public class StoreAppController {
         StoreCheckResponseDto storeCheckResponseDto = storeAppService.getStoreCheck(storeId);
 
         return ResponseEntity.ok(CommonDto.<StoreCheckResponseDto>builder()
-                .message("store-id get")
+                .message(messageUtil.getSuccessMessage())
                 .code(HttpStatus.OK.value())
                 .data(storeCheckResponseDto)
                 .build());
@@ -33,7 +35,7 @@ public class StoreAppController {
                                                                                   @RequestParam("data") StoreMenuValidRequestDto requestDto) {
         StoreMenuValidResponseDto responseDto = storeAppService.getStoreMenuValid(storeId, requestDto);
         return ResponseEntity.ok(CommonDto.<StoreMenuValidResponseDto>builder()
-                .message("store-id get")
+                .message(messageUtil.getSuccessMessage())
                 .code(HttpStatus.OK.value())
                 .data(responseDto)
                 .build());

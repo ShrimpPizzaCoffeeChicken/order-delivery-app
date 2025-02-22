@@ -52,7 +52,7 @@ public class CategoryServiceController {
 
     @PatchMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryUpdateResponseDto>> updateCategory(@PathVariable String categoryId, @RequestBody CategoryUpdateRequestDto categoryUpdateRequestDto){
-        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto);
+        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryUpdateResponseDto>builder()
@@ -65,7 +65,7 @@ public class CategoryServiceController {
 
     @DeleteMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryDeleteResponseDto>> deleteCategory(@PathVariable String categoryId){
-        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, 123L);
+        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryDeleteResponseDto>builder()

@@ -4,6 +4,7 @@ import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDataDto;
 import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailDataResponseDto;
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class OrderAppController {
 
+    private final MessageUtil messageUtil;
     private final OrderService orderService;
 
     @GetMapping("/orders/{orderId}")
@@ -27,7 +29,7 @@ public class OrderAppController {
         return ResponseEntity.ok(
                 CommonDto.<OrderGetDataDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(orderData)
                         .build()
         );
@@ -39,7 +41,7 @@ public class OrderAppController {
         return ResponseEntity.ok(
                 CommonDto.<OrderGetDetailDataResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(responseDto)
                         .build()
         );
