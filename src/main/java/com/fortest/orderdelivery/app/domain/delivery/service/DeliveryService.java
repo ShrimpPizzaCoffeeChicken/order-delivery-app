@@ -102,7 +102,7 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
 
-        if (! delivery.getCustomerName().equals(user)) {
+        if (! delivery.getCustomerName().equals(user.getUsername())) {
             throw new NotValidRequestException(messageUtil.getMessage("app.delivery.not-valid-user"));
         }
 
