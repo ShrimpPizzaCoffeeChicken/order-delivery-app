@@ -33,8 +33,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         // Access Token 가져오기
         String accessToken = jwtUtil.getAccessTokenFromHeader(req);
 
-        String refreshToken = jwtUtil.getRefreshTokenFromCookie(req);
-
         if (StringUtils.hasText(accessToken)) {
             if (!jwtUtil.validateToken(accessToken)) {
                 log.error("Access Token이 만료됨");
@@ -50,10 +48,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            Claims info = jwtUtil.getUserInfoFromToken(accessToken);
+            //Claims info = jwtUtil.getUserInfoFromToken(accessToken);
 
             try {
-                setAuthentication(info.getSubject());
+                setAuthenticationFromToken(accessToken);
             } catch (Exception e) {
                 log.error("인증 실패: " + e.getMessage());
                 return;
@@ -62,6 +60,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         // 다음 필터 실행
         filterChain.doFilter(req, res);
+    }
+
+    public void setAuthenticationFromToken(String token) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        Authentication authentication = createAuthenticationFromToken(token);
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+    }
+
+    private Authentication createAuthenticationFromToken(String token) {
+        // `loadUserByToken`을 사용하여 API Gateway에서 유저 정보 가져오기
+        UserDetails userDetails = userDetailsService.loadUserByToken(token);
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
 

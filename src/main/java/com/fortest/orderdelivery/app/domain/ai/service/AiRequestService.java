@@ -8,7 +8,6 @@ import com.fortest.orderdelivery.app.domain.ai.entity.AiRequest;
 import com.fortest.orderdelivery.app.domain.ai.mapper.AiRequestMapper;
 import com.fortest.orderdelivery.app.domain.ai.repository.AiRequestQueryRepository;
 import com.fortest.orderdelivery.app.domain.ai.repository.AiRequestRepository;
-import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
