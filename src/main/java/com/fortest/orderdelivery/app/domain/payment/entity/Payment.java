@@ -1,6 +1,8 @@
 package com.fortest.orderdelivery.app.domain.payment.entity;
 
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
+import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,7 +44,6 @@ public class Payment extends BaseDataEntity {
     @Getter
     @AllArgsConstructor
     public enum Status {
-
         COMPLETE("완료"),
         CANCELED("취소"),
         FAIL("실패");
@@ -54,7 +55,11 @@ public class Payment extends BaseDataEntity {
         this.status = status;
     }
 
-    public static Status getStatusByString (String statusString) {
-        return Status.valueOf(statusString);
+    public static Status getStatusByString (MessageUtil messageUtil, String statusString) {
+        try {
+            return Status.valueOf(statusString);
+        } catch (IllegalArgumentException e) {
+            throw new BusinessLogicException(messageUtil.getMessage("app.payment.status.not-found"));
+        }
     }
 }

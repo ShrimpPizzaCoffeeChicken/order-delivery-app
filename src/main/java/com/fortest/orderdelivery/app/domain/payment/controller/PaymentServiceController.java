@@ -2,17 +2,21 @@ package com.fortest.orderdelivery.app.domain.payment.controller;
 
 import com.fortest.orderdelivery.app.domain.payment.dto.*;
 import com.fortest.orderdelivery.app.domain.payment.service.PaymentService;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/service")
 @RestController
@@ -21,9 +25,11 @@ public class PaymentServiceController {
     private final MessageUtil messageUtil;
     private final PaymentService paymentService;
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/payments")
-    public ResponseEntity<CommonDto<PaymentSaveResponseDto>> savePayment(@RequestBody PaymentSaveRequestDto saveRequestDto) {
-        PaymentSaveResponseDto responseDto = paymentService.saveEntry(saveRequestDto, new User());
+    public ResponseEntity<CommonDto<PaymentSaveResponseDto>> savePayment(@Valid @RequestBody PaymentSaveRequestDto saveRequestDto,
+                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        PaymentSaveResponseDto responseDto = paymentService.saveEntry(saveRequestDto, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<PaymentSaveResponseDto> builder()
@@ -34,16 +40,20 @@ public class PaymentServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/payments")
     public ResponseEntity<CommonDto<PaymentGetListResponseDto>> getPaymentList (
-            @RequestParam("page") Integer page,
-            @RequestParam("size") Integer size,
-            @RequestParam("orderby") String orderby,
-            @RequestParam("sort") String sort,
-            @RequestParam("search") String search
+            @Valid PaymentGetListRequestDto requestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-
-        PaymentGetListResponseDto paymentList = paymentService.getPaymentList(page, size, orderby, sort, search, new User());
+        PaymentGetListResponseDto paymentList = paymentService.getPaymentList(
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getOrderby(),
+                requestDto.getSort(),
+                requestDto.getSearch(),
+                userDetails.getUser()
+        );
         return ResponseEntity.ok(
                 CommonDto.<PaymentGetListResponseDto> builder()
                         .code(HttpStatus.OK.value())
@@ -53,9 +63,11 @@ public class PaymentServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
     @DeleteMapping("/payments/{paymentId}")
-    public ResponseEntity<CommonDto<Map<String, String>>> deletePayment(@PathVariable("paymentId") String paymentId) {
-        String deletePaymentId = paymentService.deletePayment(paymentId, 123L);
+    public ResponseEntity<CommonDto<Map<String, String>>> deletePayment(@PathVariable("paymentId") String paymentId,
+                                                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        String deletePaymentId = paymentService.deletePayment(paymentId, userDetails.getUser());
         Map<String, String> data = Map.of("payment-id", deletePaymentId);
 
         return ResponseEntity.ok(
@@ -67,9 +79,12 @@ public class PaymentServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/payments/{paymentId}")
-    public ResponseEntity<CommonDto<PaymentUpdateStatusResponseDto>> updateStatus(@PathVariable("paymentId") String paymentId, @RequestBody PaymentUpdateStatusRequestDto requestDto) {
-        PaymentUpdateStatusResponseDto responseDto = paymentService.updateStatus(new User(), paymentId, requestDto);
+    public ResponseEntity<CommonDto<PaymentUpdateStatusResponseDto>> updateStatus(@PathVariable("paymentId") String paymentId,
+                                                                                  @Valid @RequestBody PaymentUpdateStatusRequestDto requestDto,
+                                                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        PaymentUpdateStatusResponseDto responseDto = paymentService.updateStatus(userDetails.getUser(), paymentId, requestDto);
 
         return ResponseEntity.ok(
                 CommonDto.<PaymentUpdateStatusResponseDto> builder()

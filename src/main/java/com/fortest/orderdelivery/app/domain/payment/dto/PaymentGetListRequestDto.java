@@ -1,15 +1,18 @@
-package com.fortest.orderdelivery.app.domain.order.dto;
+package com.fortest.orderdelivery.app.domain.payment.dto;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderGetListRequestDto {
+public class PaymentGetListRequestDto {
     @Positive(message = "page 값은 음수일 수 없습니다.")
     private Integer page;
     @Positive(message = "page 값은 음수일 수 없습니다.")

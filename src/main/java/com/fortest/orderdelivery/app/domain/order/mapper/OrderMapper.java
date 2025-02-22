@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.order.entity.MenuOptionMenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.MenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.global.util.CommonUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 
@@ -22,7 +23,7 @@ public class OrderMapper {
      * @param validDto : 가격 정보를 가진 검증 결과 DTO
      * @return order, menuOrder, MenuOptionMenuOrder 가 바인딩 된 Entity 반환
      */
-    public static Order saveDtoToEntity(OrderSaveRequestDto saveDto, StoreMenuValidResponseDto validDto, Long userId, String userName) {
+    public static Order saveDtoToEntity(MessageUtil messageUtil, OrderSaveRequestDto saveDto, StoreMenuValidResponseDto validDto, Long userId, String userName) {
 
         // 가격 정보 세팅
         HashMap<String, StoreMenuValidResponseDto.MenuDto> menuValidMap = new HashMap<>();
@@ -42,7 +43,7 @@ public class OrderMapper {
                 .storeName(validDto.getStoreName())
                 .customerName(userName)
                 .orderStatus(Order.OrderStatus.WAIT)
-                .orderType(Order.getOrderTypeByString(saveDto.getOrderType()))
+                .orderType(Order.getOrderTypeByString(messageUtil, saveDto.getOrderType()))
                 .menuOrderList(new ArrayList<>())
                 .build();
         order.isCreatedBy(userId);

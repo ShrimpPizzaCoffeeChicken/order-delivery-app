@@ -1,6 +1,8 @@
 package com.fortest.orderdelivery.app.domain.order.entity;
 
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
+import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -80,11 +82,19 @@ public class Order extends BaseDataEntity {
         this.menuOrderList.addAll(menuOrderList);
     }
 
-    public static OrderStatus getOrderStatusByString(String orderStatusString) {
-        return OrderStatus.valueOf(orderStatusString);
+    public static OrderStatus getOrderStatusByString(MessageUtil messageUtil, String orderStatusString) {
+        try {
+            return OrderStatus.valueOf(orderStatusString);
+        } catch (IllegalArgumentException e) {
+            throw new BusinessLogicException(messageUtil.getMessage("app.order.status.not-found"));
+        }
     }
 
-    public static OrderType getOrderTypeByString(String orderTypeString) {
-        return OrderType.valueOf(orderTypeString);
+    public static OrderType getOrderTypeByString(MessageUtil messageUtil, String orderTypeString) {
+        try {
+            return OrderType.valueOf(orderTypeString);
+        } catch (IllegalArgumentException e) {
+            throw new BusinessLogicException(messageUtil.getMessage("app.order.type.not-found"));
+        }
     }
 }

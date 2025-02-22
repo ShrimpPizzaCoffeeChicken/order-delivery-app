@@ -53,7 +53,7 @@ public class OrderService {
 
         // 주문 상태 변경
         String toStatusString = requestDto.getTo();
-        Order.OrderStatus toStatus = Order.getOrderStatusByString(toStatusString);
+        Order.OrderStatus toStatus = Order.getOrderStatusByString(messageUtil, toStatusString);
         order.updateStatus(toStatus);
         order.isUpdatedNow(user.getId());
 
@@ -83,13 +83,8 @@ public class OrderService {
         StoreMenuValidResponseDto storeMenuValidDto = apiGateway.getValidStoreMenuFromApp(storeId, storeMenuValidRequestDto); // api 요청
 
         // 주문 등록
-        Order order = null;
-        try {
-            order = OrderMapper.saveDtoToEntity(orderSaveRequestDto, storeMenuValidDto, user.getId(), user.getUsername());
-        } catch (IllegalArgumentException e) {
-            log.error("Order : Convert Dto to Entity Fail : ", e);
-            throw new BusinessLogicException(messageUtil.getMessage("app.order.service-error"));
-        }
+        Order order = OrderMapper
+                .saveDtoToEntity(messageUtil, orderSaveRequestDto, storeMenuValidDto, user.getId(), user.getUsername());
 
         orderRepository.save(order);
 
