@@ -7,7 +7,6 @@ import com.fortest.orderdelivery.app.domain.order.repository.OrderQueryRepositor
 import com.fortest.orderdelivery.app.domain.order.repository.OrderRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
-import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +66,7 @@ public class OrderService {
      * @param orderId
      * @return
      */
+    @Transactional
     public OrderGetDataDto getOrderData(String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.order")));
@@ -79,7 +78,7 @@ public class OrderService {
 
          String storeId = orderSaveRequestDto.getStoreId();
 
-        // TODO : 가게, 메뉴, 옵션 유효성 검사 요청
+        // 가게, 메뉴, 옵션 유효성 검사 요청
         StoreMenuValidRequestDto storeMenuValidRequestDto = StoreMenuValidRequestDto.from(orderSaveRequestDto);
         StoreMenuValidResponseDto storeMenuValidDto = apiGateway.getValidStoreMenuFromApp(storeId, storeMenuValidRequestDto); // api 요청
 
@@ -107,6 +106,7 @@ public class OrderService {
      * @param user : 접속한 유저
      * @return
      */
+    @Transactional
     public OrderGetListResponseDto getOrderList(Integer page, Integer size, String orderby, String sort, String search, User user) {
 
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
@@ -147,25 +147,19 @@ public class OrderService {
             throw new NotValidRequestException(messageUtil.getMessage("app.order.not-valid-user"));
         }
 
+        // 결제 가능 시간 검사
         Duration between = Duration.between(order.getCreatedAt(), LocalDateTime.now());
         if (between.getSeconds() > REMOVE_ABLE_TIME) {
             throw new BusinessLogicException(messageUtil.getMessage("app.order.inable-delete"));
         }
 
+        // 결제 정보 존재 확인
+
+        // 결제 정보 검사 : 결제 상태가 완료인 주문만 취소 가능
+
         // TODO : 결제 취소 요청 전송
 
         order.isDeletedNow(user.getId());
         return order.getId();
-    }
-
-    // TODO : 하단 코드로 교체 예정
-    private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-        String userName = "user" + userId;
-
-        UserResponseDto userDto = UserResponseDto.builder()
-                .username(userName)
-                .build();
-
-        return new CommonDto<>("SUCCESS", HttpStatus.OK.value(), userDto);
     }
 }

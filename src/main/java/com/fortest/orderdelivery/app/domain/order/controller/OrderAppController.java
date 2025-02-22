@@ -5,6 +5,8 @@ import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailDataResponse
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/app")
 @RestController
 public class OrderAppController {
@@ -22,7 +25,8 @@ public class OrderAppController {
     private final OrderService orderService;
 
     @GetMapping("/orders/{orderId}")
-    public ResponseEntity<CommonDto<OrderGetDataDto>> getOrderData(@PathVariable("orderId") String orderId) {
+    public ResponseEntity<CommonDto<OrderGetDataDto>> getOrderData(
+            @Valid @Size(min = 1, max = 50) @PathVariable("orderId") String orderId) {
 
         OrderGetDataDto orderData = orderService.getOrderData(orderId);
 
@@ -36,7 +40,8 @@ public class OrderAppController {
     }
 
     @GetMapping("/orders/{orderId}/details")
-    public ResponseEntity<CommonDto<OrderGetDetailDataResponseDto>> getOrderDetailData(@PathVariable("orderId") String orderId) {
+    public ResponseEntity<CommonDto<OrderGetDetailDataResponseDto>> getOrderDetailData(
+            @Valid @Size(min = 1, max = 50) @PathVariable("orderId") String orderId) {
         OrderGetDetailDataResponseDto responseDto = orderService.getOderDetailData(orderId);
         return ResponseEntity.ok(
                 CommonDto.<OrderGetDetailDataResponseDto> builder()
