@@ -1,4 +1,4 @@
-package com.fortest.orderdelivery.app.domain.category.dto;
+package com.fortest.orderdelivery.app.domain.review.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -6,14 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryGetListDto {
-
+public class ReviewGetListResponseDto {
     @JsonProperty("total-contents")
     private Long totalContents;
 
@@ -22,21 +22,24 @@ public class CategoryGetListDto {
     @JsonProperty("current-page")
     private Integer currentPage;
 
-    @JsonProperty("category-list")
-    private List<CategoryDto> categoryList;
+    @JsonProperty("review-list")
+    private List<ReviewDto> reviewList;
 
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CategoryDto {
+    public static class ReviewDto {
 
-        @JsonProperty("category-id")
-        private String categoryId;
+        private Long rate;
 
-        @JsonProperty("category-name")
-        private String categoryName;
+        private String contents;
+
+        @JsonProperty("create-at")
+        private LocalDateTime createdAt;
+
+        @JsonProperty("update-at")
+        private LocalDateTime updatedAt;
 
     }
-
 }

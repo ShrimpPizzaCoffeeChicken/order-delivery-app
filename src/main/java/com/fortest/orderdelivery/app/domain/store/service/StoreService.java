@@ -93,10 +93,17 @@ public class StoreService {
         return StoreMapper.entityToStoreSaveResponseDto(savedStore, area);
     }
 
-    public StoreGetDetailResponseDto getStoreDetail(String storeId){
+    public StoreGetDetailResponseDto getStoreDetail(String storeId, User user) {
 
         Store store = storeQueryRepository.findStoreDetail(storeId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.store")));
+
+        if (user.getRoleType().getRoleName() == RoleType.RoleName.CUSTOMER
+                || user.getRoleType().getRoleName() == RoleType.RoleName.OWNER) {
+            if (!store.getOwnerName().equals(user.getUsername())) {
+                throw new NotValidRequestException(messageUtil.getMessage("app.store.not-valid-user"));
+            }
+        }
 
         return StoreMapper.entityToStoreGetDetailResponseDto(store);
     }

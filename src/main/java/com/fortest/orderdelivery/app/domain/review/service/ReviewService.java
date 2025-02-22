@@ -9,6 +9,7 @@ import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
@@ -16,12 +17,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
-
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
 
+    private final MessageUtil messageUtil;
     private final ApiGateway apiGateway;
     private final ReviewRepository reviewRepository;
     private final ReviewQueryRepository reviewQueryRepository;
@@ -37,7 +37,7 @@ public class ReviewService {
         return ReviewMapper.entityToReviewSaveResponseDto(savedReview);
     }
 
-    public ReviewGetListDto getReviewList(String storeId, Integer page, Integer size, String orderby, String sort) {
+    public ReviewGetListResponseDto getReviewList(String storeId, Integer page, Integer size, String orderby, String sort) {
 
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
         Page<Review> reviewList;
@@ -49,7 +49,7 @@ public class ReviewService {
     @Transactional
     public ReviewDeleteResponseDto deleteReview(String reviewId, User user){
         Review review = reviewRepository.findById(reviewId).orElseThrow(()->
-                new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+                new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
         review.isDeletedNow(user.getId());
 
         return ReviewMapper.entityToReviewDeleteResponseDto(review);
@@ -57,7 +57,7 @@ public class ReviewService {
 
     public ReviewGetResponseDto getReview(String reviewId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(()->
-                new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+                new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
         OrderDetailsResponseDto commonDto = apiGateway.getOrderDetailsFromApp(review.getOrderId());
 

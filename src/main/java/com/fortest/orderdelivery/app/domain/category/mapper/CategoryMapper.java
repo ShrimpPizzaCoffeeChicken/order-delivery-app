@@ -22,21 +22,21 @@ public class CategoryMapper {
             .build();
     }
 
-    public static CategoryGetListDto pageToGetCategoryListDto(Page<Category> page) {
-        CategoryGetListDto.CategoryGetListDtoBuilder builder = CategoryGetListDto.builder();
+    public static CategoryGetListResponseDto pageToGetCategoryListDto(Page<Category> page) {
+        CategoryGetListResponseDto.CategoryGetListResponseDtoBuilder builder = CategoryGetListResponseDto.builder();
         builder = builder
                 .totalContents(page.getTotalElements())
                 .size(page.getSize())
                 .currentPage(page.getNumber() + 1);
-        List<CategoryGetListDto.CategoryDto> categoryDtoList = page.getContent().stream()
+        List<CategoryGetListResponseDto.CategoryDto> categoryDtoList = page.getContent().stream()
                 .map(CategoryMapper::entityToCategoryListDtoElement)
                 .collect(Collectors.toList());
         builder = builder.categoryList(categoryDtoList);
         return builder.build();
     }
 
-    public static CategoryGetListDto.CategoryDto entityToCategoryListDtoElement(Category category) {
-        return CategoryGetListDto.CategoryDto.builder()
+    public static CategoryGetListResponseDto.CategoryDto entityToCategoryListDtoElement(Category category) {
+        return CategoryGetListResponseDto.CategoryDto.builder()
                 .categoryId(category.getId())
                 .categoryName(category.getName())
                 .build();

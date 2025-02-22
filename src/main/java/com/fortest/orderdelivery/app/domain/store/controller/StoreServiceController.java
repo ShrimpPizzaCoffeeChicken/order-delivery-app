@@ -4,15 +4,20 @@ import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.service.StoreService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
+@Validated
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
 public class StoreServiceController {
@@ -37,17 +42,20 @@ public class StoreServiceController {
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/search")
     public ResponseEntity<CommonDto<StoreSearchResponseDto>> searchStore(
-            @RequestParam("page") Integer page,
-            @RequestParam("size") Integer size,
-            @RequestParam("orderby") String orderby,
-            @RequestParam("sort") String sort,
-            @RequestParam("search") String search,
-            @RequestParam("category-id") String categoryId,
-            @RequestParam("city") String city,
-            @RequestParam("district") String district,
-            @RequestParam("street") String street
+            @Valid StoreSearchRequestDto requestDto
     ) {
-        StoreSearchResponseDto storeSearchResponseDto = storeService.searchStore(page, size, orderby, sort, search, categoryId, city, district, street);
+        StoreSearchResponseDto storeSearchResponseDto = storeService.searchStore(
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getOrderby(),
+                requestDto.getSort(),
+                requestDto.getSearch(),
+                requestDto.getCategoryId(),
+                requestDto.getCity(),
+                requestDto.getDistrict(),
+                requestDto.getStreet()
+        );
+
         return ResponseEntity.ok(
                 CommonDto.<StoreSearchResponseDto>builder()
                         .message(messageUtil.getSuccessMessage())
@@ -59,9 +67,9 @@ public class StoreServiceController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/stores")
-    public ResponseEntity<CommonDto<StoreSaveResponseDto>> saveStore(@RequestBody StoreSaveRequestDto storeSaveRequestDto) {
-        // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
-        StoreSaveResponseDto storeSaveResponseDto = storeService.saveStore(storeSaveRequestDto, new User());
+    public ResponseEntity<CommonDto<StoreSaveResponseDto>> saveStore(@Valid @RequestBody StoreSaveRequestDto storeSaveRequestDto,
+                                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        StoreSaveResponseDto storeSaveResponseDto = storeService.saveStore(storeSaveRequestDto, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreSaveResponseDto>builder()
@@ -74,9 +82,9 @@ public class StoreServiceController {
 
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/{storeId}")
-    public ResponseEntity<CommonDto<StoreGetDetailResponseDto>> getStoreDetail (@PathVariable("storeId") String storeId) {
-        StoreGetDetailResponseDto storeDetailResponseDto = storeService.getStoreDetail(storeId);
-
+    public ResponseEntity<CommonDto<StoreGetDetailResponseDto>> getStoreDetail (@PathVariable("storeId") String storeId,
+                                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        StoreGetDetailResponseDto storeDetailResponseDto = storeService.getStoreDetail(storeId, userDetails.getUser());
         return ResponseEntity.ok(
                 CommonDto.<StoreGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
@@ -88,8 +96,10 @@ public class StoreServiceController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/stores/{storeId}")
-    public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateStore(@PathVariable String storeId, @RequestBody StoreUpdateRequestDto storeUpdateRequestDto){
-        StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto, new User());
+    public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateStore(@PathVariable String storeId,
+                                                                         @RequestBody StoreUpdateRequestDto storeUpdateRequestDto,
+                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateResponseDto>builder()
@@ -102,8 +112,9 @@ public class StoreServiceController {
 
     @PreAuthorize("hasRole('OWNER')")
     @DeleteMapping("/stores/{storeId}")
-    public ResponseEntity<CommonDto<StoreDeleteResponseDto>> deleteStore(@PathVariable String storeId){
-        StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, new User());
+    public ResponseEntity<CommonDto<StoreDeleteResponseDto>> deleteStore(@PathVariable String storeId,
+                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreDeleteResponseDto>builder()

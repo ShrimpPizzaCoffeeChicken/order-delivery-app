@@ -2,16 +2,20 @@ package com.fortest.orderdelivery.app.domain.category.controller;
 
 import com.fortest.orderdelivery.app.domain.category.dto.*;
 import com.fortest.orderdelivery.app.domain.category.service.CategoryService;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
 public class CategoryServiceController {
@@ -21,9 +25,10 @@ public class CategoryServiceController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/categories")
-    public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@RequestBody CategorySaveRequestDto categorySaveRequestDto) {
+    public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@Valid @RequestBody CategorySaveRequestDto categorySaveRequestDto,
+                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
-        CategorySaveResponseDto categorySaveResponseDto = categoryService.saveCategory(categorySaveRequestDto, new User());
+        CategorySaveResponseDto categorySaveResponseDto = categoryService.saveCategory(categorySaveRequestDto, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<CategorySaveResponseDto>builder()
@@ -36,16 +41,18 @@ public class CategoryServiceController {
 
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/categories")
-    public ResponseEntity<CommonDto<CategoryGetListDto>> getCategoryList(
-            @RequestParam("page") Integer page,
-            @RequestParam("size") Integer size,
-            @RequestParam("orderby") String orderby,
-            @RequestParam("sort") String sort
+    public ResponseEntity<CommonDto<CategoryGetListResponseDto>> getCategoryList(
+            @Valid CategoryGetListRequestDto requestDto
     ) {
-        CategoryGetListDto categoryList = categoryService.getCategoryList(page, size, orderby, sort);
+        CategoryGetListResponseDto categoryList = categoryService.getCategoryList(
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getOrderby(),
+                requestDto.getSort()
+        );
 
         return ResponseEntity.ok(
-                CommonDto.<CategoryGetListDto> builder()
+                CommonDto.<CategoryGetListResponseDto> builder()
                         .code(HttpStatus.OK.value())
                         .message(messageUtil.getSuccessMessage())
                         .data(categoryList)
@@ -55,8 +62,10 @@ public class CategoryServiceController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/categories/{categoryId}")
-    public ResponseEntity<CommonDto<CategoryUpdateResponseDto>> updateCategory(@PathVariable String categoryId, @RequestBody CategoryUpdateRequestDto categoryUpdateRequestDto){
-        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto, new User());
+    public ResponseEntity<CommonDto<CategoryUpdateResponseDto>> updateCategory(@PathVariable String categoryId,
+                                                                               @RequestBody CategoryUpdateRequestDto categoryUpdateRequestDto,
+                                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryUpdateResponseDto>builder()
@@ -69,8 +78,9 @@ public class CategoryServiceController {
 
     @PreAuthorize("hasRole('OWNER')")
     @DeleteMapping("/categories/{categoryId}")
-    public ResponseEntity<CommonDto<CategoryDeleteResponseDto>> deleteCategory(@PathVariable String categoryId){
-        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, new User());
+    public ResponseEntity<CommonDto<CategoryDeleteResponseDto>> deleteCategory(@PathVariable String categoryId,
+                                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId,  userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryDeleteResponseDto>builder()

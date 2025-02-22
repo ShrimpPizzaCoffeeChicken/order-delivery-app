@@ -35,12 +35,12 @@ public class CategoryService {
         return CategoryMapper.entityToCategorySaveResponseDto(savedCategory);
     }
 
-    public CategoryGetListDto getCategoryList(Integer page, Integer size, String orderby, String sort) {
+    public CategoryGetListResponseDto getCategoryList(Integer page, Integer size, String orderby, String sort) {
 
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
-        Page<Category> categoryList = categoryQueryRepository.findCategoryList(pageable);
+        Page<Category> categoryPage = categoryQueryRepository.findCategoryList(pageable);
 
-        return CategoryMapper.pageToGetCategoryListDto(categoryList);
+        return CategoryMapper.pageToGetCategoryListDto(categoryPage);
     }
 
     @Transactional
