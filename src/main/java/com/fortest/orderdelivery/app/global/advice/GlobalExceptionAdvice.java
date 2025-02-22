@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -21,15 +22,19 @@ public class GlobalExceptionAdvice {
 
     // 유효성 검사 실패 : MethodArgumentNotValidException
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CommonDto<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        StringBuilder sb = new StringBuilder();
+        for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
+            sb.append(fieldError.getDefaultMessage());
+        }
 
         // 메세지 구성
-        String message = e.getMessage();
+        String message = sb.toString();
 
         return CommonDto.builder()
                 .message(message)
-                .code(HttpStatus.METHOD_NOT_ALLOWED.value())
+                .code(HttpStatus.BAD_REQUEST.value())
                 .data(null)
                 .build();
     }
