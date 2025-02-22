@@ -1,21 +1,21 @@
 package com.fortest.orderdelivery.app.domain.review.controller;
 
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetListDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.review.dto.*;
 import com.fortest.orderdelivery.app.domain.review.service.ReviewService;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
 public class ReviewServiceController {
@@ -25,9 +25,10 @@ public class ReviewServiceController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/reviews")
-    public ResponseEntity<CommonDto<ReviewSaveResponseDto>> saveReview(@RequestBody ReviewSaveRequestDto reviewSaveRequestDto) {
-        // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
-        ReviewSaveResponseDto reviewSaveResponseDto = reviewService.saveReview(reviewSaveRequestDto, new User());
+    public ResponseEntity<CommonDto<ReviewSaveResponseDto>> saveReview(@Valid @RequestBody ReviewSaveRequestDto reviewSaveRequestDto,
+                                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        ReviewSaveResponseDto reviewSaveResponseDto = reviewService.saveReview(reviewSaveRequestDto, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewSaveResponseDto>builder()
@@ -40,17 +41,19 @@ public class ReviewServiceController {
 
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews")
-    public ResponseEntity<CommonDto<ReviewGetListDto>> getReviewList(
-            @RequestParam("storeId") String storeId,
-            @RequestParam("page") Integer page,
-            @RequestParam("size") Integer size,
-            @RequestParam("orderby") String orderby,
-            @RequestParam("sort") String sort
+    public ResponseEntity<CommonDto<ReviewGetListResponseDto>> getReviewList(
+            @Valid ReviewGetListRequestDto requestDto
     ) {
-        ReviewGetListDto reviewList = reviewService.getReviewList(storeId, page, size, orderby, sort);
+        ReviewGetListResponseDto reviewList = reviewService.getReviewList(
+                requestDto.getStoreId(),
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getOrderby(),
+                requestDto.getSort()
+        );
 
         return ResponseEntity.ok(
-                CommonDto.<ReviewGetListDto> builder()
+                CommonDto.<ReviewGetListResponseDto> builder()
                         .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(reviewList)
@@ -60,8 +63,9 @@ public class ReviewServiceController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/reviews/{reviewId}")
-    public ResponseEntity<CommonDto<ReviewDeleteResponseDto>> deleteReview(@PathVariable String reviewId){
-        ReviewDeleteResponseDto reviewDeleteResponseDto = reviewService.deleteReview(reviewId, new User());
+    public ResponseEntity<CommonDto<ReviewDeleteResponseDto>> deleteReview(@PathVariable String reviewId,
+                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        ReviewDeleteResponseDto reviewDeleteResponseDto = reviewService.deleteReview(reviewId, userDetails.getUser());
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewDeleteResponseDto>builder()

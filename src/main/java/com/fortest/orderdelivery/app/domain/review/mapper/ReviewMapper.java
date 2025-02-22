@@ -1,11 +1,6 @@
 package com.fortest.orderdelivery.app.domain.review.mapper;
 
-import com.fortest.orderdelivery.app.domain.review.dto.OrderDetailsResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewDeleteResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetListDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewGetResponseDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveRequestDto;
-import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
+import com.fortest.orderdelivery.app.domain.review.dto.*;
 import com.fortest.orderdelivery.app.domain.review.entity.Review;
 import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import org.springframework.data.domain.Page;
@@ -29,21 +24,21 @@ public class ReviewMapper {
                 .build();
     }
 
-    public static ReviewGetListDto pageToGetReviewListDto(Page<Review> page) {
-        ReviewGetListDto.ReviewGetListDtoBuilder builder = ReviewGetListDto.builder();
+    public static ReviewGetListResponseDto pageToGetReviewListDto(Page<Review> page) {
+        ReviewGetListResponseDto.ReviewGetListResponseDtoBuilder builder = ReviewGetListResponseDto.builder();
         builder = builder
                 .totalContents(page.getTotalElements())
                 .size(page.getSize())
                 .currentPage(page.getNumber() + 1);
-        List<ReviewGetListDto.ReviewDto> reviewDtoList = page.getContent().stream()
+        List<ReviewGetListResponseDto.ReviewDto> reviewDtoList = page.getContent().stream()
                 .map(ReviewMapper::entityToReviewListDtoElement)
                 .collect(Collectors.toList());
         builder = builder.reviewList(reviewDtoList);
         return builder.build();
     }
 
-    public static ReviewGetListDto.ReviewDto entityToReviewListDtoElement(Review review) {
-        return ReviewGetListDto.ReviewDto.builder()
+    public static ReviewGetListResponseDto.ReviewDto entityToReviewListDtoElement(Review review) {
+        return ReviewGetListResponseDto.ReviewDto.builder()
                 .rate(review.getRate())
                 .contents(review.getContents())
                 .createdAt(review.getCreatedAt())
