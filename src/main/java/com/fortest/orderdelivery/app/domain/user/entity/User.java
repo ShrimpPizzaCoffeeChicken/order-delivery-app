@@ -44,6 +44,10 @@ public class User extends BaseDataEntity {
         this.password = passwordEncoder.encode(this.password);
     }
 
+    public void updateRollType(RoleType roleType) {
+        this.roleType = roleType;
+    }
+
     public void updateUserInfo(UserUpdateRequestDto requestDto) {
         if (requestDto.getNickname() != null) {
             this.nickname = requestDto.getNickname();

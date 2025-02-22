@@ -48,6 +48,24 @@ public class UserService {
         return UserMapper.entityToUserResponseDto(user);
     }
 
+    // 유저 권한 업데이트
+    @Transactional
+    public UserUpdateRollResponseDto updateRoll(Long targetUserId, String toRollString, User user) {
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-user")));
+        String fromRoll = targetUser.getRoleType().getRoleName().name();
+
+        RoleType.RoleName toRoleName = RoleType.RoleName.getByString(messageUtil, toRollString);
+        RoleType newRoleType = roleTypeRepository.findByRoleName(toRoleName)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-role-name")));
+        String toRoll = newRoleType.getRoleName().name();
+
+        targetUser.updateRollType(newRoleType);
+        targetUser.isUpdatedNow(user.getId());
+
+        return new UserUpdateRollResponseDto(fromRoll, toRoll);
+    }
+
     // 로그인 관련 기능 (토큰 재발급)
     @Transactional
     public CommonDto<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
