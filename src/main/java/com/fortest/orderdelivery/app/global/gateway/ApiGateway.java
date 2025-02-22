@@ -1,8 +1,10 @@
 package com.fortest.orderdelivery.app.global.gateway;
 
 import com.fortest.orderdelivery.app.domain.ai.dto.StoreResponseDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetDataResponseDto;
 import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.*;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderStatusUpdateResponseDto;
 import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidRequestDto;
 import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidResponseDto;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
@@ -42,53 +44,124 @@ public class ApiGateway {
     private final WebClient webClient;
     private final MessageUtil messageUtil;
 
-    private static final String CONTENT_TYPE = "Content-Type";
-    private static final String USER_APP_URL = "http://{host}:{port}/api/app/user/{userId}";
-    private static final String STORE_VALID_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
-    private static final String STORE_APP_URL = "http://{url}:{port}/api/app/stores/{storeId}";
-    private static final String MENU_APP_URL = "http://{url}:{port}/api/app/menus";
-    private static final String MENU_OPTION_APP_URL = "http://{host}:{port}/api/app/menus/options/valid";
-    private static final String IMAGE_UPDATE_APP_URL = "http://{url}:{port}/api/app/images/menus";
-    private static final String IMAGE_DELETE_APP_URL = "http://{url}:{port}/api/app/images/menus/{menuId}";
-    private static final String IMAGE_OPTION_UPDATE_APP_URL = "http://{url}:{port}/api/app/images/options";
-    private static final String IMAGE_OPTION_DELETE_APP_URL = "http://{url}:{port}/api/app/images/options/{optionId}";
-    private static final String ORDER_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
-    private static final String ORDER_DETAILS_APP_URL = "http://{url}:{port}/api/app/orders/{orderId}/details";
-    private static final String PAYMENT_APP_URL = "http://{url}:{port}/api/app/payments/{paymentId}";
+    private static final String CONTENT_TYPE =                   "Content-Type";
+    private static final String USER_APP_URL =                   "http://{host}:{port}/api/app/user/{userId}";
+    private static final String STORE_VALID_APP_URL =            "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
+    private static final String STORE_APP_URL =                  "http://{host}:{port}/api/app/stores/{storeId}";
+    private static final String MENU_APP_URL =                   "http://{host}:{port}/api/app/menus";
+    private static final String MENU_OPTION_APP_URL =            "http://{host}:{port}/api/app/menus/options/valid";
+    private static final String IMAGE_UPDATE_APP_URL =           "http://{host}:{port}/api/app/images/menus";
+    private static final String IMAGE_DELETE_APP_URL =           "http://{host}:{port}/api/app/images/menus/{menuId}";
+    private static final String IMAGE_OPTION_UPDATE_APP_URL =    "http://{host}:{port}/api/app/images/options";
+    private static final String IMAGE_OPTION_DELETE_APP_URL =    "http://{host}:{port}/api/app/images/options/{optionId}";
+    private static final String ORDER_APP_URL =                  "http://{host}:{port}/api/app/orders/{orderId}";
+    private static final String ORDER_DETAILS_APP_URL =          "http://{host}:{port}/api/app/orders/{orderId}/details";
+    private static final String ORDER_UPDATE_STATUS_APP_URL =    "http://{host}:{port}/api/app/orders/{orderId}";
+    private static final String DELIVERY_GET_ID_APP_URL =        "http://{host}:{port}/api/app/deliveries/orders/{orderId}";
+    private static final String DELIVERY_UPDATE_STATUS_APP_URL = "http://{host}:{port}/api/app/deliveries/{deliveryId}";
 
-    // to Payment Service ----------------------------------------------------------------------------------------------
+    // to Delivery Service ---------------------------------------------------------------------------------------------
 
-    public void updatePaymentStatusByOrder(String paymentId, User user) {
+    public DeliveryGetDataResponseDto updateDeliveryStatusFromApp(String deliveryId, String toStatus, User user) {
 
-//        String targetUrl = PAYMENT_APP_URL
-//                .replace("{url}", "localhost")
-//                .replace("{port}", "8082")
-//                .replace("{paymentId}", paymentId);
-//
-//        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRoleType().getRoleName().name());
-//
-//        CommonDto<OrderDetailsResponseDto> commonResponse = webClient.get()
-//                .uri(targetUrl)
-//                .header(AUTHORIZATION_HEADER, accessToken)
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderDetailsResponseDto>>() {
-//                })
-//                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-//                .onErrorResume(throwable -> {
-//                    log.error("Fail : {}", targetUrl, throwable);
-//                    return Mono.empty();
-//                })
-//                .block();
-//
-//        String messageKey = "api.call.order.payment-update-fail";
-//        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
-//
-//        return commonResponse.getData();
+        String targetUrl = DELIVERY_UPDATE_STATUS_APP_URL
+                .replace("{host}", "localhost")
+                .replace("{port}", "8082")
+                .replace("{deliveryId}", deliveryId);
+
+        Map<String, String> body = Map.of("to", toStatus);
+
+        CommonDto<DeliveryGetDataResponseDto> commonResponse = webClient.patch()
+                .uri(targetUrl)
+                .bodyValue(body)
+                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
+                })
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+                .onErrorResume(throwable -> {
+                    log.error("Fail : url = {}", targetUrl, throwable);
+                    return Mono.empty();
+                })
+                .block();
+
+        String messageKey = "api.call.delivery.server-error";
+        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
+
+        return commonResponse.getData();
     }
 
-    // END : to Payment Service ----------------------------------------------------------------------------------------
+    /**
+     * 주문 ID 를 통한 배송 데이터 존재 유무 확인
+     * from : Order Service
+     * @param orderId
+     * @return
+     */
+    public DeliveryGetDataResponseDto getDeliveryIdByOrderIdFromApp(String orderId) {
+
+        String targetUrl = DELIVERY_GET_ID_APP_URL
+                .replace("{host}", "localhost")
+                .replace("{port}", "8082")
+                .replace("{orderId}", orderId);
+
+        CommonDto<DeliveryGetDataResponseDto> commonResponse = webClient.get()
+                .uri(targetUrl)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
+                })
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+                .onErrorResume(throwable -> {
+                    log.error("Fail : url = {}", targetUrl, throwable);
+                    return Mono.empty();
+                })
+                .block();
+
+        String messageKey = "api.call.delivery.server-error";
+        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
+
+        return commonResponse.getData();
+    }
+
+    // END : to Delivery Service ---------------------------------------------------------------------------------------
 
     // to Order Service ------------------------------------------------------------------------------------------------
+
+    /**
+     * 주문 상태 업데이트 요청
+     * from : Payment, Delivery Service
+     * @param orderId
+     * @param toStatus
+     * @param user
+     * @return
+     */
+    public OrderStatusUpdateResponseDto updateOrderStatusFromApp(String orderId, String toStatus, User user) {
+
+        String targetUrl = ORDER_UPDATE_STATUS_APP_URL
+                .replace("{host}", "localhost")
+                .replace("{port}", "8082")
+                .replace("{orderId}", orderId);
+
+        Map<String, String> body = Map.of("to", toStatus);
+
+        CommonDto<OrderStatusUpdateResponseDto> commonResponse = webClient.patch()
+                .uri(targetUrl)
+                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderStatusUpdateResponseDto>>() {
+                })
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+                .onErrorResume(throwable -> {
+                    log.error("Fail : url = {}", targetUrl, throwable);
+                    return Mono.empty();
+                })
+                .block();
+
+        String messageKey = "api.call.order.server-error";
+        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
+
+        return commonResponse.getData();
+    }
 
     /**
      * 주문 서비스에 메뉴리스트, 옵션리스트 요청
@@ -99,7 +172,7 @@ public class ApiGateway {
     public OrderDetailsResponseDto getOrderDetailsFromApp(String orderId) {
 
         String targetUrl = ORDER_DETAILS_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082")
                 .replace("{orderId}", orderId);
 
@@ -165,7 +238,7 @@ public class ApiGateway {
     public StoreResponseDto getValidStoreFromApp(String storeId) {
 
         String targetUrl = STORE_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082")
                 .replace("{storeId}", storeId);
 
@@ -239,7 +312,7 @@ public class ApiGateway {
     public MenuOptionAppResponseDto getMenuOptionFromApp(List<String> menuOptionIdList) {
 
         String targetUrl = MENU_OPTION_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082");
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(targetUrl)
@@ -274,7 +347,7 @@ public class ApiGateway {
     public MenuAppResponseDto getMenuFromApp(List<String> menuIdList) {
 
         String targetUrl = MENU_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082");
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
@@ -353,7 +426,7 @@ public class ApiGateway {
             MenuOptionImageMappingRequestDto requestDto) {
 
         String targetUrl = IMAGE_OPTION_UPDATE_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082");
 
         CommonDto<MenuOptionImageMappingResponseDto> commonResponse = webClient.patch()
@@ -386,7 +459,7 @@ public class ApiGateway {
     public ImageResponseDto deleteMenuOptionImageFromApp(String optionId) {
 
         String targetUrl = IMAGE_OPTION_DELETE_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082")
                 .replace("{optionId}", optionId);
 
@@ -418,7 +491,7 @@ public class ApiGateway {
             MenuImageMappingRequestDto requestDto) {
 
         String targetUrl = IMAGE_UPDATE_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082");
 
         CommonDto<MenuImageMappingResponseDto> commonResponse = webClient.patch()
@@ -450,7 +523,7 @@ public class ApiGateway {
     public ImageResponseDto deleteMenuImageFromApp(String menuId) {
 
         String targetUrl = IMAGE_DELETE_APP_URL
-                .replace("{url}", "localhost")
+                .replace("{host}", "localhost")
                 .replace("{port}", "8082")
                 .replace("{menuId}", menuId);
 
@@ -474,6 +547,32 @@ public class ApiGateway {
 
     // END : to Image Service ------------------------------------------------------------------------------------------
 
+    // to User Service -------------------------------------------------------------------------------------------------
+
+    /**
+     * userId를 기반으로 유저 정보를 조회하는 메서드
+     * from : All Service
+     */
+    public UserResponseDto getUserByIdFromApp(Long userId) {
+        String targetUrl = USER_APP_URL
+                .replace("{host}", "localhost")
+                .replace("{port}", "8082")
+                .replace("{userId}", userId.toString());
+
+        CommonDto<UserResponseDto> commonResponse = webClient.get()
+                .uri(targetUrl)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>(){})
+                .block();
+
+        String messageKey = "app.user.not-found-user-id";
+        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
+
+        return commonResponse.getData();
+    }
+
+    // END : User Service ----------------------------------------------------------------------------------------------
+
     /**
      * CommonDto null 확인 및 data null 확인
      * CommonDto.code 를 확인 : 400, 500 번대 상황 시 예외 발생
@@ -496,29 +595,6 @@ public class ApiGateway {
         }
     }
 
-    /**
-     * userId를 기반으로 유저 정보를 조회하는 메서드
-     */
-    public UserResponseDto getUserByIdFromApp(Long userId) {
-        String targetUrl = USER_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{userId}", userId.toString());
-
-        CommonDto<UserResponseDto> commonResponse = webClient.get()
-                .uri(targetUrl)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>(){})
-                .block();
-
-        String messageKey = "app.user.not-found-user-id";
-        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
-
-        return commonResponse.getData();
-    }
-
-
-
     private void throwByRespCode(int httpStatusCode) {
         int firstNum = httpStatusCode / 100;
         switch (firstNum) {
@@ -530,24 +606,4 @@ public class ApiGateway {
             }
         }
     }
-
-    // 유저 정보 요청
-//    private CommonDto<UserResponseDto> getValidUserFromApp(Long userId) {
-//     String targetUrl = USER_APP_URL
-//             .replace("{host}", "localhost")
-//             .replace("{port}", "8082")
-//             .replace("{userId}", userId.toString());
-//
-//     return webClient.get()
-//             .uri(targetUrl)
-//             .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//             .retrieve()
-//             .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {})
-//             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-//             .onErrorResume(throwable -> {
-//                 log.error("Fail : {}", targetUrl, throwable);
-//                 return Mono.empty();
-//             })
-//             .block();
-//    }
 }

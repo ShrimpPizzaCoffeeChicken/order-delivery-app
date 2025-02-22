@@ -1,15 +1,14 @@
 package com.fortest.orderdelivery.app.domain.delivery.service;
 
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetDetailResponseDto;
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListReponseDto;
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveRequestDto;
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveResponseDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.*;
 import com.fortest.orderdelivery.app.domain.delivery.entity.Delivery;
 import com.fortest.orderdelivery.app.domain.delivery.mapper.DeliveryMapper;
 import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryQueryRepository;
 import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryRepository;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
+import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
+import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
@@ -24,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,15 +36,45 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryQueryRepository deliveryQueryRepository;
 
+    private static final String ORDER_COMPLETE_STATUS = "COMPLETE";
+    private static final String ORDER_DELIVERY_FAIL_STATUS = "DELIVERY_FAIL";
+
+    // 주문 아이디로 배달 정보 조회
+    public DeliveryGetDataResponseDto getDeliveryDataByOrderId (String orderId) {
+        Optional<Delivery> deliveryOptional = deliveryRepository.findByOrderId(orderId);
+        return DeliveryMapper.entityToGetDataResponseDto(deliveryOptional.get());
+    }
+
+    // 배달 상태 업데이트
+    @Transactional
+    public DeliveryStatusUpdateResponseDto updateStatus (String deliveryId, String toStatusString, User user) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
+        if (user.getRoleType().getRoleName() == RoleType.RoleName.CUSTOMER
+                || user.getRoleType().getRoleName() == RoleType.RoleName.OWNER) {
+            if (!delivery.getCustomerName().equals(user.getUsername())) {
+                throw new NotValidRequestException(messageUtil.getMessage("app.delivery.not-valid-user"));
+            }
+        }
+        Delivery.Status beforeStatus = delivery.getStatus();
+        Delivery.Status toStatus = Delivery.Status.getByString(messageUtil, toStatusString);
+        delivery.updateStatus(toStatus);
+        delivery.isUpdatedNow(user.getId());
+
+        return new DeliveryStatusUpdateResponseDto(beforeStatus.name(), toStatus.name());
+    }
+
     public DeliverySaveResponseDto saveEntry(DeliverySaveRequestDto saveRequestDto, User user) {
         try {
             return saveDelivery(saveRequestDto, user);
         } catch (Exception e) {
-            // TODO : 배달 등록 실패 처리
-            // TODO : 주문 상태 업데이트 요청 : 배달 등록 실패
-            // TODO : 결제 상태 업데이트 요청 : 취소요청
-            log.error("", e);
-            throw new BusinessLogicException(messageUtil.getMessage("app.delivery.delivery-save-fail"));
+            log.error("Fail Save Delivery : {}", saveRequestDto, e);
+            apiGateway.updateOrderStatusFromApp(saveRequestDto.getOrderId(), ORDER_DELIVERY_FAIL_STATUS, user);
+            if (e instanceof BusinessLogicException) {
+                throw e;
+            } else {
+                throw new BusinessLogicException(messageUtil.getMessage("app.payment.payment-save-fail"));
+            }
         }
     }
 
@@ -59,6 +90,8 @@ public class DeliveryService {
 
         Delivery delivery = DeliveryMapper.saveDtoToEntity(saveRequestDto, user.getUsername());
         deliveryRepository.save(delivery);
+
+        apiGateway.updateOrderStatusFromApp(delivery.getOrderId(), ORDER_COMPLETE_STATUS, user);
 
         return DeliveryMapper.entityToSaveResponseDto(delivery);
     }

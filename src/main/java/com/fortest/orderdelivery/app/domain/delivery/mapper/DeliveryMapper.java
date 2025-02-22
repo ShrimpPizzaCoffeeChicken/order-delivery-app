@@ -1,14 +1,12 @@
 package com.fortest.orderdelivery.app.domain.delivery.mapper;
 
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetDetailResponseDto;
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetListReponseDto;
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveRequestDto;
-import com.fortest.orderdelivery.app.domain.delivery.dto.DeliverySaveResponseDto;
+import com.fortest.orderdelivery.app.domain.delivery.dto.*;
 import com.fortest.orderdelivery.app.domain.delivery.entity.Delivery;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class DeliveryMapper {
 
@@ -54,6 +52,20 @@ public class DeliveryMapper {
                 .status(delivery.getStatus().name())
                 .orderId(orderData.getOrderId())
                 .storeName(orderData.getStoreName())
+                .build();
+    }
+
+    public static DeliveryGetDataResponseDto entityToGetDataResponseDto ( Delivery delivery ) {
+        if (delivery != null) {
+            return DeliveryGetDataResponseDto.builder()
+                    .isExist(true)
+                    .deliveryId(delivery.getId())
+                    .build();
+        }
+
+        return DeliveryGetDataResponseDto.builder()
+                .isExist(false)
+                .deliveryId(null)
                 .build();
     }
 }
