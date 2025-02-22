@@ -93,7 +93,6 @@ public class StoreService {
         return StoreMapper.toStoreSaveResponseDto(savedStore, area);
     }
 
-    @Transactional
     public StoreGetDetailResponseDto getStoreDetail(String storeId){
 
         Store store = storeQueryRepository.findStoreDetail(storeId)
@@ -132,17 +131,5 @@ public class StoreService {
         store.isDeletedNow(userId);
 
         return StoreMapper.toCategoryDeleteResponseDto(store);
-    }
-
-    private void throwByRespCode(int httpStatusCode) {
-        int firstNum = httpStatusCode / 100;
-        switch (firstNum) {
-            case 4 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.client-error"));
-            }
-            case 5 -> {
-                throw new BusinessLogicException(messageUtil.getMessage("api.call.server-error"));
-            }
-        }
     }
 }
