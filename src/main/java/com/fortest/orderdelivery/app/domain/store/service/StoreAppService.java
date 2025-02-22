@@ -36,9 +36,9 @@ public class StoreAppService {
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.store")));
 
         // menu 검증 요청
-        MenuOptionValidRequestDto menuOptionValidRequestDto = StoreMapper.storeValidReqDtoToMenuValidRedDto(requestDto);
+        MenuOptionValidRequestDto menuOptionValidRequestDto = StoreMapper.storeValidRequestDtoToMenuValidRedDto(requestDto);
         MenuOptionValidReponseDto menuOptionValidFromApp = apiGateway.getValidMenuOptionFromMenuApp(store.getId(), menuOptionValidRequestDto);
 
-        return StoreMapper.menuOptionResDtoToStoreValidResDto(store, menuOptionValidFromApp);
+        return StoreMapper.menuOptionResponseDtoToStoreValidResDto(store, menuOptionValidFromApp);
     }
 }

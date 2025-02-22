@@ -10,8 +10,6 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +24,6 @@ public class OrderAppController {
     private final MessageUtil messageUtil;
     private final OrderService orderService;
 
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/orders/{orderId}")
     public ResponseEntity<CommonDto<OrderGetDataDto>> getOrderData(
             @Valid @Size(min = 1, max = 50) @PathVariable("orderId") String orderId) {

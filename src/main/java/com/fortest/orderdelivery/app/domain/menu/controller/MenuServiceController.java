@@ -8,6 +8,7 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MenuServiceController {
 
+    private final MessageUtil messageUtil;
     private final MenuService menuService;
 
     @PostMapping
@@ -34,7 +36,7 @@ public class MenuServiceController {
         MenuResponseDto responseDto = menuService.saveMenu(menuSaveRequestDto);
 
         return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
-            .message("메뉴 등록 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -52,7 +54,7 @@ public class MenuServiceController {
             sort);
 
         return ResponseEntity.ok(CommonDto.<MenuListGetResponseDto>builder()
-            .message("메뉴 리스트 조회 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -66,7 +68,7 @@ public class MenuServiceController {
         MenuResponseDto responseDto = menuService.updateMenu(menuUpdateRequestDto, menuId);
 
         return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
-            .message("메뉴 수정 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -84,7 +86,7 @@ public class MenuServiceController {
         MenuListGetResponseDto responseDto = menuService.searchMenuList(storeId, page, size, orderBy, sort, keyword);
 
         return ResponseEntity.ok(CommonDto.<MenuListGetResponseDto>builder()
-            .message("메뉴 리스트 검색 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -97,7 +99,7 @@ public class MenuServiceController {
         MenuResponseDto responseDto = menuService.deleteMenu(menuId, new User());
 
         return ResponseEntity.ok(CommonDto.<MenuResponseDto>builder()
-            .message("메뉴 삭제 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -110,7 +112,7 @@ public class MenuServiceController {
         MenuGetResponseDto responseDto = menuService.getMenu(menuId);
 
         return ResponseEntity.ok(CommonDto.<MenuGetResponseDto>builder()
-            .message("메뉴 상세 조회 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());

@@ -4,9 +4,11 @@ import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.service.StoreService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -15,21 +17,24 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StoreServiceController {
 
+    private final MessageUtil messageUtil;
     private final StoreService storeService;
 
+    @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/stores/{storeId}/categories")
     public ResponseEntity<CommonDto<StoreUpdateCategoryResponseDto>> updateCategory(@PathVariable("storeId") String storeId, @RequestBody StoreUpdateCategoryRequestDto requestDto) {
         // TODO : 유저 정보 획득
         StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, new User(), requestDto);
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateCategoryResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(responseDto)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/search")
     public ResponseEntity<CommonDto<StoreSearchResponseDto>> searchStore(
             @RequestParam("page") Integer page,
@@ -45,13 +50,14 @@ public class StoreServiceController {
         StoreSearchResponseDto storeSearchResponseDto = storeService.searchStore(page, size, orderby, sort, search, categoryId, city, district, street);
         return ResponseEntity.ok(
                 CommonDto.<StoreSearchResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeSearchResponseDto)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/stores")
     public ResponseEntity<CommonDto<StoreSaveResponseDto>> saveStore(@RequestBody StoreSaveRequestDto storeSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
@@ -59,13 +65,14 @@ public class StoreServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<StoreSaveResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeSaveResponseDto)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreGetDetailResponseDto>> getStoreDetail (@PathVariable("storeId") String storeId) {
         StoreGetDetailResponseDto storeDetailResponseDto = storeService.getStoreDetail(storeId);
@@ -73,32 +80,34 @@ public class StoreServiceController {
         return ResponseEntity.ok(
                 CommonDto.<StoreGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(storeDetailResponseDto)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreUpdateResponseDto>> updateStore(@PathVariable String storeId, @RequestBody StoreUpdateRequestDto storeUpdateRequestDto){
-        StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto);
+        StoreUpdateResponseDto storeUpdateResponseDto = storeService.updateStore(storeId, storeUpdateRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeUpdateResponseDto)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @DeleteMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreDeleteResponseDto>> deleteStore(@PathVariable String storeId){
-        StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, 123L);
+        StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreDeleteResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeDeleteResponseDto)
                         .build()

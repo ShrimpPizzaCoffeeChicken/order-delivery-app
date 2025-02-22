@@ -6,14 +6,12 @@ import com.fortest.orderdelivery.app.domain.category.mapper.CategoryMapper;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryQueryRepository;
 import com.fortest.orderdelivery.app.domain.category.repository.CategoryRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
-import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +28,11 @@ public class CategoryService {
     @Transactional
     public CategorySaveResponseDto saveCategory(CategorySaveRequestDto categorySaveRequestDto, User user) {
 
-        Category newCategory = CategoryMapper.toCategory(categorySaveRequestDto);
+        Category newCategory = CategoryMapper.categorySaveRequestDtoToEntity(categorySaveRequestDto);
         newCategory.isCreatedBy(user.getId());
         Category savedCategory = categoryRepository.save(newCategory);
 
-        return CategoryMapper.toCategorySaveResponseDto(savedCategory);
+        return CategoryMapper.entityToCategorySaveResponseDto(savedCategory);
     }
 
     public CategoryGetListDto getCategoryList(Integer page, Integer size, String orderby, String sort) {
@@ -46,7 +44,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryUpdateResponseDto updateCategory(String categoryId, CategoryUpdateRequestDto categoryUpdateRequestDto){
+    public CategoryUpdateResponseDto updateCategory(String categoryId, CategoryUpdateRequestDto categoryUpdateRequestDto, User user){
 
         String categoryName = categoryUpdateRequestDto.getCategoryName();
 
@@ -55,16 +53,18 @@ public class CategoryService {
 
         category.update(categoryName);
 
-        return CategoryMapper.toCategoryUpdateResponseDto(category);
+        category.isUpdatedNow(user.getId());
+
+        return CategoryMapper.entityToCategoryUpdateResponseDto(category);
     }
 
     @Transactional
-    public CategoryDeleteResponseDto deleteCategory(String categoryId, Long userId){
+    public CategoryDeleteResponseDto deleteCategory(String categoryId, User user){
         Category category = categoryRepository.findById(categoryId).orElseThrow(()->
                 new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
 
-        category.isDeletedNow(userId);
+        category.isDeletedNow(user.getId());
 
-        return CategoryMapper.toCategoryDeleteResponseDto(category);
+        return CategoryMapper.entityToCategoryDeleteResponseDto(category);
     }
 }

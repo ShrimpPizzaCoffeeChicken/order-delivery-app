@@ -5,6 +5,8 @@ import com.fortest.orderdelivery.app.domain.image.dto.ImageResponseDto;
 import com.fortest.orderdelivery.app.domain.image.service.ImageService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import java.util.List;
+
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ImageServiceController {
 
+    private final MessageUtil messageUtil;
     private final ImageService imageService;
 
     @PostMapping("/menus")
@@ -31,7 +34,7 @@ public class ImageServiceController {
         ImageResponseDto responseDto = imageService.registerMenuImage(multipartFileList);
 
         return ResponseEntity.ok(CommonDto.<ImageResponseDto>builder()
-            .message("사진 저장 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -44,7 +47,7 @@ public class ImageServiceController {
         ImageResponseDto responseDto = imageService.updateMenuImage(multipartFileList, menuId);
 
         return ResponseEntity.ok(CommonDto.<ImageResponseDto>builder()
-            .message("사진 추가 저장 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -57,7 +60,7 @@ public class ImageServiceController {
         ImageResponseDto responseDto = imageService.updateMenuOptionImage(multipartFileList, menuOptionId);
 
         return ResponseEntity.ok(CommonDto.<ImageResponseDto>builder()
-            .message("사진 추가 저장 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -69,7 +72,7 @@ public class ImageServiceController {
         ImageResponseDto responseDto = imageService.deleteImageOnUpdate(menuImageRequestDto);
 
         return ResponseEntity.ok(CommonDto.<ImageResponseDto>builder()
-            .message("사진 삭제 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());

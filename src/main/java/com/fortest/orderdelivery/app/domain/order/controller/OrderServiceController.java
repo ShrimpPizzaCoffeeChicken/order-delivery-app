@@ -2,12 +2,12 @@ package com.fortest.orderdelivery.app.domain.order.controller;
 
 import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@Slf4j
+
 @RequiredArgsConstructor
 @Validated
 @RequestMapping("/api/service")
@@ -44,13 +44,12 @@ public class OrderServiceController {
         );
     }
 
-    // @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER') or hasRole('MASTER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/orders")
     public ResponseEntity<CommonDto<OrderGetListResponseDto>> getOrderList(
             @Valid OrderGetListRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        log.info("requestDto = {}", requestDto);
         OrderGetListResponseDto orderList = orderService.getOrderList(~
                 requestDto.getPage(),
                 requestDto.getSize(),
@@ -77,17 +76,15 @@ public class OrderServiceController {
         return ResponseEntity.ok(
                 CommonDto.<OrderGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(orderDetail)
                         .build()
         );
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
     @DeleteMapping("/orders/{orderId}")
-    public ResponseEntity<CommonDto<Map<String, String>>> deleteOrder (@PathVariable("orderId") String orderId,
-                                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String deletedOrderId = orderService.deleteOrder(orderId, userDetails.getUser());
+    public ResponseEntity<CommonDto<Map<String, String>>> deleteOrder (@PathVariable("orderId") String orderId) {
+        String deletedOrderId = orderService.deleteOrder(orderId, new User());
         Map<String, String> data = Map.of("order-id", deletedOrderId);
         return ResponseEntity.ok(
                 CommonDto.<Map<String, String>> builder()
@@ -114,4 +111,5 @@ public class OrderServiceController {
                         .build()
         );
     }
+
 }

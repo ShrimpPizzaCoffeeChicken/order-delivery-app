@@ -8,6 +8,7 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ public class CategoryServiceController {
     private final MessageUtil messageUtil;
     private final CategoryService categoryService;
 
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/categories")
     public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@RequestBody CategorySaveRequestDto categorySaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
@@ -32,6 +34,7 @@ public class CategoryServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/categories")
     public ResponseEntity<CommonDto<CategoryGetListDto>> getCategoryList(
             @RequestParam("page") Integer page,
@@ -50,9 +53,10 @@ public class CategoryServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryUpdateResponseDto>> updateCategory(@PathVariable String categoryId, @RequestBody CategoryUpdateRequestDto categoryUpdateRequestDto){
-        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto);
+        CategoryUpdateResponseDto categoryUpdateResponseDto = categoryService.updateCategory(categoryId, categoryUpdateRequestDto, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryUpdateResponseDto>builder()
@@ -63,9 +67,10 @@ public class CategoryServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('OWNER')")
     @DeleteMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryDeleteResponseDto>> deleteCategory(@PathVariable String categoryId){
-        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, 123L);
+        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryDeleteResponseDto>builder()

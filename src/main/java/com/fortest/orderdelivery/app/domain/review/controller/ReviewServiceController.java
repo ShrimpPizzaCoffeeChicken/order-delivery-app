@@ -8,17 +8,22 @@ import com.fortest.orderdelivery.app.domain.review.dto.ReviewSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.review.service.ReviewService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
 public class ReviewServiceController {
+
+    private final MessageUtil messageUtil;
     private final ReviewService reviewService;
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/reviews")
     public ResponseEntity<CommonDto<ReviewSaveResponseDto>> saveReview(@RequestBody ReviewSaveRequestDto reviewSaveRequestDto) {
         // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
@@ -26,13 +31,14 @@ public class ReviewServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewSaveResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(reviewSaveResponseDto)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews")
     public ResponseEntity<CommonDto<ReviewGetListDto>> getReviewList(
             @RequestParam("storeId") String storeId,
@@ -45,33 +51,35 @@ public class ReviewServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewGetListDto> builder()
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
-                        .message("Success")
                         .data(reviewList)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<CommonDto<ReviewDeleteResponseDto>> deleteReview(@PathVariable String reviewId){
         ReviewDeleteResponseDto reviewDeleteResponseDto = reviewService.deleteReview(reviewId, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<ReviewDeleteResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(reviewDeleteResponseDto)
                         .build()
         );
     }
 
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews/{reviewId}")
     public ResponseEntity<CommonDto<ReviewGetResponseDto>> getReview(@PathVariable String reviewId) {
         ReviewGetResponseDto reviewGetResponseDto = reviewService.getReview(reviewId);
 
         return ResponseEntity.ok(
             CommonDto.<ReviewGetResponseDto>builder()
-                .message("SUCCESS")
+                .message(messageUtil.getSuccessMessage())
                 .code(HttpStatus.OK.value())
                 .data(reviewGetResponseDto)
                 .build()
