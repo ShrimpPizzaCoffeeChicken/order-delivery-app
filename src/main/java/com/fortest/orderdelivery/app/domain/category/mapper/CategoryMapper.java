@@ -11,7 +11,6 @@ public class CategoryMapper {
 
     public static Category categorySaveRequestDtoToEntity(CategorySaveRequestDto categorySaveRequestDto) {
         return Category.builder()
-                .id(categorySaveRequestDto.getCategoryId())
                 .name(categorySaveRequestDto.getCategoryName())
                 .build();
     }
