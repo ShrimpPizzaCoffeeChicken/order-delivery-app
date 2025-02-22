@@ -4,6 +4,8 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuOptionAppService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import java.util.List;
+
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MenuOptionAppController {
 
+    private final MessageUtil messageUtil;
     private final MenuOptionAppService menuOptionAppService;
 
     @GetMapping
@@ -25,7 +28,7 @@ public class MenuOptionAppController {
         MenuOptionAppResponseDto response = menuOptionAppService.getMenuOptionFromApp(menuOptionIdList);
 
         return ResponseEntity.ok(CommonDto.<MenuOptionAppResponseDto>builder()
-            .message("메뉴 옵션 객체 응답 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(response)
             .build());

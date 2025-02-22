@@ -4,6 +4,7 @@ import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.service.StoreService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StoreServiceController {
 
+    private final MessageUtil messageUtil;
     private final StoreService storeService;
 
     @PatchMapping("/stores/{storeId}/categories")
@@ -23,7 +25,7 @@ public class StoreServiceController {
         StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, new User(), requestDto);
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateCategoryResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(responseDto)
                         .build()
@@ -45,7 +47,7 @@ public class StoreServiceController {
         StoreSearchResponseDto storeSearchResponseDto = storeService.searchStore(page, size, orderby, sort, search, categoryId, city, district, street);
         return ResponseEntity.ok(
                 CommonDto.<StoreSearchResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeSearchResponseDto)
                         .build()
@@ -59,7 +61,7 @@ public class StoreServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<StoreSaveResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeSaveResponseDto)
                         .build()
@@ -73,7 +75,7 @@ public class StoreServiceController {
         return ResponseEntity.ok(
                 CommonDto.<StoreGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(storeDetailResponseDto)
                         .build()
         );
@@ -85,7 +87,7 @@ public class StoreServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeUpdateResponseDto)
                         .build()
@@ -98,7 +100,7 @@ public class StoreServiceController {
 
         return ResponseEntity.ok(
                 CommonDto.<StoreDeleteResponseDto>builder()
-                        .message("SUCCESS")
+                        .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
                         .data(storeDeleteResponseDto)
                         .build()

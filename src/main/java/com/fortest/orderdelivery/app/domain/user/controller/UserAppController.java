@@ -3,6 +3,7 @@ package com.fortest.orderdelivery.app.domain.user.controller;
 import com.fortest.orderdelivery.app.domain.user.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UserAppController {
 
+    private final MessageUtil messageUtil;
     private final UserService userService;
 
     @GetMapping("/users/{userId}")
@@ -25,7 +27,7 @@ public class UserAppController {
         return ResponseEntity.ok(
                 CommonDto.<UserResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(userData)
                         .build()
         );

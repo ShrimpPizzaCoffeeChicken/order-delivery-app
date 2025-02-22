@@ -4,6 +4,7 @@ import com.fortest.orderdelivery.app.domain.payment.dto.*;
 import com.fortest.orderdelivery.app.domain.payment.service.PaymentService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.Map;
 @RestController
 public class PaymentServiceController {
 
+    private final MessageUtil messageUtil;
     private final PaymentService paymentService;
 
     @PostMapping("/payments")
@@ -26,7 +28,7 @@ public class PaymentServiceController {
         return ResponseEntity.ok(
                 CommonDto.<PaymentSaveResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(responseDto)
                         .build()
         );
@@ -45,7 +47,7 @@ public class PaymentServiceController {
         return ResponseEntity.ok(
                 CommonDto.<PaymentGetListResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(paymentList)
                         .build()
         );
@@ -59,7 +61,7 @@ public class PaymentServiceController {
         return ResponseEntity.ok(
                 CommonDto.<Map<String, String>> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(data)
                         .build()
         );
@@ -72,7 +74,7 @@ public class PaymentServiceController {
         return ResponseEntity.ok(
                 CommonDto.<PaymentUpdateStatusResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(responseDto)
                         .build()
         );

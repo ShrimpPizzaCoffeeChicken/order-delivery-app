@@ -4,6 +4,7 @@ import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.Map;
 @RestController
 public class OrderServiceController {
 
+    private final MessageUtil messageUtil;
     private final OrderService orderService;
 
     @PostMapping("/orders")
@@ -30,7 +32,7 @@ public class OrderServiceController {
         return ResponseEntity.ok(
                 CommonDto.<Map<String, String>> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(data)
                         .build()
         );
@@ -50,7 +52,7 @@ public class OrderServiceController {
         return ResponseEntity.ok(
                 CommonDto.<OrderGetListResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(orderList)
                         .build()
         );
@@ -62,7 +64,7 @@ public class OrderServiceController {
         return ResponseEntity.ok(
                 CommonDto.<OrderGetDetailResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(orderDetail)
                         .build()
         );
@@ -75,7 +77,7 @@ public class OrderServiceController {
         return ResponseEntity.ok(
                 CommonDto.<Map<String, String>> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(data)
                         .build()
         );
@@ -88,7 +90,7 @@ public class OrderServiceController {
         return ResponseEntity.ok(
                 CommonDto.<OrderStatusUpdateResponseDto> builder()
                         .code(HttpStatus.OK.value())
-                        .message("Success")
+                        .message(messageUtil.getSuccessMessage())
                         .data(responseDto)
                         .build()
         );

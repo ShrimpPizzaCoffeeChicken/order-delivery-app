@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuOptionService;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MenuOptionServiceController {
 
+    private final MessageUtil messageUtil;
     private final MenuOptionService menuOptionService;
 
     @PostMapping("/menus/{menuId}/options")
@@ -33,7 +35,7 @@ public class MenuOptionServiceController {
             menuOptionsSaveRequestDto, menuId);
 
         return ResponseEntity.ok(CommonDto.<MenuOptionResponseDto>builder()
-            .message("메뉴 옵션 등록 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -47,7 +49,7 @@ public class MenuOptionServiceController {
         MenuOptionResponseDto responseDto = menuOptionService.updateMenuOption(menuOptionUpdateRequestDto, optionId, new User());
 
         return ResponseEntity.ok(CommonDto.<MenuOptionResponseDto>builder()
-            .message("메뉴 옵션 수정 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
@@ -60,7 +62,7 @@ public class MenuOptionServiceController {
         MenuOptionResponseDto responseDto = menuOptionService.deleteMenuOption(optionId, new User());
 
         return ResponseEntity.ok(CommonDto.<MenuOptionResponseDto>builder()
-            .message("메뉴 옵션 삭제 완료")
+            .message(messageUtil.getSuccessMessage())
             .code(HttpStatus.OK.value())
             .data(responseDto)
             .build());
