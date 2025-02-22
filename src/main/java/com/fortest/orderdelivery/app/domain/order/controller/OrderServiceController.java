@@ -2,7 +2,6 @@ package com.fortest.orderdelivery.app.domain.order.controller;
 
 import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.service.OrderService;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
@@ -82,9 +81,11 @@ public class OrderServiceController {
         );
     }
 
+    @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
     @DeleteMapping("/orders/{orderId}")
-    public ResponseEntity<CommonDto<Map<String, String>>> deleteOrder (@PathVariable("orderId") String orderId) {
-        String deletedOrderId = orderService.deleteOrder(orderId, new User());
+    public ResponseEntity<CommonDto<Map<String, String>>> deleteOrder (@PathVariable("orderId") String orderId,
+                                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        String deletedOrderId = orderService.deleteOrder(orderId, userDetails.getUser());
         Map<String, String> data = Map.of("order-id", deletedOrderId);
         return ResponseEntity.ok(
                 CommonDto.<Map<String, String>> builder()
@@ -99,7 +100,7 @@ public class OrderServiceController {
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/orders/{orderId}")
     public ResponseEntity<CommonDto<OrderStatusUpdateResponseDto>> updateStatus(@PathVariable("orderId") String orderId,
-                                                                                @RequestBody OrderStatusUpdateRequestDto requestDto,
+                                                                                @Valid @RequestBody OrderStatusUpdateRequestDto requestDto,
                                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
         OrderStatusUpdateResponseDto responseDto = orderService.updateStatus(userDetails.getUser(), orderId, requestDto);
 

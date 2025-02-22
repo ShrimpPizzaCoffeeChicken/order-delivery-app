@@ -1,6 +1,5 @@
 package com.fortest.orderdelivery.app.domain.payment.service;
 
-import com.fortest.orderdelivery.app.domain.order.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.payment.dto.*;
 import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
@@ -10,7 +9,6 @@ import com.fortest.orderdelivery.app.domain.payment.repository.PaymentAgentRepos
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentQueryRepository;
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
-import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
@@ -20,10 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,7 +40,7 @@ public class PaymentService {
 
         Payment.Status beforeStatus = payment.getStatus();
         String toStatusString = requestDto.getTo();
-        Payment.Status toStatus = Payment.getStatusByString(toStatusString);
+        Payment.Status toStatus = Payment.getStatusByString(messageUtil, toStatusString);
 
         payment.updateStatus(toStatus);
         payment.isUpdatedNow(user.getId());
@@ -77,7 +73,7 @@ public class PaymentService {
             throw new BusinessLogicException(messageUtil.getMessage("app.payment.invalid-order"));
         }
 
-        Payment payment = PaymentMapper.saveDtoToEntity(saveRequestDto, paymentAgent, validOrder.getCustomerName(), validOrder.getOrderPrice());
+        Payment payment = PaymentMapper.saveDtoToEntity(messageUtil, saveRequestDto, paymentAgent, validOrder.getCustomerName(), validOrder.getOrderPrice());
         payment.isCreatedBy(user.getId());
         paymentRepository.save(payment);
 
@@ -107,10 +103,10 @@ public class PaymentService {
     }
 
     @Transactional
-    public String deletePayment(String paymentId, Long userId) {
+    public String deletePayment(String paymentId, User user) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.payment")));
-        payment.isDeletedNow(userId);
+        payment.isDeletedNow(user.getId());
         return payment.getId();
     }
 }

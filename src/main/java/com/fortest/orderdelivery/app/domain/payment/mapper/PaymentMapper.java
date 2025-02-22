@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.payment.dto.PaymentSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
 import com.fortest.orderdelivery.app.domain.payment.entity.PaymentAgent;
 import com.fortest.orderdelivery.app.global.util.CommonUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -13,14 +14,14 @@ import java.util.stream.Collectors;
 
 public class PaymentMapper {
 
-    public static Payment saveDtoToEntity(PaymentSaveRequestDto saveRequestDto, PaymentAgent paymentAgent, String customerName, Integer price) {
+    public static Payment saveDtoToEntity(MessageUtil messageUtil, PaymentSaveRequestDto saveRequestDto, PaymentAgent paymentAgent, String customerName, Integer price) {
         return Payment.builder()
                 .orderId(saveRequestDto.getOrderId())
                 .customerName(customerName)
                 .paymentAgent(paymentAgent)
                 .paymentPid(saveRequestDto.getPaymentPid())
                 .price(price)
-                .status(Payment.getStatusByString(saveRequestDto.getStatus()))
+                .status(Payment.getStatusByString(messageUtil, saveRequestDto.getStatus()))
                 .build();
     }
 
