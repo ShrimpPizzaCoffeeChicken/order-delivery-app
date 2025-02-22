@@ -65,7 +65,7 @@ public class CategoryServiceController {
 
     @DeleteMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryDeleteResponseDto>> deleteCategory(@PathVariable String categoryId){
-        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, 123L);
+        CategoryDeleteResponseDto categoryDeleteResponseDto = categoryService.deleteCategory(categoryId, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<CategoryDeleteResponseDto>builder()

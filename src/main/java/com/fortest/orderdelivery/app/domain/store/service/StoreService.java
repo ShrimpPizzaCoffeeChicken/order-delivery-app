@@ -123,12 +123,12 @@ public class StoreService {
     }
 
     @Transactional
-    public StoreDeleteResponseDto deleteStore(String storeId, Long userId){
+    public StoreDeleteResponseDto deleteStore(String storeId, User user){
 
         Store store = storeRepository.findById(storeId).orElseThrow(()->
                 new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
-        store.isDeletedNow(userId);
+        store.isDeletedNow(user.getId());
 
         return StoreMapper.entityToCategoryDeleteResponseDto(store);
     }

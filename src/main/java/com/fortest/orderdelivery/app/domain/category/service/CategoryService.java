@@ -59,11 +59,11 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryDeleteResponseDto deleteCategory(String categoryId, Long userId){
+    public CategoryDeleteResponseDto deleteCategory(String categoryId, User user){
         Category category = categoryRepository.findById(categoryId).orElseThrow(()->
                 new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
 
-        category.isDeletedNow(userId);
+        category.isDeletedNow(user.getId());
 
         return CategoryMapper.entityToCategoryDeleteResponseDto(category);
     }

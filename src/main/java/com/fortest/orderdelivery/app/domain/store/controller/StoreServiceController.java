@@ -96,7 +96,7 @@ public class StoreServiceController {
 
     @DeleteMapping("/stores/{storeId}")
     public ResponseEntity<CommonDto<StoreDeleteResponseDto>> deleteStore(@PathVariable String storeId){
-        StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, 123L);
+        StoreDeleteResponseDto storeDeleteResponseDto = storeService.deleteStore(storeId, new User());
 
         return ResponseEntity.ok(
                 CommonDto.<StoreDeleteResponseDto>builder()
