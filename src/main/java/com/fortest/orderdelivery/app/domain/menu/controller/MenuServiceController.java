@@ -1,7 +1,9 @@
 package com.fortest.orderdelivery.app.domain.menu.controller;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuListSearchRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
@@ -11,6 +13,7 @@ import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,14 +54,9 @@ public class MenuServiceController {
 
     @GetMapping
     public ResponseEntity<CommonDto<MenuListGetResponseDto>> getMenuList(
-        @RequestParam("store-id") String storeId,
-        @RequestParam("page") int page,
-        @RequestParam("size") int size,
-        @RequestParam("order-by") String orderBy,
-        @RequestParam("sort") String sort
+        @Valid MenuListGetRequestDto menuListGetRequestDto
     ) {
-        MenuListGetResponseDto responseDto = menuService.getMenuList(storeId, page, size, orderBy,
-            sort);
+        MenuListGetResponseDto responseDto = menuService.getMenuList(menuListGetRequestDto);
 
         return ResponseEntity.ok(CommonDto.<MenuListGetResponseDto>builder()
             .message(messageUtil.getSuccessMessage())
@@ -86,15 +84,9 @@ public class MenuServiceController {
 
     @GetMapping("/search")
     public ResponseEntity<CommonDto<MenuListGetResponseDto>> searchMenuList(
-        @RequestParam("store-id") String storeId,
-        @RequestParam("page") int page,
-        @RequestParam("size") int size,
-        @RequestParam("order-by") String orderBy,
-        @RequestParam("sort") String sort,
-        @RequestParam("search") String keyword
+        @Valid MenuListSearchRequestDto menuListSearchRequestDto
     ) {
-        MenuListGetResponseDto responseDto = menuService.searchMenuList(storeId, page, size,
-            orderBy, sort, keyword);
+        MenuListGetResponseDto responseDto = menuService.searchMenuList(menuListSearchRequestDto);
 
         return ResponseEntity.ok(CommonDto.<MenuListGetResponseDto>builder()
             .message(messageUtil.getSuccessMessage())

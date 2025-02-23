@@ -3,8 +3,10 @@ package com.fortest.orderdelivery.app.domain.menu.service;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuImageMappingResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuListSearchRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuUpdateRequestDto;
@@ -57,7 +59,7 @@ public class MenuService {
                 .build();
 
             MenuImageMappingResponseDto commonDto = apiGateway.saveMenuIdToImage(
-                menuImageRequestDto);
+                menuImageRequestDto, user);
 
             if (!commonDto.getResult()) {
                 throw new BusinessLogicException(
@@ -68,10 +70,14 @@ public class MenuService {
         return MenuMapper.toMenuResponseDto(savedMenu);
     }
 
-    public MenuListGetResponseDto getMenuList(String storeId, int page, int size, String orderBy,
-        String sort) {
-        PageRequest pageRequest = JpaUtil.getNormalPageable(page, size, orderBy, sort);
-        Page<MenuListDto> menuListPage = menuQueryRepository.getMenuListPage(pageRequest, storeId);
+    public MenuListGetResponseDto getMenuList(MenuListGetRequestDto menuListGetRequestDto) {
+        PageRequest pageRequest = JpaUtil.getNormalPageable(
+            menuListGetRequestDto.getPage(),
+            menuListGetRequestDto.getSize(),
+            menuListGetRequestDto.getOrderby(),
+            menuListGetRequestDto.getSort()
+        );
+        Page<MenuListDto> menuListPage = menuQueryRepository.getMenuListPage(pageRequest, menuListGetRequestDto.getStoreId());
 
         return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }
@@ -96,7 +102,7 @@ public class MenuService {
 
     @Transactional
     public MenuResponseDto deleteMenu(String menuId, User user) {
-        apiGateway.deleteMenuImageFromApp(menuId);
+        apiGateway.deleteMenuImageFromApp(menuId, user);
 
         Menu menu = getMenuById(menuId);
         menu.isDeletedNow(user.getId());
@@ -116,11 +122,18 @@ public class MenuService {
         return menuGetResponseDto;
     }
 
-    public MenuListGetResponseDto searchMenuList(String storeId, int page, int size,
-        String orderBy, String sort, String keyword) {
-        PageRequest pageRequest = JpaUtil.getNormalPageable(page, size, orderBy, sort);
-        Page<MenuListDto> menuListPage = menuQueryRepository.searchMenuListPage(pageRequest,
-            storeId, keyword);
+    public MenuListGetResponseDto searchMenuList(MenuListSearchRequestDto menuListSearchRequestDto) {
+        PageRequest pageRequest = JpaUtil.getNormalPageable(
+            menuListSearchRequestDto.getPage(),
+            menuListSearchRequestDto.getSize(),
+            menuListSearchRequestDto.getOrderby(),
+            menuListSearchRequestDto.getSort()
+        );
+        Page<MenuListDto> menuListPage = menuQueryRepository.searchMenuListPage(
+            pageRequest,
+            menuListSearchRequestDto.getStoreId(),
+            menuListSearchRequestDto.getSearch()
+        );
 
         return MenuMapper.toMenuListGetResponseDto(menuListPage);
     }

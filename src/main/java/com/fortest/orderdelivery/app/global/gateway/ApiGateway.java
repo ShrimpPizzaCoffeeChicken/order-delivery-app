@@ -423,7 +423,7 @@ public class ApiGateway {
      * @return CommonDto<Void> : 요청 실패 시 null
      */
     public MenuOptionImageMappingResponseDto saveMenuAndMenuOptionIdToImage(
-            MenuOptionImageMappingRequestDto requestDto) {
+            MenuOptionImageMappingRequestDto requestDto, User user) {
 
         String targetUrl = IMAGE_OPTION_UPDATE_APP_URL
                 .replace("{host}", "localhost")
@@ -431,6 +431,7 @@ public class ApiGateway {
 
         CommonDto<MenuOptionImageMappingResponseDto> commonResponse = webClient.patch()
                 .uri(targetUrl)
+                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
                 .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
@@ -456,7 +457,7 @@ public class ApiGateway {
      * @param optionId
      * @return CommonDto<ImageResponseDto> : 요청 실패 시 null
      */
-    public ImageResponseDto deleteMenuOptionImageFromApp(String optionId) {
+    public ImageResponseDto deleteMenuOptionImageFromApp(String optionId, User user) {
 
         String targetUrl = IMAGE_OPTION_DELETE_APP_URL
                 .replace("{host}", "localhost")
@@ -465,6 +466,7 @@ public class ApiGateway {
 
         CommonDto<ImageResponseDto> commonResponse = webClient.delete()
                 .uri(targetUrl)
+                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
                 })
@@ -488,7 +490,7 @@ public class ApiGateway {
      * @return CommonDto<Void> : 요청 실패 시 null
      */
     public MenuImageMappingResponseDto saveMenuIdToImage (
-            MenuImageMappingRequestDto requestDto) {
+            MenuImageMappingRequestDto requestDto, User user) {
 
         String targetUrl = IMAGE_UPDATE_APP_URL
                 .replace("{host}", "localhost")
@@ -496,6 +498,7 @@ public class ApiGateway {
 
         CommonDto<MenuImageMappingResponseDto> commonResponse = webClient.patch()
                 .uri(targetUrl)
+                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
                 .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
@@ -520,7 +523,7 @@ public class ApiGateway {
      * @param menuId
      * @return CommonDto<ImageResponseDto> : 요청 실패 시 null
      */
-    public ImageResponseDto deleteMenuImageFromApp(String menuId) {
+    public ImageResponseDto deleteMenuImageFromApp(String menuId, User user) {
 
         String targetUrl = IMAGE_DELETE_APP_URL
                 .replace("{host}", "localhost")
@@ -529,6 +532,7 @@ public class ApiGateway {
 
         CommonDto<ImageResponseDto> commonResponse = webClient.delete()
                 .uri(targetUrl)
+                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
                 })
