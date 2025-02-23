@@ -8,14 +8,12 @@ import com.fortest.orderdelivery.app.domain.category.repository.CategoryReposito
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +21,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryQueryRepository categoryQueryRepository;
-    private final MessageSource messageSource;
+    private final MessageUtil messageUtil;
 
     @Transactional
     public CategorySaveResponseDto saveCategory(CategorySaveRequestDto categorySaveRequestDto, User user) {
@@ -49,7 +47,7 @@ public class CategoryService {
         String categoryName = categoryUpdateRequestDto.getCategoryName();
 
         Category category = categoryRepository.findById(categoryId).orElseThrow(()->
-                new BusinessLogicException(messageSource.getMessage( "api.call.client-error",null, Locale.KOREA)));
+                new BusinessLogicException(messageUtil.getMessage( "api.call.client-error")));
 
         category.update(categoryName);
 
@@ -61,7 +59,7 @@ public class CategoryService {
     @Transactional
     public CategoryDeleteResponseDto deleteCategory(String categoryId, User user){
         Category category = categoryRepository.findById(categoryId).orElseThrow(()->
-                new BusinessLogicException(messageSource.getMessage("api.call.client-error",null, Locale.KOREA)));
+                new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
         category.isDeletedNow(user.getId());
 
