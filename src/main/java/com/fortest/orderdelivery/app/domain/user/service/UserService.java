@@ -68,7 +68,7 @@ public class UserService {
 
     // 로그인 관련 기능 (토큰 재발급)
     @Transactional
-    public CommonDto<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public CommonDto<Object> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         if (refreshToken == null || !jwtUtil.validateToken(refreshToken)) {
             return new CommonDto<>("Invalid Refresh Token", HttpStatus.UNAUTHORIZED.value(), null);
@@ -87,10 +87,10 @@ public class UserService {
 
         jwtUtil.addAccessTokenToHeader(newAccessToken, response);
 
-        return CommonDto.<LoginResponseDto>builder()
+        return CommonDto.<Object>builder()
                 .message("새로운 Access Token 발급")
                 .code(HttpStatus.OK.value())
-                .data(new LoginResponseDto(newAccessToken, refreshToken))
+                .data(null)
                 .build();
     }
 

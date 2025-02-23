@@ -47,7 +47,7 @@ public class UserServiceController {
 
     // 토큰 재발급
     @PostMapping("/users/refresh")
-    public ResponseEntity<CommonDto<LoginResponseDto>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<CommonDto<Object>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok(userService.refreshToken(request, response));
     }
 
