@@ -28,7 +28,7 @@ public class JwtUtil {
     public static final String REFRESH_TOKEN_COOKIE = "refreshToken";
     public static final String AUTHORIZATION_KEY = "auth";
     public static final String BEARER_PREFIX = "Bearer ";
-    private final long ACCESS_TOKEN_TIME  = 10 * 60 * 1000L;
+    private final long ACCESS_TOKEN_TIME  = 100 * 60 * 1000L;
     private final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L;
     private final long ACCESS_TOKEN_TIME_FOR_APP  = 3 * 60 * 1000L;
 

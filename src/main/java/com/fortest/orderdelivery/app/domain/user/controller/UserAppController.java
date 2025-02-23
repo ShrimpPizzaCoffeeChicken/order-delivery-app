@@ -22,6 +22,7 @@ public class UserAppController {
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<CommonDto<UserResponseDto>> getUserData (@PathVariable Long userId) {
+        
         UserResponseDto userData = userService.getUserData(userId);
 
         return ResponseEntity.ok(

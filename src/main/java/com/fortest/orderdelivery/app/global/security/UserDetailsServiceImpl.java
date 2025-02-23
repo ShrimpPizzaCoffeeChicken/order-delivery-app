@@ -3,7 +3,9 @@ package com.fortest.orderdelivery.app.global.security;
 import com.fortest.orderdelivery.app.domain.user.dto.UserResponseDto;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
+import com.fortest.orderdelivery.app.domain.user.repository.UserQueryRepository;
 import com.fortest.orderdelivery.app.domain.user.repository.UserRepository;
+import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
@@ -22,6 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final MessageUtil messageUtil;
+    private final UserQueryRepository userQueryRepository;
 
     /**
      * **로그인 시 호출**
@@ -39,12 +42,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
+    public UserDetails loadUserByTokenUsingRepository(String token) {
+        // JWT 토큰에서 userId 추출
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        // RDB 조회
+        User user = userQueryRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.user")));
+        return new UserDetailsImpl(user);
+    }
+
+    @Transactional(readOnly = true)
     public UserDetails loadUserByToken(String token) {
         // JWT 토큰에서 userId 추출
         Long userId = jwtUtil.getUserIdFromToken(token);
 
         // API Gateway에서 user 정보 가져오기 (DB 조회 안함)
-        UserResponseDto userResponse = apiGateway.getUserByIdFromApp(userId);
+        UserResponseDto userResponse = apiGateway.getUserByIdFromApp(userId, token);
         if (userResponse == null) {
             throw new UsernameNotFoundException("User not found: " + userId);
         }

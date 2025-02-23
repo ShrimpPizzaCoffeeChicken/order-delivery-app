@@ -90,7 +90,7 @@ public class UserServiceController {
         return ResponseEntity.ok(userService.logout(request, response));
     }
 
-    @PutMapping("/users/{userId}")
+    @PatchMapping("/users/{userId}")
     public ResponseEntity<CommonDto<Void>> updateUser(
             @PathVariable("userId") Long userId,
             @RequestBody UserUpdateRequestDto requestDto,
