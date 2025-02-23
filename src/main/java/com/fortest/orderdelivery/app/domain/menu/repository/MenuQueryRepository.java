@@ -10,10 +10,8 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.Menu
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +32,7 @@ public class MenuQueryRepository {
     String defaultImageUrl;
 
     public Page<MenuListDto> getMenuListPage(Pageable pageable, String storeId) {
-        OrderSpecifier<?>[] orderSpecifiers = getAllOrderSpecifiers(pageable, menu);
+        OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, menu);
 
         List<MenuListDto> contents = queryFactory
             .selectDistinct(Projections.constructor(MenuListDto.class,
@@ -72,7 +70,7 @@ public class MenuQueryRepository {
     }
 
     public Page<MenuListDto> searchMenuListPage(Pageable pageable, String storeId, String keyword) {
-        OrderSpecifier<?>[] orderSpecifiers = getAllOrderSpecifiers(pageable, menu);
+        OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, menu);
 
         List<MenuListDto> contents = queryFactory
             .selectDistinct(Projections.constructor(MenuListDto.class,
@@ -156,10 +154,5 @@ public class MenuQueryRepository {
             return MenuMapper.toMenuGetResponseDto(menuQueryDto, menuImageList, optionList);
         }
         return null;
-    }
-
-    private OrderSpecifier<?>[] getAllOrderSpecifiers(Pageable pageable, Path<?> path) {
-        List<OrderSpecifier<?>> orders = QueryDslUtil.getAllOrderSpecifiers(pageable, path);
-        return orders.toArray(OrderSpecifier[]::new);
     }
 }

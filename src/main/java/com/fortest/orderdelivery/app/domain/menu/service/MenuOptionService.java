@@ -48,9 +48,9 @@ public class MenuOptionService {
     private final MessageUtil messageUtil;
     private final MenuOptionRepository menuOptionRepository;
 
-    // TODO : createdBy 추가
     public MenuOptionResponseDto saveMenuOption(
-        MenuOptionsSaveRequestDto menuOptionsSaveRequestDto, String menuId) {
+        MenuOptionsSaveRequestDto menuOptionsSaveRequestDto, String menuId, User user) {
+        Long userId = user.getId();
 
         //메뉴 유효한지 확인 후 객체 가져오기
         MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId));
@@ -58,6 +58,7 @@ public class MenuOptionService {
         Menu menu = menuDto.getMenuList().get(0);
 
         MenuOption newMenuOption = MenuOptionMapper.toMenuOption(menuOptionsSaveRequestDto, menu);
+        newMenuOption.isCreatedBy(userId);
         MenuOption savedMenuOption = menuOptionRepository.save(newMenuOption);
 
         //만약 image Url이 있다면 imageUrl로 정보 보내기 (메뉴 + 메뉴 옵션)
@@ -71,7 +72,7 @@ public class MenuOptionService {
                 .build();
 
             MenuOptionImageMappingResponseDto ImagecommonDto =
-                    apiGateway.saveMenuAndMenuOptionIdToImage(menuOptionImageRequestDto);
+                apiGateway.saveMenuAndMenuOptionIdToImage(menuOptionImageRequestDto);
 
             if (!ImagecommonDto.getResult()) {
                 throw new BusinessLogicException(
@@ -82,11 +83,11 @@ public class MenuOptionService {
         return MenuOptionMapper.toMenuOptionSaveResponseDto(savedMenuOption);
     }
 
-    // TODO : updatedBy 변경
     @Transactional
-    public MenuOptionResponseDto updateMenuOption(MenuOptionUpdateRequestDto menuOptionUpdateRequestDto,
-                                                  String menuOptionId,
-                                                  User user) {
+    public MenuOptionResponseDto updateMenuOption(
+        MenuOptionUpdateRequestDto menuOptionUpdateRequestDto,
+        String menuOptionId,
+        User user) {
         MenuOption menuOption = getMenuOptionById(menuOptionId);
 
         menuOption.updateMenuOption(
@@ -101,7 +102,6 @@ public class MenuOptionService {
         return MenuMapper.toMenuOptionResponseDto(savedMenuOption);
     }
 
-    // TODO : deleteBy 변경
     @Transactional
     public MenuOptionResponseDto deleteMenuOption(String optionId, User user) {
         ImageResponseDto commonDto = apiGateway.deleteMenuOptionImageFromApp(optionId);
