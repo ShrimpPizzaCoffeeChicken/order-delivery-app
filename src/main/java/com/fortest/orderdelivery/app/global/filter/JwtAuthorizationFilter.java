@@ -27,6 +27,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
 
+    private static final String REPOSITORY_FIND_URL = "/api";
+    private static final String APP_URL_SUFFIX = "/app";
+    private static final String SERVICE_URL_SUFFIX = "/service";
+    private static final String USER_API_SUFFIX = "/users";
+
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
         log.info("authorizationFilter=============");
@@ -51,9 +56,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             //Claims info = jwtUtil.getUserInfoFromToken(accessToken);
 
             try {
-                setAuthenticationFromToken(accessToken);
+                // url 매칭 확인 : 특정 http 메소드 + 특정 url 이면 repository 에서 조회해야한다고 판단
+                String targetUrl = req.getRequestURL().toString();
+                boolean isFindRepositoryUrl = isFindRepositoryTargetUrl(
+                        targetUrl
+                );
+                setAuthenticationFromToken(accessToken, isFindRepositoryUrl);
             } catch (Exception e) {
-                log.error("인증 실패: " + e.getMessage());
+                log.error("인증 실패: " , e);
                 return;
             }
         }
@@ -62,16 +72,22 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         filterChain.doFilter(req, res);
     }
 
-    public void setAuthenticationFromToken(String token) {
+    public void setAuthenticationFromToken(String token, Boolean isUseRepository) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthenticationFromToken(token);
+        Authentication authentication = createAuthenticationFromToken(token, isUseRepository);
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
     }
 
-    private Authentication createAuthenticationFromToken(String token) {
-        // `loadUserByToken`을 사용하여 API Gateway에서 유저 정보 가져오기
-        UserDetails userDetails = userDetailsService.loadUserByToken(token);
+    private Authentication createAuthenticationFromToken(String token, Boolean isUseRepository) {
+
+        UserDetails userDetails = null;
+        if (isUseRepository) {
+            userDetails = userDetailsService.loadUserByTokenUsingRepository(token);
+        } else {
+            // `loadUserByToken`을 사용하여 API Gateway에서 유저 정보 가져오기
+            userDetails = userDetailsService.loadUserByToken(token);
+        }
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
@@ -89,5 +105,22 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private Authentication createAuthentication(String username) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+
+    /**
+     * 요청 URL 을 확인 한 뒤 유저정보를 repository 에서 조회해야하는지 판단
+     * @param currentUrl
+     * @return
+     */
+    private boolean isFindRepositoryTargetUrl ( String currentUrl ) {
+        int i = currentUrl.lastIndexOf(REPOSITORY_FIND_URL);
+        String substring = currentUrl.substring(i).replace(REPOSITORY_FIND_URL, "");
+        if (substring.startsWith(APP_URL_SUFFIX)) {
+            substring = substring.replace(APP_URL_SUFFIX, "");
+        } else {
+            substring = substring.replace(SERVICE_URL_SUFFIX, "");
+        }
+
+        return substring.startsWith(USER_API_SUFFIX);
     }
 }

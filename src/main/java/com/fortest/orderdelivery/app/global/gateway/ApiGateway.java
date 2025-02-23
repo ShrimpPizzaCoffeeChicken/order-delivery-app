@@ -553,22 +553,24 @@ public class ApiGateway {
      * userId를 기반으로 유저 정보를 조회하는 메서드
      * from : All Service
      */
-    public UserResponseDto getUserByIdFromApp(Long userId) {
-        String targetUrl = USER_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{userId}", userId.toString());
+    public UserResponseDto getUserByIdFromApp(Long userId, String accessToken) {
+            String targetUrl = USER_APP_URL
+                    .replace("{host}", "localhost")
+                    .replace("{port}", "8082")
+                    .replace("{userId}", userId.toString());
 
-        CommonDto<UserResponseDto> commonResponse = webClient.get()
-                .uri(targetUrl)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>(){})
-                .block();
+            CommonDto<UserResponseDto> commonResponse = webClient.get()
+                    .uri(targetUrl)
+//                .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {
+                    })
+                    .block();
 
-        String messageKey = "app.user.not-found-user-id";
-        checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
+            String messageKey = "app.user.not-found-user-id";
+            checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
 
-        return commonResponse.getData();
+            return commonResponse.getData();
     }
 
     // END : User Service ----------------------------------------------------------------------------------------------
