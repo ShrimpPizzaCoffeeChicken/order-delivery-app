@@ -37,44 +37,43 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         FilterChain filterChain) throws ServletException, IOException {
         log.info("authorizationFilter=============");
 
-            // Access Token 가져오기
-            String accessToken = jwtUtil.getAccessTokenFromHeader(req);
+        // Access Token 가져오기
+        String accessToken = jwtUtil.getAccessTokenFromHeader(req);
 
-            if (StringUtils.hasText(accessToken)) {
-                if (!jwtUtil.validateToken(accessToken)) {
-                    log.error("Access Token이 만료됨");
+        if (StringUtils.hasText(accessToken)) {
+            if (!jwtUtil.validateToken(accessToken)) {
+                log.error("Access Token이 만료됨");
 
-                    // 만료된 경우, 401 응답을 JSON으로 반환
-                    res.setContentType("application/json");
-                    res.setCharacterEncoding("UTF-8");
-                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // 만료된 경우, 401 응답을 JSON으로 반환
+                res.setContentType("application/json");
+                res.setCharacterEncoding("UTF-8");
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-                    PrintWriter writer = res.getWriter();
-                    writer.write("{ \"message\": \"Access Token Expired\", \"code\": 401 }");
-                    writer.flush();
-                    return;
-                }
-
-                //Claims info = jwtUtil.getUserInfoFromToken(accessToken);
-
-                try {
-                    // url 매칭 확인 : 특정 http 메소드 + 특정 url 이면 repository 에서 조회해야한다고 판단
-                    String targetUrl = req.getRequestURL().toString();
-                    boolean isFindRepositoryUrl = isFindRepositoryTargetUrl(
-                        targetUrl
-                    );
-
-                    log.info("isFindRepositoryUrl : {}", isFindRepositoryUrl);
-
-                    setAuthenticationFromToken(accessToken, isFindRepositoryUrl);
-                } catch (Exception e) {
-                    log.error("인증 실패: ", e);
-                    return;
-                }
-
-                // 다음 필터 실행
-                filterChain.doFilter(req, res);
+                PrintWriter writer = res.getWriter();
+                writer.write("{ \"message\": \"Access Token Expired\", \"code\": 401 }");
+                writer.flush();
+                return;
             }
+
+            //Claims info = jwtUtil.getUserInfoFromToken(accessToken);
+
+            try {
+                // url 매칭 확인 : 특정 http 메소드 + 특정 url 이면 repository 에서 조회해야한다고 판단
+                String targetUrl = req.getRequestURL().toString();
+                boolean isFindRepositoryUrl = isFindRepositoryTargetUrl(
+                    targetUrl
+                );
+
+                log.info("isFindRepositoryUrl : {}", isFindRepositoryUrl);
+
+                setAuthenticationFromToken(accessToken, isFindRepositoryUrl);
+            } catch (Exception e) {
+                log.error("인증 실패: ", e);
+                return;
+            }
+        }
+        // 다음 필터 실행
+        filterChain.doFilter(req, res);
     }
 
     public void setAuthenticationFromToken(String token, Boolean isUseRepository) {

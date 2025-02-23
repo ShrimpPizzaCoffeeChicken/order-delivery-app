@@ -63,7 +63,7 @@ public class AiRequestService {
      */
     @Transactional
     public AiRequestGetListResponseDto getAiRequestList(String storeId, Integer page, Integer size, String orderby, String sort, String search, User user) {
-        StoreResponseDto validStoreDto = apiGateway.getValidStoreFromApp(storeId);
+        StoreResponseDto validStoreDto = apiGateway.getValidStoreFromApp(storeId, user);
 
         if (user.getRoleType().getRoleName() == RoleType.RoleName.CUSTOMER
             || user.getRoleType().getRoleName() == RoleType.RoleName.OWNER) {
@@ -80,7 +80,7 @@ public class AiRequestService {
 
     @Transactional
     public AiRequestSaveResponseDto saveAiRequest (AiRequestSaveRequestDto requestDto, User user) {
-        StoreResponseDto validStoreDto = apiGateway.getValidStoreFromApp(requestDto.getStoreId());
+        StoreResponseDto validStoreDto = apiGateway.getValidStoreFromApp(requestDto.getStoreId(), user);
 
         if (!validStoreDto.getOwnerName().equals(user.getUsername())) {
             throw new NotValidRequestException(messageUtil.getMessage("app.airequest.not-valid-user"));

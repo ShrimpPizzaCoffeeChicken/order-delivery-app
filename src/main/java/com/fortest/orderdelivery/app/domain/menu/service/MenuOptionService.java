@@ -53,7 +53,7 @@ public class MenuOptionService {
         Long userId = user.getId();
 
         //메뉴 유효한지 확인 후 객체 가져오기
-        MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId));
+        MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId), user);
 
         Menu menu = menuDto.getMenuList().get(0);
 
