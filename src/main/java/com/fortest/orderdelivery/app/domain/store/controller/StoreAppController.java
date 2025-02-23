@@ -9,15 +9,17 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @Validated
-@RequestMapping("api/app/stores")
+@RequestMapping("/api/app/stores")
 @RequiredArgsConstructor
 public class StoreAppController {
 
@@ -28,6 +30,8 @@ public class StoreAppController {
     @GetMapping("/{storeId}")
     public ResponseEntity<CommonDto<StoreCheckResponseDto>> getStoreCheck(
             @Valid @Size(min = 1, max = 50) @PathVariable("storeId") String storeId) {
+
+        log.info(storeId);
 
         StoreCheckResponseDto storeCheckResponseDto = storeAppService.getStoreCheck(storeId);
 

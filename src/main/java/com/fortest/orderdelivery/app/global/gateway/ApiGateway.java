@@ -45,7 +45,7 @@ public class ApiGateway {
     private final MessageUtil messageUtil;
 
     private static final String CONTENT_TYPE =                   "Content-Type";
-    private static final String USER_APP_URL =                   "http://{host}:{port}/api/app/user/{userId}";
+    private static final String USER_APP_URL =                   "http://{host}:{port}/api/app/users/{userId}";
     private static final String STORE_VALID_APP_URL =            "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
     private static final String STORE_APP_URL =                  "http://{host}:{port}/api/app/stores/{storeId}";
     private static final String MENU_APP_URL =                   "http://{host}:{port}/api/app/menus";
@@ -558,23 +558,28 @@ public class ApiGateway {
      * from : All Service
      */
     public UserResponseDto getUserByIdFromApp(Long userId, String accessToken) {
+        try {
             String targetUrl = USER_APP_URL
-                    .replace("{host}", "localhost")
-                    .replace("{port}", "8082")
-                    .replace("{userId}", userId.toString());
+                .replace("{host}", "localhost")
+                .replace("{port}", "8082")
+                .replace("{userId}", userId.toString());
 
             CommonDto<UserResponseDto> commonResponse = webClient.get()
-                    .uri(targetUrl)
+                .uri(targetUrl)
 //                .header("Authorization", "Bearer " + accessToken)
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {
-                    })
-                    .block();
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {
+                })
+                .block();
 
             String messageKey = "app.user.not-found-user-id";
             checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
 
             return commonResponse.getData();
+        } catch(Exception e) {
+            log.error("유저 정보 조회 에러", e);
+            throw e;
+        }
     }
 
     // END : User Service ----------------------------------------------------------------------------------------------
