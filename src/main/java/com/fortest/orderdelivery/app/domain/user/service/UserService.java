@@ -141,7 +141,7 @@ public class UserService {
         responseData.put("username", username);
         responseData.put("is-available", isAvailable);
 
-        String messageKey = isAvailable ? "username.available" : "username.taken";
+        String messageKey = isAvailable ? "user.username.available" : "user.username.not-available";
 
         //응답 객체 생성 및 반환
         return new CommonDto<>(messageUtil.getMessage(messageKey),

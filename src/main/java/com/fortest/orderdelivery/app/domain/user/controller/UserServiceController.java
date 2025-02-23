@@ -67,8 +67,10 @@ public class UserServiceController {
     }
 
     //사용자 정보 조회
+    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/users/{userId}")
-    public ResponseEntity<CommonDto<UserGetDetailResponseDto>> getUserDetail (@PathVariable("userId") Long userId) {
+    public ResponseEntity<CommonDto<UserGetDetailResponseDto>> getUserDetail (@PathVariable("userId") Long userId,
+                                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
         UserGetDetailResponseDto userDetailResponseDto = userService.getUserDetail(userId);
 
         return ResponseEntity.ok(

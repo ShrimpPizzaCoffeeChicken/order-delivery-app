@@ -72,9 +72,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                // 다음 필터 실행
-                filterChain.doFilter(req, res);
+
             }
+        // 다음 필터 실행
+        filterChain.doFilter(req, res);
     }
 
     public void setAuthenticationFromToken(String token, Boolean isUseRepository) {
