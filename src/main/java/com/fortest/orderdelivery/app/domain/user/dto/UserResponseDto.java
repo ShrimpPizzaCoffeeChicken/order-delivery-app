@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fortest.orderdelivery.app.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -50,6 +50,7 @@ public class Order extends BaseDataEntity {
         WAIT("대기"),
         PAYED("결제완료"),
         COMPLETE("배달완료"),
+        DELIVERY_FAIL("배달실패"),
         FAIL("주문실패"),
         CANCEL("주문취소");
 

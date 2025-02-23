@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.order.service;
 
+import com.fortest.orderdelivery.app.domain.delivery.dto.DeliveryGetDataResponseDto;
 import com.fortest.orderdelivery.app.domain.order.dto.*;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.order.mapper.OrderMapper;
@@ -36,6 +37,7 @@ public class OrderService {
     private final OrderQueryRepository orderQueryRepository;
 
     private static final int REMOVE_ABLE_TIME = 5 * 60; // 60초
+    private static final String DELIVERY_CANCEL_STATUS = "CANCEL";
 
     @Transactional
     public OrderGetDetailDataResponseDto getOderDetailData (String orderId) {
@@ -131,6 +133,19 @@ public class OrderService {
         return OrderMapper.entityToGetDetailDto(order);
     }
 
+    public String deleteEntry (String orderId, User user) {
+        try {
+            return deleteOrder(orderId, user);
+        } catch (Exception e) {
+            log.error("Fail Cancel Order : orderId = {}", orderId, e);
+            if (e instanceof BusinessLogicException) {
+                throw e;
+            } else {
+                throw new BusinessLogicException(messageUtil.getMessage("app.order.cancel-fail"));
+            }
+        }
+    }
+
     @Transactional
     public String deleteOrder(String orderId, User user) {
 
@@ -148,11 +163,11 @@ public class OrderService {
             throw new BusinessLogicException(messageUtil.getMessage("app.order.inable-delete"));
         }
 
-        // 결제 정보 존재 확인
-
-        // 결제 정보 검사 : 결제 상태가 완료인 주문만 취소 가능
-
-        // TODO : 결제 취소 요청 전송
+        // 배달 정보 확인
+        DeliveryGetDataResponseDto deliveryDataFromApp = apiGateway.getDeliveryIdByOrderIdFromApp(order.getId());
+        if (deliveryDataFromApp.getIsExist()) {
+            apiGateway.updateDeliveryStatusFromApp(deliveryDataFromApp.getDeliveryId(), DELIVERY_CANCEL_STATUS, user);
+        }
 
         order.isDeletedNow(user.getId());
         return order.getId();

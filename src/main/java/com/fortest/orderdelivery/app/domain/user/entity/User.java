@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.user.entity;
 
+import com.fortest.orderdelivery.app.domain.user.dto.UserUpdateRequestDto;
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -41,6 +42,22 @@ public class User extends BaseDataEntity {
     @Bean
     public void encodePassword(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);
+    }
+
+    public void updateRollType(RoleType roleType) {
+        this.roleType = roleType;
+    }
+
+    public void updateUserInfo(UserUpdateRequestDto requestDto) {
+        if (requestDto.getNickname() != null) {
+            this.nickname = requestDto.getNickname();
+        }
+        if (requestDto.getEmail() != null) {
+            this.email = requestDto.getEmail();
+        }
+        if (requestDto.getPassword() != null && !requestDto.getPassword().isBlank()) {
+            this.password = requestDto.getPassword(); // ⚠️ 비밀번호 암호화 필요
+        }
     }
 
     public void setNickname(String nickname) {

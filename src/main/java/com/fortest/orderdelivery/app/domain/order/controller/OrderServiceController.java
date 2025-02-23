@@ -85,7 +85,7 @@ public class OrderServiceController {
     @DeleteMapping("/orders/{orderId}")
     public ResponseEntity<CommonDto<Map<String, String>>> deleteOrder (@PathVariable("orderId") String orderId,
                                                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String deletedOrderId = orderService.deleteOrder(orderId, userDetails.getUser());
+        String deletedOrderId = orderService.deleteEntry(orderId, userDetails.getUser());
         Map<String, String> data = Map.of("order-id", deletedOrderId);
         return ResponseEntity.ok(
                 CommonDto.<Map<String, String>> builder()
