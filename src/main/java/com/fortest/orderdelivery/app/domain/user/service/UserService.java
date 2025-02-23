@@ -166,7 +166,6 @@ public class UserService {
 
     @Transactional
     public void updateUser(Long userId, UserUpdateRequestDto requestDto, String loggedInUsername) {
-        log.info("회원 정보 수정 요청 - userId: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("not-found.user"));
 
@@ -216,6 +215,26 @@ public class UserService {
 
         return userQueryRepository.findUsersByFilters(username, nickname, roleName);
     }
+
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserDetailMe(Long userId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new NotFoundException("not-found.user"));
+
+        return UserResponseDto.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .role(user.getRoleType().getRoleName().name())
+                .isPublic(user.getIsPublic())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
+                .createdBy(user.getCreatedBy())
+                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
+                .updatedBy(user.getUpdatedBy())
+                .build();
+    }
+
 
 
 
