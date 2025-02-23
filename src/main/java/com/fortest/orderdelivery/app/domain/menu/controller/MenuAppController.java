@@ -39,9 +39,9 @@ public class MenuAppController {
 
     @GetMapping("/options/valid")
     public ResponseEntity<CommonDto<MenuAndOptionValidResponseDto>> validateMenuAndOption(
-        @RequestBody MenuAndOptionValidRequestDto menuAndOptionValidRequestDto
+        @RequestParam(name= "data") String data
     ) {
-        MenuAndOptionValidResponseDto responseDto = menuAppService.validateMenuAndOption(menuAndOptionValidRequestDto);
+        MenuAndOptionValidResponseDto responseDto = menuAppService.validateMenuAndOption(data);
 
         return ResponseEntity.ok(CommonDto.<MenuAndOptionValidResponseDto>builder()
             .message(messageUtil.getSuccessMessage())

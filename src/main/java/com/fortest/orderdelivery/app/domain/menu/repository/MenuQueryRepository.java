@@ -7,6 +7,7 @@ import static com.fortest.orderdelivery.app.domain.menu.entity.QMenuOption.menuO
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetQueryDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
+import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
 import com.querydsl.core.types.OrderSpecifier;

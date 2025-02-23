@@ -1,6 +1,7 @@
 package com.fortest.orderdelivery.app.domain.menu.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fortest.orderdelivery.app.domain.order.entity.MenuOrder;
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,10 @@ public class Menu extends BaseDataEntity {
 
     @Column(length = 50, nullable = false)
     private String storeId;
+
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<MenuOption> menuOptionList = new ArrayList<>();
 
     @Column(length = 30, nullable = false)
     @Enumerated(value = EnumType.STRING)
