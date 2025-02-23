@@ -12,6 +12,7 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,6 +31,7 @@ public class MenuServiceController {
     private final MessageUtil messageUtil;
     private final MenuService menuService;
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PostMapping
     public ResponseEntity<CommonDto<MenuResponseDto>> saveMenu(
         @RequestBody MenuSaveRequestDto menuSaveRequestDto) {
@@ -60,6 +62,7 @@ public class MenuServiceController {
             .build());
     }
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/{menuId}")
     public ResponseEntity<CommonDto<MenuResponseDto>> updateMenu(
         @RequestBody MenuUpdateRequestDto menuUpdateRequestDto,
@@ -92,6 +95,7 @@ public class MenuServiceController {
             .build());
     }
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @DeleteMapping("/{menuId}")
     public ResponseEntity<CommonDto<MenuResponseDto>> deleteMenu(
         @PathVariable("menuId") String menuId

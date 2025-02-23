@@ -10,6 +10,7 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ public class MenuOptionServiceController {
     private final MessageUtil messageUtil;
     private final MenuOptionService menuOptionService;
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PostMapping("/menus/{menuId}/options")
     public ResponseEntity<CommonDto<MenuOptionResponseDto>> saveMenuOption(
         @RequestBody MenuOptionsSaveRequestDto menuOptionsSaveRequestDto,
@@ -41,6 +43,7 @@ public class MenuOptionServiceController {
             .build());
     }
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/options/{optionId}")
     public ResponseEntity<CommonDto<MenuOptionResponseDto>> updateMenuOption(
         @RequestBody MenuOptionUpdateRequestDto menuOptionUpdateRequestDto,
@@ -55,6 +58,7 @@ public class MenuOptionServiceController {
             .build());
     }
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @DeleteMapping("/options/{optionId}")
     public ResponseEntity<CommonDto<MenuOptionResponseDto>> deleteMenuOption(
         @PathVariable("optionId") String optionId

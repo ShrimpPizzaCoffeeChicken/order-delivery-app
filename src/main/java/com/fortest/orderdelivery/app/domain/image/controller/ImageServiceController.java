@@ -10,6 +10,7 @@ import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ public class ImageServiceController {
     private final MessageUtil messageUtil;
     private final ImageService imageService;
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PostMapping("/menus")
     public ResponseEntity<CommonDto<ImageResponseDto>> registerMenuImage(
         @RequestParam(value = "image-list", required = false)
@@ -40,6 +42,7 @@ public class ImageServiceController {
             .build());
     }
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PostMapping("/menus/{menuId}")
     public ResponseEntity<CommonDto<ImageResponseDto>> updateMenuImage(
         @RequestParam(value = "image-list", required = false) List<MultipartFile> multipartFileList,
@@ -53,6 +56,7 @@ public class ImageServiceController {
             .build());
     }
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PostMapping("/options/{optionId}")
     public ResponseEntity<CommonDto<ImageResponseDto>> updateMenuOptionImage(
         @RequestParam(value = "image-list", required = false) List<MultipartFile> multipartFileList,
@@ -66,6 +70,7 @@ public class ImageServiceController {
             .build());
     }
 
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/menus")
     public ResponseEntity<CommonDto<ImageResponseDto>> deleteImageFromS3(@RequestBody
     MenuImageRequestDto menuImageRequestDto) {
