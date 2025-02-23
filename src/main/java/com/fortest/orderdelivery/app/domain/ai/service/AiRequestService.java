@@ -10,8 +10,6 @@ import com.fortest.orderdelivery.app.domain.ai.repository.AiRequestQueryReposito
 import com.fortest.orderdelivery.app.domain.ai.repository.AiRequestRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
-import com.fortest.orderdelivery.app.global.dto.CommonDto;
-import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
@@ -22,7 +20,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
