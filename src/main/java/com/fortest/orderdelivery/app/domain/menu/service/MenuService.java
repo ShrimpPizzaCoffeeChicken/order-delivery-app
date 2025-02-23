@@ -57,7 +57,7 @@ public class MenuService {
                 .build();
 
             MenuImageMappingResponseDto commonDto = apiGateway.saveMenuIdToImage(
-                menuImageRequestDto);
+                menuImageRequestDto, user);
 
             if (!commonDto.getResult()) {
                 throw new BusinessLogicException(
@@ -96,7 +96,7 @@ public class MenuService {
 
     @Transactional
     public MenuResponseDto deleteMenu(String menuId, User user) {
-        apiGateway.deleteMenuImageFromApp(menuId);
+        apiGateway.deleteMenuImageFromApp(menuId, user);
 
         Menu menu = getMenuById(menuId);
         menu.isDeletedNow(user.getId());
