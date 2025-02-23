@@ -5,7 +5,6 @@ import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestGetListResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.ai.dto.AiRequestSaveResponseDto;
 import com.fortest.orderdelivery.app.domain.ai.service.AiRequestService;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
