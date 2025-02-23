@@ -17,6 +17,7 @@ public class ReviewSaveRequestDto {
     @JsonProperty("order-id")
     private String orderId;
 
+    @Size(min = 1, max = 5)
     @JsonProperty("rate")
     private Long rate;
 

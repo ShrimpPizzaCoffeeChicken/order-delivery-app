@@ -25,6 +25,7 @@ public class Review extends BaseDataEntity {
     @Column(length = 50)
     private String orderId;
 
+    @Column(length = 5)
     private Long rate;
 
     @Column(columnDefinition = "TEXT")
