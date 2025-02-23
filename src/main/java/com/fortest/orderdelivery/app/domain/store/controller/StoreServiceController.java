@@ -27,8 +27,8 @@ public class StoreServiceController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/stores/{storeId}/categories")
-    public ResponseEntity<CommonDto<StoreUpdateCategoryResponseDto>> updateCategory(@PathVariable("storeId") String storeId, @RequestBody StoreUpdateCategoryRequestDto requestDto) {
-        // TODO : 유저 정보 획득
+    public ResponseEntity<CommonDto<StoreUpdateCategoryResponseDto>> updateCategory(@PathVariable("storeId") String storeId,
+                                                                                    @RequestBody StoreUpdateCategoryRequestDto requestDto) {
         StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, new User(), requestDto);
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateCategoryResponseDto>builder()

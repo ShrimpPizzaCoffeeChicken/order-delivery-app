@@ -27,7 +27,6 @@ public class CategoryServiceController {
     @PostMapping("/categories")
     public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@Valid @RequestBody CategorySaveRequestDto categorySaveRequestDto,
                                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        // TODO : TEMP : userId 를 UserDetail 에서 획득해야함
         CategorySaveResponseDto categorySaveResponseDto = categoryService.saveCategory(categorySaveRequestDto, userDetails.getUser());
 
         return ResponseEntity.ok(
