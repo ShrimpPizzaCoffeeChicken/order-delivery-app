@@ -4,7 +4,6 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionUpdateRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuOptionService;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
