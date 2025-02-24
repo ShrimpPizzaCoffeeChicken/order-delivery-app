@@ -27,11 +27,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-    private static final String SUCCESS_MESSAGE = "로그인 성공 및 JWT 생성";
     private static final String FAILURE_MESSAGE = "로그인 실패";
     private static final String RESPONSE_TYPE = "application/json";
     private static final String CHARSET_UTF8 = "UTF-8";
-    private static final String STATUS_SUCCESS = "success";
+    private static final String STATUS_SUCCESS = "SUCCESS";
+    private static final String STATUS_DELETE = "삭제된 계정입니다.";
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil = jwtUtil;
@@ -44,8 +44,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try {
             LoginRequestDto requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
-            return getAuthenticationManager().authenticate( //매니저 통해 인증진행
-                    new UsernamePasswordAuthenticationToken( //username, password 읽고 토큰 생성
+            return getAuthenticationManager().authenticate(
+                    new UsernamePasswordAuthenticationToken(
                             requestDto.getUsername(),
                             requestDto.getPassword(),
                             null
@@ -59,8 +59,24 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+
         UserDetailsImpl principal = (UserDetailsImpl) authResult.getPrincipal();
         User user = principal.getUser();
+
+        if (user.getDeletedAt() != null || user.getDeletedBy() != null) {
+            CommonDto<String> failureResponse = new CommonDto<>(
+                    FAILURE_MESSAGE, HttpStatus.UNAUTHORIZED.value(), STATUS_DELETE);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonResponse = objectMapper.writeValueAsString(failureResponse);
+
+            response.setContentType(RESPONSE_TYPE);
+            response.setCharacterEncoding(CHARSET_UTF8);
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write(jsonResponse);
+            response.getWriter().flush();
+            return;
+        }
 
         String username = user.getUsername();
         RoleType roleType = user.getRoleType();
@@ -71,7 +87,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         jwtUtil.addAccessTokenToHeader(accessToken, response);
         jwtUtil.addRefreshTokenToCookie(refreshToken, response);
 
-        //LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
         CommonDto<LoginResponseDto> success = new CommonDto<>(
                 STATUS_SUCCESS, HttpStatus.OK.value(),null);
 
@@ -86,6 +101,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        response.setStatus(401);
+
+        CommonDto<String> failureResponse = new CommonDto<>(
+                FAILURE_MESSAGE, HttpStatus.UNAUTHORIZED.value(), null);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonResponse = objectMapper.writeValueAsString(failureResponse);
+
+        response.setContentType(RESPONSE_TYPE);
+        response.setCharacterEncoding(CHARSET_UTF8);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write(jsonResponse);
+        response.getWriter().flush();
     }
 }
