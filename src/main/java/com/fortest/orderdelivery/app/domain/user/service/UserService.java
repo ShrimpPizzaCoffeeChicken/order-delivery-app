@@ -10,8 +10,8 @@ import com.fortest.orderdelivery.app.domain.user.repository.UserQueryRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
-import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -19,13 +19,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -97,7 +98,7 @@ public class UserService {
                 .build();
     }
 
-
+    @Transactional
     public UserSignupResponseDto signup(SignupRequestDto requestDto) {
 
         validateUsername(requestDto.getUsername());
@@ -118,10 +119,8 @@ public class UserService {
         userRepository.save(user);
         userRepository.flush();
 
-        user.isCreatedBy(user.getId());
-        userRepository.save(user);
+        userQueryRepository.insertUpdatedAt(user);
 
-        // User -> UserSignupResponseDto 변환 후 반환
         return UserMapper.fromUserToUserSignupResponseDto(user);
     }
 
@@ -190,7 +189,6 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(targetUserId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
 
-        //소프트 삭제 처리 (삭제한 userId 기록)
         user.softDelete(requesterUserId);
     }
 
@@ -204,12 +202,13 @@ public class UserService {
         response.addCookie(cookie);
     }
 
-    public List<UserResponseDto> searchUsers(String username, String nickname, String roleName) {
-        if (username == null && nickname == null && roleName == null) {
-            throw new NotValidRequestException("검색 조건을 하나 이상 입력하세요.");
-        }
+    @Transactional
+    public UserGetListResponseDto searchUsers(Integer page, Integer size, String orderby, String sort, String search) {
 
-        return userQueryRepository.findUsersByFilters(username, nickname, roleName);
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<User> userPage = userQueryRepository.findUserList(pageable, search);
+
+        return UserMapper.pageToGetUserListDto(userPage, search);
     }
 
     @Transactional(readOnly = true)

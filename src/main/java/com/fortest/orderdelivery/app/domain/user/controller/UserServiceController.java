@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.user.controller;
 
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListRequestDto;
 import com.fortest.orderdelivery.app.domain.user.dto.*;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -8,6 +9,7 @@ import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,7 +35,7 @@ public class UserServiceController {
     @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/users/{userId}/rolls")
     public ResponseEntity<CommonDto<UserUpdateRollResponseDto>> updateRoll(@PathVariable("userId") Long userId,
-                                                                           @RequestBody UserUpdateRollRequestDto requestDto,
+                                                                           @Valid @RequestBody UserUpdateRollRequestDto requestDto,
                                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         UserUpdateRollResponseDto responseDto = userService.updateRoll(userId, requestDto.getToRoll(), userDetails.getUser());
         return ResponseEntity.ok(
@@ -53,7 +55,7 @@ public class UserServiceController {
 
     // 회원가입
     @PostMapping("/users/signup")
-    public ResponseEntity<CommonDto<UserSignupResponseDto>> signup(@RequestBody SignupRequestDto requestDto) {
+    public ResponseEntity<CommonDto<UserSignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         UserSignupResponseDto responseDto = userService.signup(requestDto);
 
         return ResponseEntity.ok(
@@ -97,7 +99,7 @@ public class UserServiceController {
     @PatchMapping("/users/{userId}")
     public ResponseEntity<CommonDto<Void>> updateUser(
             @PathVariable("userId") Long userId,
-            @RequestBody UserUpdateRequestDto requestDto,
+            @Valid @RequestBody UserUpdateRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
         // JWT에서 가져온 username
         String loggedInUsername = userDetails.getUsername();
@@ -136,20 +138,22 @@ public class UserServiceController {
     //관리자 회원정보 조회
     @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')" )
     @GetMapping("/users/search")
-    public ResponseEntity<CommonDto<List<UserResponseDto>>> searchUsers(
-            @RequestParam(name = "username", required = false) String username,
-            @RequestParam(name = "nickname", required = false) String nickname,
-            @RequestParam(name = "role", required = false) String role) {
+    public ResponseEntity<CommonDto<UserGetListResponseDto>> searchUsers(
+            @Valid OrderGetListRequestDto requestDto) {
 
-        log.info("회원 검색 요청 - username: {}, nickname: {}, role: {}", username, nickname, role);
-
-        List<UserResponseDto> users = userService.searchUsers(username, nickname, role);
+        UserGetListResponseDto userList = userService.searchUsers(
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getOrderby(),
+                requestDto.getSort(),
+                requestDto.getSearch()
+        );
 
         return ResponseEntity.ok(
-                CommonDto.<List<UserResponseDto>>builder()
-                        .message(messageUtil.getSuccessMessage())
+                CommonDto.<UserGetListResponseDto>builder()
                         .code(HttpStatus.OK.value())
-                        .data(users)
+                        .message(messageUtil.getSuccessMessage())
+                        .data(userList)
                         .build()
         );
     }

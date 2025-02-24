@@ -18,6 +18,8 @@ public class OrderValidResponseDto {
     private Integer orderPrice;
     @JsonProperty("order-status")
     private String orderStatus;
+    @JsonProperty("order-type")
+    private String orderType;
     @JsonProperty("customer-name")
     private String customerName;
     @JsonProperty("store-id")
