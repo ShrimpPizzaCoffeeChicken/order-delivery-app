@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 public class StoreMapper {
 
@@ -85,6 +86,14 @@ public class StoreMapper {
     public static StoreMenuValidResponseDto menuOptionResponseDtoToStoreValidResDto(Store store, MenuOptionValidReponseDto menuOptionValidReponseDto) {
         List<StoreMenuValidResponseDto.MenuDto> afterMenuDtoList = new ArrayList<>();
         List<MenuOptionValidReponseDto.MenuDto> beforeMenuDtoList = menuOptionValidReponseDto.getMenuList();
+
+        if(CollectionUtils.isEmpty(beforeMenuDtoList)) {
+            return StoreMenuValidResponseDto.builder()
+                .storeId(store.getId())
+                .storeName(store.getName())
+                .menuList(null)
+                .build();
+        }
         for (MenuOptionValidReponseDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
             List<StoreMenuValidResponseDto.OptionDto> afterOptionList = new ArrayList<>();
             StoreMenuValidResponseDto.MenuDto afterMenuDto = StoreMenuValidResponseDto.MenuDto.builder()
