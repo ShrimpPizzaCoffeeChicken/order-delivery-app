@@ -51,11 +51,17 @@ public class UserService {
     // 유저 권한 업데이트
     @Transactional
     public UserUpdateRollResponseDto updateRoll(Long targetUserId, String toRollString, User user) {
+
+        if (toRollString == null || toRollString.trim().isEmpty()) {
+            throw new BusinessLogicException("toRoll 값이 null 또는 비어 있습니다.");
+        }
+
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-user")));
         String fromRoll = targetUser.getRoleType().getRoleName().name();
 
         RoleType.RoleName toRoleName = RoleType.RoleName.getByString(messageUtil, toRollString);
+
         RoleType newRoleType = roleTypeRepository.findByRoleName(toRoleName)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-role-name")));
         String toRoll = newRoleType.getRoleName().name();
