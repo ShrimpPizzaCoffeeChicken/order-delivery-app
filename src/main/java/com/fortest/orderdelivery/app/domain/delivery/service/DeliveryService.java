@@ -108,8 +108,17 @@ public class DeliveryService {
     @Transactional
     public DeliveryGetDetailResponseDto getDeliveryDetail(String deliveryId, User user) {
 
-        Delivery delivery = deliveryQueryRepository.findDeliveryDetail(deliveryId, user.getUsername())
-                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
+        Optional<Delivery> deliveryOptional = deliveryQueryRepository.findDeliveryDetail(deliveryId);
+        if (deliveryOptional.isEmpty()) {
+            throw new NotFoundException(messageUtil.getMessage("not-found.delivery"));
+        }
+        Delivery delivery = deliveryOptional.get();
+        if (!user.getUsername().equals(delivery.getCustomerName())) {
+            if (!RoleType.RoleName.MASTER.name().equals(user.getRoleType().getRoleName().name())
+                    && !RoleType.RoleName.MANAGER.name().equals(user.getRoleType().getRoleName().name())) {
+                throw new NotFoundException(messageUtil.getMessage("app.delivery.not-valid-user"));
+            }
+        }
 
         OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(delivery.getOrderId(), user);
 
@@ -129,12 +138,14 @@ public class DeliveryService {
     @Transactional
     public DeliveryGetListReponseDto getDeliveryList (Integer page, Integer size, String orderby, String sort, String search, User user) {
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
-        Page<Delivery> deliveryPage;
-        if (search == null || search.isBlank() || search.isEmpty()) {
-            deliveryPage = deliveryQueryRepository.findDeliveryList(pageable, user.getUsername());
-        } else {
-            deliveryPage = deliveryQueryRepository.findDeliveryListUsingSearch(pageable, search, user.getUsername());
+
+        String userName = user.getUsername();
+        if (RoleType.RoleName.MASTER.name().equals(user.getRoleType().getRoleName().name())
+                || RoleType.RoleName.MANAGER.name().equals(user.getRoleType().getRoleName().name())) {
+            userName = null;
         }
+        Page<Delivery> deliveryPage = deliveryQueryRepository.findDeliveryListUsingSearch(pageable, search, userName);
+
         return DeliveryMapper.entityToGetListDto(deliveryPage, search);
     }
 
