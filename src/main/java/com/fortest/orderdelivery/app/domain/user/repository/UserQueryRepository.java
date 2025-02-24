@@ -18,9 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static com.fortest.orderdelivery.app.domain.order.entity.QOrder.order;
 import static com.fortest.orderdelivery.app.domain.user.entity.QRoleType.*;
 import static com.fortest.orderdelivery.app.domain.user.entity.QUser.*;
 

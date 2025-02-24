@@ -1,6 +1,5 @@
 package com.fortest.orderdelivery.app.domain.user.service;
 
-import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.user.dto.*;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
@@ -11,7 +10,6 @@ import com.fortest.orderdelivery.app.domain.user.repository.UserQueryRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
-import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
@@ -29,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -124,10 +121,6 @@ public class UserService {
 
         userQueryRepository.insertUpdatedAt(user);
 
-    //    user.isCreatedBy(user.getId());
-     //   userRepository.save(user);
-
-        // User -> UserSignupResponseDto 변환 후 반환
         return UserMapper.fromUserToUserSignupResponseDto(user);
     }
 
@@ -196,7 +189,6 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(targetUserId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
 
-        //소프트 삭제 처리 (삭제한 userId 기록)
         user.softDelete(requesterUserId);
     }
 

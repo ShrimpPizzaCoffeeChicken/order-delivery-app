@@ -11,8 +11,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
 
-    Optional<User> findByUsername(String username);
-
     Optional<User> findByIdAndDeletedAtIsNull(Long id);
 
     @Query("SELECT u FROM User u JOIN FETCH u.roleType WHERE u.username = :username")
