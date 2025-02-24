@@ -59,7 +59,7 @@ public class MenuServiceTest {
 
         String data = "json";
 
-        MenuAndOptionValidResponseDto menuAndOptionValidResponseDto  = menuAppService.validateMenuAndOption(data);
+        MenuAndOptionValidResponseDto menuAndOptionValidResponseDto  = menuAppService.validateMenuAndOption(requestDto);
 
         JSONObject jsonObject = new JSONObject(menuAndOptionValidResponseDto);
         log.info("response : " + jsonObject);

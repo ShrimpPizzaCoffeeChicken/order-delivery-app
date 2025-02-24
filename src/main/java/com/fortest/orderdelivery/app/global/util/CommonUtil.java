@@ -21,7 +21,6 @@ public class CommonUtil {
     }
 
     public static LocalDateTime stringToLDT (String ldtString) {
-        log.info("ldtString : {}", ldtString);
         if(Objects.isNull(ldtString) || ldtString.isBlank()) {
             return null;
         }

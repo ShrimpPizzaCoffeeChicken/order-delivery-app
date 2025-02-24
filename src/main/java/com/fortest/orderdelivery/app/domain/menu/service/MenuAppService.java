@@ -34,9 +34,7 @@ public class MenuAppService {
     }
 
 
-    public MenuAndOptionValidResponseDto validateMenuAndOption(String data) {
-
-        MenuAndOptionValidRequestDto menuAndOptionValidRequestDto = CommonUtil.convertJsonToDto(data, MenuAndOptionValidRequestDto.class);
+    public MenuAndOptionValidResponseDto validateMenuAndOption(MenuAndOptionValidRequestDto menuAndOptionValidRequestDto) {
         boolean result = true;
 
         //request menuList 없는 경우 함수 return
