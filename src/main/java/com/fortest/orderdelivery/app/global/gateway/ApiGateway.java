@@ -209,7 +209,7 @@ public class ApiGateway {
             .replace("{port}", "8082")
             .replace("{orderId}", orderId);
 
-        CommonDto<OrderValidResponseDto> commonResponse = webClient.patch()
+        CommonDto<OrderValidResponseDto> commonResponse = webClient.get()
             .uri(targetUrl)
             .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
             .retrieve()
