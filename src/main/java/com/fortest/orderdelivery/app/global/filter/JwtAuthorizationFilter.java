@@ -128,14 +128,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 userDetails.getAuthorities());
     }
 
-
-    // 인증 객체 생성
-    private Authentication createAuthentication(String username) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(userDetails, null,
-                userDetails.getAuthorities());
-    }
-
     /**
      * 요청 URL 을 확인 한 뒤 유저정보를 repository 에서 조회해야하는지 판단
      *

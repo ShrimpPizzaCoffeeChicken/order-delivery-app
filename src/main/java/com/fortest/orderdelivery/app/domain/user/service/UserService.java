@@ -96,6 +96,10 @@ public class UserService {
 
 
     public UserSignupResponseDto signup(SignupRequestDto requestDto) {
+
+        validateUsername(requestDto.getUsername());
+        validatePassword(requestDto.getPassword());
+
         RoleType roleType = roleTypeRepository.findByRoleName(RoleType.RoleName.CUSTOMER)
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("not-found.role")));
 
@@ -125,13 +129,6 @@ public class UserService {
         // User -> UserSignupResponseDto 변환 후 반환
         return UserMapper.fromUserToUserSignupResponseDto(user);
     }
-
-//    @Transactional
-//    public void isCreatedBy(User user){
-//        //  User findUser = userRepository.findById(user.getId()).get();
-//        user.isCreatedBy(user.getId());
-//        userRepository.save(user);
-//    }
 
     @Transactional
     public UserGetDetailResponseDto getUserDetail(Long userId){
@@ -245,7 +242,21 @@ public class UserService {
                 .build();
     }
 
+    private void validateUsername(String username) {
+        // 최소 4자 이상, 10자 이하이며 알파벳 소문자(a~z), 숫자(0~9)만 허용
+        String usernameRegex = "^[a-z0-9]{4,10}$";
+        if (!username.matches(usernameRegex)) {
+            throw new BusinessLogicException(messageUtil.getMessage("invalid.username"));
+        }
+    }
 
+    private void validatePassword(String password) {
+        // 최소 8자 이상, 15자 이하이며 알파벳 대소문자(a~z, A~Z), 숫자(0~9), 특수문자 포함
+        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,15}$";
+        if (!password.matches(passwordRegex)) {
+            throw new BusinessLogicException(messageUtil.getMessage("invalid.password"));
+        }
+    }
 
 
 }
