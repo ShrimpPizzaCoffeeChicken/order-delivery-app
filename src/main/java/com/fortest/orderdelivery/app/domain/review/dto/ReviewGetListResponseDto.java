@@ -31,7 +31,7 @@ public class ReviewGetListResponseDto {
     @NoArgsConstructor
     public static class ReviewDto {
 
-        private Long rate;
+        private Integer rate;
 
         private String contents;
 

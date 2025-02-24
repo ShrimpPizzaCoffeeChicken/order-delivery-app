@@ -13,22 +13,22 @@ import java.util.stream.Collectors;
 
 public class StoreMapper {
 
-    public static Store storeSaveRequestDtoToEntity(StoreSaveRequestDto storeSaveRequestDto, Area area) {
+    public static Store storeSaveRequestDtoToEntity(StoreSaveRequestDto storeSaveRequestDto, Area area, String userName) {
         return Store.builder()
                 .name(storeSaveRequestDto.getStoreName())
                 .area(area)
                 .detailAddress(storeSaveRequestDto.getDetailAddress())
-                .ownerName(storeSaveRequestDto.getOwnerName())
+                .ownerName(userName)
                 .build();
     }
 
-    public static StoreSaveResponseDto entityToStoreSaveResponseDto(Store store, Area area) {
+    public static StoreSaveResponseDto entityToStoreSaveResponseDto(Store store, Area area, String userName) {
         return StoreSaveResponseDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
                 .areaId(area.getId())
                 .detailAddress(store.getDetailAddress())
-                .ownerName(store.getOwnerName())
+                .ownerName(userName)
                 .build();
     }
 

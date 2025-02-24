@@ -2,6 +2,8 @@ package com.fortest.orderdelivery.app.domain.review.entity;
 
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,8 +27,9 @@ public class Review extends BaseDataEntity {
     @Column(length = 50)
     private String orderId;
 
-    @Column(length = 5)
-    private Long rate;
+    @Min(1)
+    @Max(5)
+    private Integer rate;
 
     @Column(columnDefinition = "TEXT")
     private String contents;

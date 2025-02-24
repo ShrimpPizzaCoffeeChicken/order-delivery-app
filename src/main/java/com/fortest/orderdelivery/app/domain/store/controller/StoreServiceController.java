@@ -2,7 +2,6 @@ package com.fortest.orderdelivery.app.domain.store.controller;
 
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.service.StoreService;
-import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
@@ -28,8 +27,9 @@ public class StoreServiceController {
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/stores/{storeId}/categories")
     public ResponseEntity<CommonDto<StoreUpdateCategoryResponseDto>> updateCategory(@PathVariable("storeId") String storeId,
-                                                                                    @RequestBody StoreUpdateCategoryRequestDto requestDto) {
-        StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, new User(), requestDto);
+                                                                                    @RequestBody StoreUpdateCategoryRequestDto requestDto,
+                                                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        StoreUpdateCategoryResponseDto responseDto = storeService.updateCategory(storeId, userDetails.getUser(), requestDto);
         return ResponseEntity.ok(
                 CommonDto.<StoreUpdateCategoryResponseDto>builder()
                         .message(messageUtil.getSuccessMessage())
@@ -81,7 +81,7 @@ public class StoreServiceController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
-    @GetMapping("/stores/{storeId}")
+    @GetMapping("/stores/{storeId}/detail")
     public ResponseEntity<CommonDto<StoreGetDetailResponseDto>> getStoreDetail (@PathVariable("storeId") String storeId,
                                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
         StoreGetDetailResponseDto storeDetailResponseDto = storeService.getStoreDetail(storeId, userDetails.getUser());

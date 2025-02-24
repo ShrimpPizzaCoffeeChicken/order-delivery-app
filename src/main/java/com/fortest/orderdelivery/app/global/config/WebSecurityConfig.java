@@ -73,23 +73,20 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // 정적 리소스 허용
-                    .requestMatchers("/api/service/users/login",
-                                    "/api/service/users/signup",
-                                    "/api/service/users/logout",
-                                    "/api/service/users/refresh").permitAll() // 로그인 & 회원가입만 인증 없이 허용
+                    .requestMatchers("/api/service/users/login", "/api/service/users/signup","/api/service/users/check-username","/api/service/users/refresh").permitAll() // 로그인 & 회원가입만 인증 없이 허용
                     .requestMatchers("/api/service/users/protected-resource").authenticated()
                     .requestMatchers("/api/service/areas/**").authenticated()
                     .requestMatchers("/api/app/users/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/stores/{storeId}").permitAll()
 //                              .requestMatchers("/api/service/users/refresh").permitAll()
-                    .requestMatchers(HttpMethod.DELETE, "/api/service/users/{userId}").authenticated()
-                    .anyRequest().authenticated() // 그 외 요청은 인증 필요
+                                .requestMatchers(HttpMethod.DELETE, "/api/service/users/{userId}").authenticated()
+                                .anyRequest().authenticated() // 그 외 요청은 인증 필요
 
-            //                       .requestMatchers("/api/service/**").permitAll()
+       //                       .requestMatchers("/api/service/**").permitAll()
         );
 
         http.exceptionHandling(exceptionHandling ->
-            exceptionHandling.accessDeniedHandler(new CustomAccessDeniedHandler())
+                exceptionHandling.accessDeniedHandler(new CustomAccessDeniedHandler())
         );
 
         http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -2,12 +2,10 @@ package com.fortest.orderdelivery.app.domain.category.dto;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,5 +19,4 @@ public class CategoryGetListRequestDto {
     private String orderby;
 
     private String sort;
-
 }

@@ -68,7 +68,7 @@ public class UserService {
 
     // 로그인 관련 기능 (토큰 재발급)
     @Transactional
-    public CommonDto<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public CommonDto<Object> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         if (refreshToken == null || !jwtUtil.validateToken(refreshToken)) {
             return new CommonDto<>("Invalid Refresh Token", HttpStatus.UNAUTHORIZED.value(), null);
@@ -87,10 +87,10 @@ public class UserService {
 
         jwtUtil.addAccessTokenToHeader(newAccessToken, response);
 
-        return CommonDto.<LoginResponseDto>builder()
+        return CommonDto.<Object>builder()
                 .message("새로운 Access Token 발급")
                 .code(HttpStatus.OK.value())
-                .data(new LoginResponseDto(newAccessToken, refreshToken))
+                .data(null)
                 .build();
     }
 
@@ -141,7 +141,7 @@ public class UserService {
         responseData.put("username", username);
         responseData.put("is-available", isAvailable);
 
-        String messageKey = isAvailable ? "username.available" : "username.taken";
+        String messageKey = isAvailable ? "user.username.available" : "user.username.not-available";
 
         //응답 객체 생성 및 반환
         return new CommonDto<>(messageUtil.getMessage(messageKey),
@@ -166,7 +166,6 @@ public class UserService {
 
     @Transactional
     public void updateUser(Long userId, UserUpdateRequestDto requestDto, String loggedInUsername) {
-        log.info("회원 정보 수정 요청 - userId: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("not-found.user"));
 
@@ -216,6 +215,26 @@ public class UserService {
 
         return userQueryRepository.findUsersByFilters(username, nickname, roleName);
     }
+
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserDetailMe(Long userId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new NotFoundException("not-found.user"));
+
+        return UserResponseDto.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .role(user.getRoleType().getRoleName().name())
+                .isPublic(user.getIsPublic())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
+                .createdBy(user.getCreatedBy())
+                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
+                .updatedBy(user.getUpdatedBy())
+                .build();
+    }
+
 
 
 
