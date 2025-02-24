@@ -14,7 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 public class StoreMenuValidResponseDto {
     private Boolean result;
+    @JsonProperty("store-id")
     private String storeId;
+    @JsonProperty("store-name")
     private String storeName;
 
     @JsonProperty("menu-list")
