@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.user.controller;
 
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListRequestDto;
 import com.fortest.orderdelivery.app.domain.user.dto.*;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -8,6 +9,7 @@ import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -136,20 +138,22 @@ public class UserServiceController {
     //관리자 회원정보 조회
     @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')" )
     @GetMapping("/users/search")
-    public ResponseEntity<CommonDto<List<UserResponseDto>>> searchUsers(
-            @RequestParam(name = "username", required = false) String username,
-            @RequestParam(name = "nickname", required = false) String nickname,
-            @RequestParam(name = "role", required = false) String role) {
+    public ResponseEntity<CommonDto<UserGetListResponseDto>> searchUsers(
+            @Valid OrderGetListRequestDto requestDto) {
 
-        log.info("회원 검색 요청 - username: {}, nickname: {}, role: {}", username, nickname, role);
-
-        List<UserResponseDto> users = userService.searchUsers(username, nickname, role);
+        UserGetListResponseDto userList = userService.searchUsers(
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getOrderby(),
+                requestDto.getSort(),
+                requestDto.getSearch()
+        );
 
         return ResponseEntity.ok(
-                CommonDto.<List<UserResponseDto>>builder()
-                        .message(messageUtil.getSuccessMessage())
+                CommonDto.<UserGetListResponseDto>builder()
                         .code(HttpStatus.OK.value())
-                        .data(users)
+                        .message(messageUtil.getSuccessMessage())
+                        .data(userList)
                         .build()
         );
     }

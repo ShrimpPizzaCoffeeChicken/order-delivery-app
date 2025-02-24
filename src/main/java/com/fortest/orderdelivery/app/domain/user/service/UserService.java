@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.user.service;
 
+import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.user.dto.*;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
@@ -12,6 +13,7 @@ import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -19,6 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -206,12 +210,13 @@ public class UserService {
         response.addCookie(cookie);
     }
 
-    public List<UserResponseDto> searchUsers(String username, String nickname, String roleName) {
-        if (username == null && nickname == null && roleName == null) {
-            throw new NotValidRequestException("검색 조건을 하나 이상 입력하세요.");
-        }
+    @Transactional
+    public UserGetListResponseDto searchUsers(Integer page, Integer size, String orderby, String sort, String search) {
 
-        return userQueryRepository.findUsersByFilters(username, nickname, roleName);
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<User> userPage = userQueryRepository.findUserList(pageable, search);
+
+        return UserMapper.pageToGetUserListDto(userPage, search);
     }
 
     @Transactional(readOnly = true)
