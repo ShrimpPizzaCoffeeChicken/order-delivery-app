@@ -78,12 +78,12 @@ public class PaymentService {
     @Transactional
     public PaymentSaveResponseDto savePayment(PaymentSaveRequestDto saveRequestDto, User user) {
 
-        OrderValidResponseDto validOrder = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId());
+        OrderValidResponseDto validOrder = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId(), user);
         PaymentAgent paymentAgent = paymentAgentRepository.findByName(saveRequestDto.getPaymentAgent())
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("app.payment.agent.not-found")));
 
         // 주문 유효성 검사
-        if ( ! Order.OrderStatus.WAIT.name().equals(validOrder.getOrderStatus()) ) {
+        if (!Order.OrderStatus.WAIT.name().equals(validOrder.getOrderStatus()) ) {
             throw new BusinessLogicException(messageUtil.getMessage("app.payment.invalid-order"));
         }
 

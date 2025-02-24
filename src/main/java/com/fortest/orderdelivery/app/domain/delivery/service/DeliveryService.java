@@ -89,7 +89,7 @@ public class DeliveryService {
             throw new AlreadyExistException(messageUtil.getMessage("app.delivery.already-exist"));
         };
 
-        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId());
+        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId(), user);
 
         // 주문 유효성 검사
         if ( ! Order.OrderStatus.PAYED.name().equals(orderValidDto.getOrderStatus())
@@ -111,7 +111,7 @@ public class DeliveryService {
         Delivery delivery = deliveryQueryRepository.findDeliveryDetail(deliveryId, user.getUsername())
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
 
-        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(delivery.getOrderId());
+        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(delivery.getOrderId(), user);
 
         return DeliveryMapper.entityToGetDetailDto(delivery, orderValidDto);
     }
