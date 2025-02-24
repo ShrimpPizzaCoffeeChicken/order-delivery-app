@@ -49,7 +49,7 @@ public class OrderServiceController {
             @Valid OrderGetListRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        OrderGetListResponseDto orderList = orderService.getOrderList(~
+        OrderGetListResponseDto orderList = orderService.getOrderList(
                 requestDto.getPage(),
                 requestDto.getSize(),
                 requestDto.getOrderby(),
