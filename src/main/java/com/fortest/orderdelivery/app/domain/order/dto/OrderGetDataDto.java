@@ -18,6 +18,9 @@ public class OrderGetDataDto {
     @JsonProperty("order-status")
     private String orderStatus;
 
+    @JsonProperty("order-type")
+    private String orderType;
+
     @JsonProperty("customer-name")
     private String customerName;
 
