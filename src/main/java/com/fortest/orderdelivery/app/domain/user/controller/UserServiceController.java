@@ -35,7 +35,7 @@ public class UserServiceController {
     @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/users/{userId}/rolls")
     public ResponseEntity<CommonDto<UserUpdateRollResponseDto>> updateRoll(@PathVariable("userId") Long userId,
-                                                                           @RequestBody UserUpdateRollRequestDto requestDto,
+                                                                           @Valid @RequestBody UserUpdateRollRequestDto requestDto,
                                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         UserUpdateRollResponseDto responseDto = userService.updateRoll(userId, requestDto.getToRoll(), userDetails.getUser());
         return ResponseEntity.ok(
@@ -55,7 +55,7 @@ public class UserServiceController {
 
     // 회원가입
     @PostMapping("/users/signup")
-    public ResponseEntity<CommonDto<UserSignupResponseDto>> signup(@RequestBody SignupRequestDto requestDto) {
+    public ResponseEntity<CommonDto<UserSignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         UserSignupResponseDto responseDto = userService.signup(requestDto);
 
         return ResponseEntity.ok(
@@ -99,7 +99,7 @@ public class UserServiceController {
     @PatchMapping("/users/{userId}")
     public ResponseEntity<CommonDto<Void>> updateUser(
             @PathVariable("userId") Long userId,
-            @RequestBody UserUpdateRequestDto requestDto,
+            @Valid @RequestBody UserUpdateRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
         // JWT에서 가져온 username
         String loggedInUsername = userDetails.getUsername();
