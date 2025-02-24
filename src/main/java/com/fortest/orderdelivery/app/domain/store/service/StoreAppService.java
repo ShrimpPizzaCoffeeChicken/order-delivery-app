@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.store.service;
 
+import com.fortest.orderdelivery.app.domain.ai.dto.StoreResponseDto;
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
 import com.fortest.orderdelivery.app.domain.store.mapper.StoreMapper;
@@ -20,13 +21,17 @@ public class StoreAppService {
     private final MessageUtil messageUtil;
     private final StoreRepository storeRepository;
 
-    public StoreCheckResponseDto getStoreCheck(String storeId) {
+    public StoreResponseDto getStoreCheck(String storeId) {
         // store
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.store")));
 
-        return StoreCheckResponseDto.builder()
+        return StoreResponseDto.builder()
                 .storeId(store.getId())
+                .storeName(store.getName())
+                .area(store.getArea().getPlainAreaName())
+                .detailAddress(store.getDetailAddress())
+                .ownerName(store.getOwnerName())
                 .build();
     }
 

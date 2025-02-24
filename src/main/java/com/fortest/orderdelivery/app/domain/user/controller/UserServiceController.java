@@ -82,6 +82,7 @@ public class UserServiceController {
         );
     }
 
+    //아이디 중복체크
     @GetMapping("/users/check-username")
     public ResponseEntity<CommonDto<Map<String, Object>>> checkUsername(@RequestParam(name = "username") String username) {
         return ResponseEntity.ok(userService.checkUsernameAvailability(username));
@@ -162,7 +163,7 @@ public class UserServiceController {
     }
 
     //사용자 본인 정보 조회
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/users/search-me")
     public ResponseEntity<CommonDto<UserResponseDto>> getMyInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         log.info("본인 정보 조회 요청 - username: {}", userDetails.getUsername());
