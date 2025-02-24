@@ -114,12 +114,14 @@ public class StoreMapper {
                 afterOptionList.add(afterOption);
             }
         }
-        return StoreMenuValidResponseDto.builder()
+         StoreMenuValidResponseDto storeMenuValidResponseDto = StoreMenuValidResponseDto.builder()
                 .result(menuOptionValidReponseDto.getResult())
                 .storeId(store.getId())
                 .storeName(store.getName())
                 .menuList(afterMenuDtoList)
                 .build();
+
+        return storeMenuValidResponseDto;
     }
 
     public static StoreSearchResponseDto pageToSearchResponseDto (Page<Store> page, String search) {
