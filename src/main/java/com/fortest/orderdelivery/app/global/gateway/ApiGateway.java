@@ -203,15 +203,15 @@ public class ApiGateway {
      * @param orderId
      * @return
      */
-    public OrderValidResponseDto getValidOrderFromApp(String orderId) {
+    public OrderValidResponseDto getValidOrderFromApp(String orderId, User user) {
         String targetUrl = ORDER_APP_URL
             .replace("{host}", "localhost")
             .replace("{port}", "8082")
             .replace("{orderId}", orderId);
 
-        CommonDto<OrderValidResponseDto> commonResponse = webClient.get()
+        CommonDto<OrderValidResponseDto> commonResponse = webClient.patch()
             .uri(targetUrl)
-            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderValidResponseDto>>() {
             })
