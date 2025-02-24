@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.store.controller;
 
+import com.fortest.orderdelivery.app.domain.ai.dto.StoreResponseDto;
 import com.fortest.orderdelivery.app.domain.store.dto.StoreCheckResponseDto;
 import com.fortest.orderdelivery.app.domain.store.dto.StoreMenuValidRequestDto;
 import com.fortest.orderdelivery.app.domain.store.dto.StoreMenuValidResponseDto;
@@ -24,15 +25,15 @@ public class StoreAppController {
     private final StoreAppService storeAppService;
 
     @GetMapping("/{storeId}")
-    public ResponseEntity<CommonDto<StoreCheckResponseDto>> getStoreCheck(@PathVariable("storeId") String storeId) {
+    public ResponseEntity<CommonDto<StoreResponseDto>> getStoreCheck(@PathVariable("storeId") String storeId) {
 
-        StoreCheckResponseDto storeCheckResponseDto = storeAppService.getStoreCheck(storeId);
+        StoreResponseDto storeResponseDto = storeAppService.getStoreCheck(storeId);
 
         return ResponseEntity.ok(
-                CommonDto.<StoreCheckResponseDto>builder()
+                CommonDto.<StoreResponseDto>builder()
                 .message(messageUtil.getSuccessMessage())
                 .code(HttpStatus.OK.value())
-                .data(storeCheckResponseDto)
+                .data(storeResponseDto)
                 .build());
     }
 

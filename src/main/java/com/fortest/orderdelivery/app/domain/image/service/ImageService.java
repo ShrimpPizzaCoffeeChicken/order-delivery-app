@@ -16,6 +16,7 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
+import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
@@ -78,7 +79,7 @@ public class ImageService {
             MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId), user);
 
             uploadImageToS3(multipartFileList, imageIdList, sequence,
-                menuDto.getMenuList().get(0), null, user);
+                MenuMapper.toMenu(menuDto.getMenuList().get(0)), null, user);
         }
 
         return ImageMapper.toImageResponseDto(imageIdList);

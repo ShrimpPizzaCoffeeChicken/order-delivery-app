@@ -14,9 +14,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MenuOptionImageMappingRequestDto {
-    private Menu menu;
-    @JsonProperty("menu-option")
-    private MenuOption menuOption;
+    @JsonProperty("menu-dto")
+    private MenuDto menuDto;
+    @JsonProperty("menu-option-dto")
+    private MenuOptionDto menuOptionDto;
     @JsonProperty("image-id-list")
     private List<String> imageIdList;
 }
