@@ -49,7 +49,8 @@ public class ApiGateway {
     private static final String STORE_VALID_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}";
     private static final String MENU_APP_URL = "http://{host}:{port}/api/app/menus";
-    private static final String MENU_OPTION_APP_URL = "http://{host}:{port}/api/app/menus/options/valid";
+    private static final String MENU_OPTION_APP_URL = "http://{host}:{port}/api/app/menus/options";
+    private static final String MENU_VALID_APP_URL = "http://{host}:{port}/api/app/menus/options/valid";
     private static final String IMAGE_UPDATE_APP_URL = "http://{host}:{port}/api/app/images/menus";
     private static final String IMAGE_DELETE_APP_URL = "http://{host}:{port}/api/app/images/menus/{menuId}";
     private static final String IMAGE_OPTION_UPDATE_APP_URL = "http://{host}:{port}/api/app/images/options";
@@ -384,28 +385,23 @@ public class ApiGateway {
      * @param
      * @return CommonDto<StoreMenuValidResDto> : 요청 실패 시 null
      */
-    public MenuOptionValidReponseDto getValidMenuOptionFromMenuApp(String storeId,
+    public MenuOptionValidReponseDto getValidMenuOptionFromMenuApp(
         MenuOptionValidRequestDto validReqDto) {
 
-        String targetUrl = MENU_OPTION_APP_URL
+        String targetUrl = MENU_VALID_APP_URL
             .replace("{host}", "localhost")
             .replace("{port}", "8082");
 
-        // 요청 파라미터 생성
-        JSONObject paramObject = new JSONObject(validReqDto);
-        Map<String, String> queryParam = Map.of(
-            "data", paramObject.toString()
-        );
-
-        CommonDto<MenuOptionValidReponseDto> commonResponse = webClient.get()
-            .uri(targetUrl, queryParam, storeId)
+        CommonDto<MenuOptionValidReponseDto> commonResponse = webClient.post()
+            .uri(targetUrl)
+            .bodyValue(validReqDto)
             .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionValidReponseDto>>() {
             })
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
-                log.error("Fail : {}, {}", targetUrl, queryParam, throwable);
+                log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
             })
             .block();

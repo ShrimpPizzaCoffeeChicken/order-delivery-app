@@ -55,7 +55,7 @@ public class MenuService {
         if (!Objects.isNull(imageIdList)) {
             MenuImageMappingRequestDto menuImageRequestDto = MenuImageMappingRequestDto.builder()
                 .imageIdList(imageIdList)
-                .menu(savedMenu)
+                .menuDto(MenuMapper.toMenuDto(savedMenu))
                 .build();
 
             MenuImageMappingResponseDto commonDto = apiGateway.saveMenuIdToImage(
