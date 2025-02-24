@@ -70,7 +70,8 @@ public class MenuAppService {
                 for (MenuOption menuOption : menuOptionList) {
                     if (Objects.equals(option.getId(), menuOption.getId())) {
                         if (!Objects.equals(menuId, menuOption.getMenu().getId())) {
-                            return MenuMapper.toMenuAndOptionValidResponseDto(null, false);
+                            result = false;
+                            return MenuMapper.toMenuAndOptionValidResponseDto(null, result);
                         }
                         resultOptionList.add(MenuAndOptionValidResponseDto.MenuList.OptionList.builder()
                             .id(menuOption.getId())
@@ -83,7 +84,8 @@ public class MenuAppService {
             }
 
             if(resultOptionList.size() != optionLists.size()) {
-                return MenuMapper.toMenuAndOptionValidResponseDto(null, false);
+                result = false;
+                return MenuMapper.toMenuAndOptionValidResponseDto(null, result);
             }
 
             resultMenuList.add(MenuAndOptionValidResponseDto.MenuList.builder()
