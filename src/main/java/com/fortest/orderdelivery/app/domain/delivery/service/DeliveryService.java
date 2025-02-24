@@ -155,11 +155,12 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
 
-        if (! delivery.getCustomerName().equals(user.getUsername())) {
+        if (user.getRoleType().getRoleName() != RoleType.RoleName.MANAGER
+                && user.getRoleType().getRoleName() != RoleType.RoleName.MASTER) {
             throw new NotValidRequestException(messageUtil.getMessage("app.delivery.not-valid-user"));
         }
-
         delivery.isDeletedNow(user.getId());
+
         return delivery.getId();
     }
 }
