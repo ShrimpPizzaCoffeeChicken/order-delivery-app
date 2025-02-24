@@ -51,11 +51,17 @@ public class UserService {
     // 유저 권한 업데이트
     @Transactional
     public UserUpdateRollResponseDto updateRoll(Long targetUserId, String toRollString, User user) {
+
+        if (toRollString == null || toRollString.trim().isEmpty()) {
+            throw new BusinessLogicException("toRoll 값이 null 또는 비어 있습니다.");
+        }
+
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-user")));
         String fromRoll = targetUser.getRoleType().getRoleName().name();
 
         RoleType.RoleName toRoleName = RoleType.RoleName.getByString(messageUtil, toRollString);
+
         RoleType newRoleType = roleTypeRepository.findByRoleName(toRoleName)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-role-name")));
         String toRoll = newRoleType.getRoleName().name();
@@ -76,9 +82,6 @@ public class UserService {
 
         Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
         String username = claims.getSubject();
-
-        // User user = userRepository.findByUsername(username)
-        //         .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
         User user = userRepository.findByUsernameWithRole(username)
                 .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
@@ -111,14 +114,6 @@ public class UserService {
                 .roleType(roleType)
                 .isPublic(true)
                 .build();
-
-//        user = userRepository.save(user);
-//        user.isCreatedBy(user.getId());
-//        user = userRepository.save(user);
-
-//        user = userRepository.save(user);
-//        userRepository.flush();
-//        user.isCreatedBy(user.getId());
 
         userRepository.save(user);
         userRepository.flush();
@@ -158,14 +153,13 @@ public class UserService {
 
     @Transactional
     public CommonDto<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        // 현재 쿠키에서 Refresh Token 가져오기
+
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
 
         if (refreshToken == null) {
             return new CommonDto<>("Refresh Token이 존재하지 않습니다.", HttpStatus.BAD_REQUEST.value(), null);
         }
 
-        // Refresh Token 삭제 (쿠키에서 제거)
         removeRefreshTokenCookie(response);
 
         return new CommonDto<>("로그아웃 완료", HttpStatus.OK.value(), "로그아웃 성공");
@@ -195,11 +189,6 @@ public class UserService {
         //탈퇴 대상 회원 조회 (소프트 삭제된 회원은 제외)
         User user = userRepository.findByIdAndDeletedAtIsNull(targetUserId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
-
-        //요청한 유저가 본인이 맞는지 다시 검증 (이중 체크)
-//        if (!user.getId().equals(requesterUserId)) {
-//            throw new UnauthorizedException("본인 계정만 탈퇴할 수 있습니다.");
-//        }
 
         //소프트 삭제 처리 (삭제한 userId 기록)
         user.softDelete(requesterUserId);
@@ -243,7 +232,6 @@ public class UserService {
     }
 
     private void validateUsername(String username) {
-        // 최소 4자 이상, 10자 이하이며 알파벳 소문자(a~z), 숫자(0~9)만 허용
         String usernameRegex = "^[a-z0-9]{4,10}$";
         if (!username.matches(usernameRegex)) {
             throw new BusinessLogicException(messageUtil.getMessage("invalid.username"));
@@ -251,7 +239,6 @@ public class UserService {
     }
 
     private void validatePassword(String password) {
-        // 최소 8자 이상, 15자 이하이며 알파벳 대소문자(a~z, A~Z), 숫자(0~9), 특수문자 포함
         String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,15}$";
         if (!password.matches(passwordRegex)) {
             throw new BusinessLogicException(messageUtil.getMessage("invalid.password"));

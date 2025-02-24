@@ -9,10 +9,8 @@ import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreAppService {

@@ -1,6 +1,5 @@
 package com.fortest.orderdelivery.app.domain.store.repository;
 
-import com.fortest.orderdelivery.app.domain.area.entity.QArea;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
 import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
@@ -33,9 +32,10 @@ public class StoreQueryRepository {
         return Optional.ofNullable(
                 jpaQueryFactory
                         .selectFrom(store)
-                        .join(store.categoryStoreList, categoryStore).fetchJoin()
-                        .join(categoryStore.category, category)
+                        .leftJoin(store.categoryStoreList, categoryStore).fetchJoin()
+                        .leftJoin(categoryStore.category, category)
                         .where(
+                                store.id.eq(storeId),
                                 store.deletedAt.isNull()
                         )
                         .fetchOne()

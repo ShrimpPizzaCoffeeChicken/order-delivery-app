@@ -118,10 +118,6 @@ public class UserServiceController {
             @PathVariable("userId") Long userId, // 탈퇴할 대상 userId
             @AuthenticationPrincipal UserDetailsImpl userDetails // 현재 로그인한 사용자 정보 가져오기
     ) {
-//        // 본인이 맞는지 검증
-//        if (!targetUserId.equals(requesterUserId.toString())) {
-//            throw new BusinessLogicException("본인 계정만 탈퇴할 수 있습니다.");
-//        }
         // 본인 확인 후 탈퇴 수행
         if (!userId.equals(userDetails.getUserId())) {
             throw new BusinessLogicException(messageUtil.getMessage("delete.user.forbidden"));
@@ -148,10 +144,6 @@ public class UserServiceController {
         log.info("회원 검색 요청 - username: {}, nickname: {}, role: {}", username, nickname, role);
 
         List<UserResponseDto> users = userService.searchUsers(username, nickname, role);
-
-//        if (users.isEmpty()) {
-//            throw new NotFoundException("해당 조건에 맞는 회원이 없습니다.");
-//        }
 
         return ResponseEntity.ok(
                 CommonDto.<List<UserResponseDto>>builder()
