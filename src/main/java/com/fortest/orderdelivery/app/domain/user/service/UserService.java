@@ -77,8 +77,8 @@ public class UserService {
         Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
         String username = claims.getSubject();
 
-       // User user = userRepository.findByUsername(username)
-       //         .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+        // User user = userRepository.findByUsername(username)
+        //         .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
         User user = userRepository.findByUsernameWithRole(username)
                 .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
@@ -94,7 +94,7 @@ public class UserService {
                 .build();
     }
 
-    @Transactional
+
     public UserSignupResponseDto signup(SignupRequestDto requestDto) {
         RoleType roleType = roleTypeRepository.findByRoleName(RoleType.RoleName.CUSTOMER)
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("not-found.role")));
@@ -105,16 +105,33 @@ public class UserService {
                 .email(requestDto.getEmail())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
                 .roleType(roleType)
+                .isPublic(true)
                 .build();
 
-        userRepository.save(user);
+//        user = userRepository.save(user);
+//        user.isCreatedBy(user.getId());
+//        user = userRepository.save(user);
 
-        // createdBy 자동 반영
+//        user = userRepository.save(user);
+//        userRepository.flush();
+//        user.isCreatedBy(user.getId());
+
+        userRepository.save(user);
+        userRepository.flush();
+
         user.isCreatedBy(user.getId());
+        userRepository.save(user);
 
         // User -> UserSignupResponseDto 변환 후 반환
         return UserMapper.fromUserToUserSignupResponseDto(user);
     }
+
+//    @Transactional
+//    public void isCreatedBy(User user){
+//        //  User findUser = userRepository.findById(user.getId()).get();
+//        user.isCreatedBy(user.getId());
+//        userRepository.save(user);
+//    }
 
     @Transactional
     public UserGetDetailResponseDto getUserDetail(Long userId){
@@ -123,13 +140,6 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.user")));
 
         return UserMapper.toUserGetDetailResponseDto(user);
-    }
-
-    @Transactional
-    public void isCreatedBy(User user){
-      //  User findUser = userRepository.findById(user.getId()).get();
-        user.isCreatedBy(user.getId());
-        userRepository.save(user);
     }
 
     @Transactional(readOnly = true)
