@@ -42,4 +42,8 @@ public class MenuOption extends BaseDataEntity {
         this.price = price;
         this.exposeStatus = exposeStatus;
     }
+
+    public void updateMenu(Menu menu) {
+        this.menu = menu;
+    }
 }

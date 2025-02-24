@@ -4,6 +4,7 @@ import com.amazonaws.util.CollectionUtils;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
@@ -23,11 +24,11 @@ public class MenuAppService {
     private final MenuOptionQueryRepository menuOptionQueryRepository;
 
     public MenuAppResponseDto getMenuFromApp(List<String> menuId) {
-        List<Menu> menuList = new ArrayList<>();
+        List<MenuDto> menuList = new ArrayList<>();
 
         menuId.forEach(id -> {
             Menu menu = menuService.getMenuById(id);
-            menuList.add(menu);
+            menuList.add(MenuMapper.toMenuDto(menu));
         });
         return MenuMapper.toMenuAppResponseDto(menuList);
     }

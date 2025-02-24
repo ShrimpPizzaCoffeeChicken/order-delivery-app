@@ -49,7 +49,7 @@ public class ApiGateway {
     private static final String STORE_VALID_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
     private static final String STORE_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}";
     private static final String MENU_APP_URL = "http://{host}:{port}/api/app/menus";
-    private static final String MENU_OPTION_APP_URL = "http://{host}:{port}/api/app/menus/options/valid";
+    private static final String MENU_OPTION_APP_URL = "http://{host}:{port}/api/app/menus/options";
     private static final String IMAGE_UPDATE_APP_URL = "http://{host}:{port}/api/app/images/menus";
     private static final String IMAGE_DELETE_APP_URL = "http://{host}:{port}/api/app/images/menus/{menuId}";
     private static final String IMAGE_OPTION_UPDATE_APP_URL = "http://{host}:{port}/api/app/images/options";

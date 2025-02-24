@@ -2,6 +2,7 @@ package com.fortest.orderdelivery.app.domain.menu.mapper;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetQueryDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
@@ -29,6 +30,20 @@ public class MenuMapper {
             .build();
     }
 
+    public static Menu toMenu(MenuDto menuDto) {
+        return Menu.builder()
+            .id(menuDto.getId())
+            .name(menuDto.getName())
+            .description(menuDto.getDescription())
+            .price(menuDto.getPrice())
+            .storeId(menuDto.getStoreId())
+            .menuOptionList(menuDto.getMenuOptionList().stream()
+                .map(MenuOptionMapper::toMenuOption)
+                .toList())
+            .exposeStatus(menuDto.getExposeStatus())
+            .build();
+    }
+
     public static MenuResponseDto toMenuResponseDto(Menu menu) {
         return MenuResponseDto.builder()
             .menuId(menu.getId())
@@ -44,7 +59,7 @@ public class MenuMapper {
             .build();
     }
 
-    public static MenuAppResponseDto toMenuAppResponseDto(List<Menu> menuList) {
+    public static MenuAppResponseDto toMenuAppResponseDto(List<MenuDto> menuList) {
         return MenuAppResponseDto.builder()
             .menuList(menuList)
             .build();
@@ -80,6 +95,20 @@ public class MenuMapper {
         return MenuAndOptionValidResponseDto.builder()
             .result(result)
             .menuList(menuLists)
+            .build();
+    }
+
+    public static MenuDto toMenuDto(Menu menu) {
+        return MenuDto.builder()
+            .id(menu.getId())
+            .name(menu.getName())
+            .description(menu.getDescription())
+            .price(menu.getPrice())
+            .storeId(menu.getStoreId())
+            .menuOptionList(menu.getMenuOptionList().stream()
+                .map(MenuOptionMapper::toMenuOptionDto)
+                .toList())
+            .exposeStatus(menu.getExposeStatus())
             .build();
     }
 }

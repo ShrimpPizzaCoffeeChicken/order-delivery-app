@@ -11,6 +11,8 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingReque
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionImageMappingResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
+import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
+import com.fortest.orderdelivery.app.domain.menu.mapper.MenuOptionMapper;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,7 @@ public class ImageAppService {
     public MenuImageMappingResponseDto updateMenuId(
         MenuImageMappingRequestDto menuOptionImageRequestDto, User user) {
         List<String> imageIdList = menuOptionImageRequestDto.getImageIdList();
-        Menu menu = menuOptionImageRequestDto.getMenu();
+        Menu menu = MenuMapper.toMenu(menuOptionImageRequestDto.getMenuDto());
 
         List<String> updatedImageIdList = new ArrayList<>();
         boolean result = false;
@@ -55,8 +57,10 @@ public class ImageAppService {
         MenuOptionImageMappingRequestDto menuOptionImageRequestDto,
         User user) {
         List<String> imageIdList = menuOptionImageRequestDto.getImageIdList();
-        Menu menu = menuOptionImageRequestDto.getMenu();
-        MenuOption menuOption = menuOptionImageRequestDto.getMenuOption();
+
+        Menu menu = MenuMapper.toMenu(menuOptionImageRequestDto.getMenuDto());
+        MenuOption menuOption = MenuOptionMapper.toMenuOption(menuOptionImageRequestDto.getMenuOptionDto());
+        menu.updateMenuOption(menuOption);
 
         List<String> updatedImageIdList = new ArrayList<>();
         boolean result = false;
