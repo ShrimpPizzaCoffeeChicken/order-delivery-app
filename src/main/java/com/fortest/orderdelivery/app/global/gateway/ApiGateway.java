@@ -273,28 +273,23 @@ public class ApiGateway {
      * @param
      * @return CommonDto<StoreMenuValidResDto> : 요청 실패 시 null
      */
-    public StoreMenuValidResponseDto getValidStoreMenuFromApp(String storeId,
-        StoreMenuValidRequestDto validReqDto) {
+    public StoreMenuValidResponseDto getValidStoreMenuFromApp(String storeId, StoreMenuValidRequestDto validReqDto) {
         String targetUrl = STORE_VALID_APP_URL
             .replace("{host}", "localhost")
             .replace("{port}", "8082")
             .replace("{storeId}", storeId);
 
         // 요청 파라미터 생성
-        JSONObject paramObject = new JSONObject(validReqDto);
-        Map<String, String> queryParam = Map.of(
-            "data", paramObject.toString()
-        );
-
-        CommonDto<StoreMenuValidResponseDto> commonResponse = webClient.get()
-            .uri(targetUrl, queryParam)
+        CommonDto<StoreMenuValidResponseDto> commonResponse = webClient.post()
+            .uri(targetUrl)
+            .bodyValue(validReqDto)
             .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreMenuValidResponseDto>>() {
             })
             .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
-                log.error("Fail : {}, {}", targetUrl, queryParam, throwable);
+                log.error("Fail : {}, {}", targetUrl, validReqDto, throwable);
                 return Mono.empty();
             })
             .block();
