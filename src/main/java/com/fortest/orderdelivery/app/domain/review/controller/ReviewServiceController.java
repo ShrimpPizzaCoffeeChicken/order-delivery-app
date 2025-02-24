@@ -39,7 +39,6 @@ public class ReviewServiceController {
         );
     }
 
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews")
     public ResponseEntity<CommonDto<ReviewGetListResponseDto>> getReviewList(
             @Valid ReviewGetListRequestDto requestDto
@@ -76,7 +75,6 @@ public class ReviewServiceController {
         );
     }
 
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews/{reviewId}")
     public ResponseEntity<CommonDto<ReviewGetResponseDto>> getReview(@PathVariable("reviewId") String reviewId) {
         ReviewGetResponseDto reviewGetResponseDto = reviewService.getReview(reviewId);
