@@ -44,46 +44,47 @@ public class ApiGateway {
     private final WebClient webClient;
     private final MessageUtil messageUtil;
 
-    private static final String CONTENT_TYPE =                   "Content-Type";
-    private static final String USER_APP_URL =                   "http://{host}:{port}/api/app/users/{userId}";
-    private static final String STORE_VALID_APP_URL =            "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
-    private static final String STORE_APP_URL =                  "http://{host}:{port}/api/app/stores/{storeId}";
-    private static final String MENU_APP_URL =                   "http://{host}:{port}/api/app/menus";
-    private static final String MENU_OPTION_APP_URL =            "http://{host}:{port}/api/app/menus/options/valid";
-    private static final String IMAGE_UPDATE_APP_URL =           "http://{host}:{port}/api/app/images/menus";
-    private static final String IMAGE_DELETE_APP_URL =           "http://{host}:{port}/api/app/images/menus/{menuId}";
-    private static final String IMAGE_OPTION_UPDATE_APP_URL =    "http://{host}:{port}/api/app/images/options";
-    private static final String IMAGE_OPTION_DELETE_APP_URL =    "http://{host}:{port}/api/app/images/options/{optionId}";
-    private static final String ORDER_APP_URL =                  "http://{host}:{port}/api/app/orders/{orderId}";
-    private static final String ORDER_DETAILS_APP_URL =          "http://{host}:{port}/api/app/orders/{orderId}/details";
-    private static final String ORDER_UPDATE_STATUS_APP_URL =    "http://{host}:{port}/api/app/orders/{orderId}";
-    private static final String DELIVERY_GET_ID_APP_URL =        "http://{host}:{port}/api/app/deliveries/orders/{orderId}";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String USER_APP_URL = "http://{host}:{port}/api/app/users/{userId}";
+    private static final String STORE_VALID_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}/menus/valid";
+    private static final String STORE_APP_URL = "http://{host}:{port}/api/app/stores/{storeId}";
+    private static final String MENU_APP_URL = "http://{host}:{port}/api/app/menus";
+    private static final String MENU_OPTION_APP_URL = "http://{host}:{port}/api/app/menus/options/valid";
+    private static final String IMAGE_UPDATE_APP_URL = "http://{host}:{port}/api/app/images/menus";
+    private static final String IMAGE_DELETE_APP_URL = "http://{host}:{port}/api/app/images/menus/{menuId}";
+    private static final String IMAGE_OPTION_UPDATE_APP_URL = "http://{host}:{port}/api/app/images/options";
+    private static final String IMAGE_OPTION_DELETE_APP_URL = "http://{host}:{port}/api/app/images/options/{optionId}";
+    private static final String ORDER_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
+    private static final String ORDER_DETAILS_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}/details";
+    private static final String ORDER_UPDATE_STATUS_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
+    private static final String DELIVERY_GET_ID_APP_URL = "http://{host}:{port}/api/app/deliveries/orders/{orderId}";
     private static final String DELIVERY_UPDATE_STATUS_APP_URL = "http://{host}:{port}/api/app/deliveries/{deliveryId}";
 
     // to Delivery Service ---------------------------------------------------------------------------------------------
 
-    public DeliveryGetDataResponseDto updateDeliveryStatusFromApp(String deliveryId, String toStatus, User user) {
+    public DeliveryGetDataResponseDto updateDeliveryStatusFromApp(String deliveryId,
+        String toStatus, User user) {
 
         String targetUrl = DELIVERY_UPDATE_STATUS_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{deliveryId}", deliveryId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{deliveryId}", deliveryId);
 
         Map<String, String> body = Map.of("to", toStatus);
 
         CommonDto<DeliveryGetDataResponseDto> commonResponse = webClient.patch()
-                .uri(targetUrl)
-                .bodyValue(body)
-                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : url = {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .bodyValue(body)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : url = {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.delivery.server-error";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -92,29 +93,29 @@ public class ApiGateway {
     }
 
     /**
-     * 주문 ID 를 통한 배송 데이터 존재 유무 확인
-     * from : Order Service
+     * 주문 ID 를 통한 배송 데이터 존재 유무 확인 from : Order Service
+     *
      * @param orderId
      * @return
      */
     public DeliveryGetDataResponseDto getDeliveryIdByOrderIdFromApp(String orderId) {
 
         String targetUrl = DELIVERY_GET_ID_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{orderId}", orderId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{orderId}", orderId);
 
         CommonDto<DeliveryGetDataResponseDto> commonResponse = webClient.get()
-                .uri(targetUrl)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : url = {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : url = {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.delivery.server-error";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -127,35 +128,36 @@ public class ApiGateway {
     // to Order Service ------------------------------------------------------------------------------------------------
 
     /**
-     * 주문 상태 업데이트 요청
-     * from : Payment, Delivery Service
+     * 주문 상태 업데이트 요청 from : Payment, Delivery Service
+     *
      * @param orderId
      * @param toStatus
      * @param user
      * @return
      */
-    public OrderStatusUpdateResponseDto updateOrderStatusFromApp(String orderId, String toStatus, User user) {
+    public OrderStatusUpdateResponseDto updateOrderStatusFromApp(String orderId, String toStatus,
+        User user) {
 
         String targetUrl = ORDER_UPDATE_STATUS_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{orderId}", orderId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{orderId}", orderId);
 
         Map<String, String> body = Map.of("to", toStatus);
 
         CommonDto<OrderStatusUpdateResponseDto> commonResponse = webClient.patch()
-                .uri(targetUrl)
-                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderStatusUpdateResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : url = {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .bodyValue(body)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderStatusUpdateResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : url = {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.order.server-error";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -164,29 +166,29 @@ public class ApiGateway {
     }
 
     /**
-     * 주문 서비스에 메뉴리스트, 옵션리스트 요청
-     * from : Review Service
+     * 주문 서비스에 메뉴리스트, 옵션리스트 요청 from : Review Service
+     *
      * @param orderId
      * @return CommonDto<OrderDetailsResponseDto> : 요청 실패 시 null
      */
     public OrderDetailsResponseDto getOrderDetailsFromApp(String orderId) {
 
         String targetUrl = ORDER_DETAILS_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{orderId}", orderId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{orderId}", orderId);
 
         CommonDto<OrderDetailsResponseDto> commonResponse = webClient.get()
-                .uri(targetUrl)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderDetailsResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderDetailsResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.order.server-error";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -195,29 +197,29 @@ public class ApiGateway {
     }
 
     /**
-     * 유효한 주문인지 확인
-     * from : Delivery, Payment Service
+     * 유효한 주문인지 확인 from : Delivery, Payment Service
+     *
      * @param orderId
      * @return
      */
     public OrderValidResponseDto getValidOrderFromApp(String orderId) {
         String targetUrl = ORDER_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{orderId}", orderId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{orderId}", orderId);
 
         CommonDto<OrderValidResponseDto> commonResponse = webClient.get()
-                .uri(targetUrl)
-                .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderValidResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderValidResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.order.server-error";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -230,68 +232,72 @@ public class ApiGateway {
     // to Store Service ------------------------------------------------------------------------------------------------
 
     /**
-     * 가게유효성 검사 요청
-     * from : AiRequest, Menu Service
+     * 가게유효성 검사 요청 from : AiRequest, Menu Service
+     *
      * @param storeId
      * @return CommonDto<StoreValidResponseDto> : 요청 실패 시 null
      */
-    public StoreResponseDto getValidStoreFromApp(String storeId) {
+    public StoreResponseDto getValidStoreFromApp(String storeId, User user) {
 
         String targetUrl = STORE_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{storeId}", storeId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{storeId}", storeId);
 
         CommonDto<StoreResponseDto> commonResponse = webClient.get()
-                .uri(targetUrl)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String connectionFailMessageKey = "api.call.store.check.server-error";
         String dataNullMessageKey = "api.call.store.check.not-found";
-        checkCommonResponseData(targetUrl, commonResponse, connectionFailMessageKey, dataNullMessageKey);
+        checkCommonResponseData(targetUrl, commonResponse, connectionFailMessageKey,
+            dataNullMessageKey);
 
         return commonResponse.getData();
     }
 
     /**
-     * 가게, 메뉴, 옵션 유효성 검사 요청
-     * from : Order Service
+     * 가게, 메뉴, 옵션 유효성 검사 요청 from : Order Service
+     *
      * @param
      * @param
      * @return CommonDto<StoreMenuValidResDto> : 요청 실패 시 null
      */
-    public StoreMenuValidResponseDto getValidStoreMenuFromApp(String storeId, StoreMenuValidRequestDto validReqDto) {
+    public StoreMenuValidResponseDto getValidStoreMenuFromApp(String storeId,
+        StoreMenuValidRequestDto validReqDto) {
         String targetUrl = STORE_VALID_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{storeId}", storeId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{storeId}", storeId);
 
         // 요청 파라미터 생성
         JSONObject paramObject = new JSONObject(validReqDto);
         Map<String, String> queryParam = Map.of(
-                "data", paramObject.toString()
+            "data", paramObject.toString()
         );
 
         CommonDto<StoreMenuValidResponseDto> commonResponse = webClient.get()
-                .uri(targetUrl, queryParam)
-                .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreMenuValidResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}, {}", targetUrl, queryParam, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl, queryParam)
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreMenuValidResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}, {}", targetUrl, queryParam, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.order.store-menu-valid.server-error";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -304,33 +310,34 @@ public class ApiGateway {
     // to Menu Service -------------------------------------------------------------------------------------------------
 
     /**
-     * 메뉴 옵션 서비스에 메뉴 옵션 Id로 메뉴 옵션 객체 요청
-     * from Image Service
+     * 메뉴 옵션 서비스에 메뉴 옵션 Id로 메뉴 옵션 객체 요청 from Image Service
+     *
      * @param menuOptionIdList
      * @return CommonDto<MenuAppResponseDto> : 요청 실패 시 null
      */
-    public MenuOptionAppResponseDto getMenuOptionFromApp(List<String> menuOptionIdList) {
+    public MenuOptionAppResponseDto getMenuOptionFromApp(List<String> menuOptionIdList, User user) {
 
         String targetUrl = MENU_OPTION_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082");
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082");
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(targetUrl)
-                .queryParam("menuOptionId", menuOptionIdList);
+            .queryParam("menuOptionId", menuOptionIdList);
 
         String finalUri = uriBuilder.build().toString();
 
         CommonDto<MenuOptionAppResponseDto> commonResponse = webClient.get()
-                .uri(finalUri)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionAppResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", finalUri, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(finalUri)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionAppResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", finalUri, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.image.menuopntion.menu-not-found";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -339,34 +346,35 @@ public class ApiGateway {
     }
 
     /**
-     * 메뉴 서비스에 메뉴 Id로 메뉴 객체 요청
-     * from : Image MenuOption Service
+     * 메뉴 서비스에 메뉴 Id로 메뉴 객체 요청 from : Image MenuOption Service
+     *
      * @param menuIdList
      * @return CommonDto<MenuAppResponseDto> : 요청 실패 시 null
      */
-    public MenuAppResponseDto getMenuFromApp(List<String> menuIdList) {
+    public MenuAppResponseDto getMenuFromApp(List<String> menuIdList, User user) {
 
         String targetUrl = MENU_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082");
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082");
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                .fromHttpUrl(targetUrl)
-                .queryParam("menuId", menuIdList);
+            .fromHttpUrl(targetUrl)
+            .queryParam("menuId", menuIdList);
 
         String finalUri = uriBuilder.build().toString();
 
         CommonDto<MenuAppResponseDto> commonResponse = webClient.get()
-                .uri(finalUri)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", finalUri, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(finalUri)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", finalUri, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.menu.menu-not-found";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -375,36 +383,37 @@ public class ApiGateway {
     }
 
     /**
-     * 가게, 메뉴, 옵션 유효성 검사 요청
-     * from : Store Service
+     * 가게, 메뉴, 옵션 유효성 검사 요청 from : Store Service
+     *
      * @param
      * @param
      * @return CommonDto<StoreMenuValidResDto> : 요청 실패 시 null
      */
-    public MenuOptionValidReponseDto getValidMenuOptionFromMenuApp(String storeId, MenuOptionValidRequestDto validReqDto) {
+    public MenuOptionValidReponseDto getValidMenuOptionFromMenuApp(String storeId,
+        MenuOptionValidRequestDto validReqDto) {
 
         String targetUrl = MENU_OPTION_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082");
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082");
 
         // 요청 파라미터 생성
         JSONObject paramObject = new JSONObject(validReqDto);
         Map<String, String> queryParam = Map.of(
-                "data", paramObject.toString()
+            "data", paramObject.toString()
         );
 
         CommonDto<MenuOptionValidReponseDto> commonResponse = webClient.get()
-                .uri(targetUrl, queryParam, storeId)
-                .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionValidReponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}, {}", targetUrl, queryParam, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl, queryParam, storeId)
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionValidReponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}, {}", targetUrl, queryParam, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.menu.valid-menu-option.server-error";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -417,33 +426,33 @@ public class ApiGateway {
     // to Image Service ------------------------------------------------------------------------------------------------
 
     /**
-     * 이미지에 메뉴 옵션 Id update 요청
-     * from : MenuOption Service
+     * 이미지에 메뉴 옵션 Id update 요청 from : MenuOption Service
+     *
      * @param requestDto
      * @return CommonDto<Void> : 요청 실패 시 null
      */
     public MenuOptionImageMappingResponseDto saveMenuAndMenuOptionIdToImage(
-            MenuOptionImageMappingRequestDto requestDto, User user) {
+        MenuOptionImageMappingRequestDto requestDto, User user) {
 
         String targetUrl = IMAGE_OPTION_UPDATE_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082");
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082");
 
         CommonDto<MenuOptionImageMappingResponseDto> commonResponse = webClient.patch()
-                .uri(targetUrl)
-                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
-                .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .bodyToMono(
-                        new ParameterizedTypeReference<CommonDto<MenuOptionImageMappingResponseDto>>() {
-                        })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", targetUrl, throwable);
-                    return Mono.empty();
+            .uri(targetUrl)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
+            .retrieve()
+            .bodyToMono(
+                new ParameterizedTypeReference<CommonDto<MenuOptionImageMappingResponseDto>>() {
                 })
-                .block();
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.image.menuoption.mapping-fail";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -452,30 +461,30 @@ public class ApiGateway {
     }
 
     /**
-     * 이미지 서비스에 메뉴 옵션 Id로 메뉴 옵션 이미지 삭제 요청
-     * from : MenuOption Service
+     * 이미지 서비스에 메뉴 옵션 Id로 메뉴 옵션 이미지 삭제 요청 from : MenuOption Service
+     *
      * @param optionId
      * @return CommonDto<ImageResponseDto> : 요청 실패 시 null
      */
     public ImageResponseDto deleteMenuOptionImageFromApp(String optionId, User user) {
 
         String targetUrl = IMAGE_OPTION_DELETE_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{optionId}", optionId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{optionId}", optionId);
 
         CommonDto<ImageResponseDto> commonResponse = webClient.delete()
-                .uri(targetUrl)
-                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.image.menuoption.delete-fail";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -484,32 +493,32 @@ public class ApiGateway {
     }
 
     /**
-     * 이미지에 메뉴 Id update 요청
-     * from : Menu Service
+     * 이미지에 메뉴 Id update 요청 from : Menu Service
+     *
      * @param requestDto
      * @return CommonDto<Void> : 요청 실패 시 null
      */
-    public MenuImageMappingResponseDto saveMenuIdToImage (
-            MenuImageMappingRequestDto requestDto, User user) {
+    public MenuImageMappingResponseDto saveMenuIdToImage(
+        MenuImageMappingRequestDto requestDto, User user) {
 
         String targetUrl = IMAGE_UPDATE_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082");
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082");
 
         CommonDto<MenuImageMappingResponseDto> commonResponse = webClient.patch()
-                .uri(targetUrl)
-                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
-                .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuImageMappingResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .body(Mono.justOrEmpty(requestDto), MenuImageMappingRequestDto.class)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuImageMappingResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.image.menu.mapping-fail";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -518,30 +527,30 @@ public class ApiGateway {
     }
 
     /**
-     * 이미지 서비스에 메뉴 옵션 Id로 메뉴 옵션 이미지 삭제 요청
-     * from Menu Service
+     * 이미지 서비스에 메뉴 옵션 Id로 메뉴 옵션 이미지 삭제 요청 from Menu Service
+     *
      * @param menuId
      * @return CommonDto<ImageResponseDto> : 요청 실패 시 null
      */
     public ImageResponseDto deleteMenuImageFromApp(String menuId, User user) {
 
         String targetUrl = IMAGE_DELETE_APP_URL
-                .replace("{host}", "localhost")
-                .replace("{port}", "8082")
-                .replace("{menuId}", menuId);
+            .replace("{host}", "localhost")
+            .replace("{port}", "8082")
+            .replace("{menuId}", menuId);
 
         CommonDto<ImageResponseDto> commonResponse = webClient.delete()
-                .uri(targetUrl)
-                .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
-                })
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
-                .onErrorResume(throwable -> {
-                    log.error("Fail : {}", targetUrl, throwable);
-                    return Mono.empty();
-                })
-                .block();
+            .uri(targetUrl)
+            .header(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createAccessTokenForApp(user))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
+            })
+            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            .onErrorResume(throwable -> {
+                log.error("Fail : {}", targetUrl, throwable);
+                return Mono.empty();
+            })
+            .block();
 
         String messageKey = "api.call.image.menu-image.delete-fail";
         checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
@@ -554,8 +563,7 @@ public class ApiGateway {
     // to User Service -------------------------------------------------------------------------------------------------
 
     /**
-     * userId를 기반으로 유저 정보를 조회하는 메서드
-     * from : All Service
+     * userId를 기반으로 유저 정보를 조회하는 메서드 from : All Service
      */
     public UserResponseDto getUserByIdFromApp(Long userId, String accessToken) {
         try {
@@ -566,7 +574,7 @@ public class ApiGateway {
 
             CommonDto<UserResponseDto> commonResponse = webClient.get()
                 .uri(targetUrl)
-//                .header("Authorization", "Bearer " + accessToken)
+                .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<CommonDto<UserResponseDto>>() {
                 })
@@ -576,7 +584,7 @@ public class ApiGateway {
             checkCommonResponseData(targetUrl, commonResponse, messageKey, messageKey);
 
             return commonResponse.getData();
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error("유저 정보 조회 에러", e);
             throw e;
         }
@@ -585,14 +593,15 @@ public class ApiGateway {
     // END : User Service ----------------------------------------------------------------------------------------------
 
     /**
-     * CommonDto null 확인 및 data null 확인
-     * CommonDto.code 를 확인 : 400, 500 번대 상황 시 예외 발생
+     * CommonDto null 확인 및 data null 확인 CommonDto.code 를 확인 : 400, 500 번대 상황 시 예외 발생
+     *
      * @param targetUrl
      * @param commonResponse
      * @param connectionFailMessageKey
      * @param dataNullMessageKey
      */
-    private void checkCommonResponseData(String targetUrl, CommonDto<?> commonResponse, String connectionFailMessageKey, String dataNullMessageKey) {
+    private void checkCommonResponseData(String targetUrl, CommonDto<?> commonResponse,
+        String connectionFailMessageKey, String dataNullMessageKey) {
         if (commonResponse == null) { // 통신 실패
             log.error("CommonResponse is Null : url = {}", targetUrl);
             throw new ApiCallFailException(messageUtil.getMessage(connectionFailMessageKey));
@@ -610,10 +619,12 @@ public class ApiGateway {
         int firstNum = httpStatusCode / 100;
         switch (firstNum) {
             case 4 -> {
-                throw new UnacceptableHttpCodeException(messageUtil.getMessage("api.call.client-error"));
+                throw new UnacceptableHttpCodeException(
+                    messageUtil.getMessage("api.call.client-error"));
             }
             case 5 -> {
-                throw new UnacceptableHttpCodeException(messageUtil.getMessage("api.call.server-error"));
+                throw new UnacceptableHttpCodeException(
+                    messageUtil.getMessage("api.call.server-error"));
             }
         }
     }

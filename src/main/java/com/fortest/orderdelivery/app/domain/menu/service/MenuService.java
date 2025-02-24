@@ -44,7 +44,7 @@ public class MenuService {
         String storeId = menuSaveRequestDto.getStoreId();
 
         // 가게 DB 존재 여부 확인
-        apiGateway.getValidStoreFromApp(storeId);
+        apiGateway.getValidStoreFromApp(storeId, user);
 
         Menu newMenu = MenuMapper.toMenu(menuSaveRequestDto);
         newMenu.isCreatedBy(user.getId());
