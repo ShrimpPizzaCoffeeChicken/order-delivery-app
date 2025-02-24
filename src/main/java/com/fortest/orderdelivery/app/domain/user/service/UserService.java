@@ -97,7 +97,7 @@ public class UserService {
                 .build();
     }
 
-
+    @Transactional
     public UserSignupResponseDto signup(SignupRequestDto requestDto) {
 
         validateUsername(requestDto.getUsername());
@@ -118,8 +118,10 @@ public class UserService {
         userRepository.save(user);
         userRepository.flush();
 
-        user.isCreatedBy(user.getId());
-        userRepository.save(user);
+        userQueryRepository.insertUpdatedAt(user);
+
+    //    user.isCreatedBy(user.getId());
+     //   userRepository.save(user);
 
         // User -> UserSignupResponseDto 변환 후 반환
         return UserMapper.fromUserToUserSignupResponseDto(user);

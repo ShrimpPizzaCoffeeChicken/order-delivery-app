@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.user.entity.QUser;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -13,13 +14,22 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.fortest.orderdelivery.app.domain.user.entity.QRoleType.*;
+import static com.fortest.orderdelivery.app.domain.user.entity.QUser.*;
 
 @RequiredArgsConstructor
 @Repository
 public class UserQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
-    private final QUser user = QUser.user;
+    private final EntityManager entityManager;
+
+    public void insertUpdatedAt(User targetUser){
+        //updatable = false 우회하여 강제 업데이트
+        entityManager.createQuery("UPDATE User u SET u.createdBy = :createdBy WHERE u.id = :id")
+                .setParameter("createdBy", targetUser.getId())
+                .setParameter("id", targetUser.getId())
+                .executeUpdate();
+    }
 
     public Optional<User> findById(Long userId) {
         return Optional.ofNullable(
