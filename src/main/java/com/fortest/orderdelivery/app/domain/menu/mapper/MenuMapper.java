@@ -8,18 +8,17 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionResponseDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 
-//추후에 Security Filter 생성 후, createBy 등 사용자 정보 넣어주기
 public class MenuMapper {
 
     public static Menu toMenu(MenuSaveRequestDto menuSaveRequestDto) {
@@ -67,9 +66,9 @@ public class MenuMapper {
             .build();
     }
 
-    public static MenuOptionAppResponseDto toMenuOptionAppResponseDto(List<MenuOption> menuOptionList) {
+    public static MenuOptionAppResponseDto toMenuOptionAppResponseDto(List<MenuOptionDto> menuOptionDtoList) {
         return MenuOptionAppResponseDto.builder()
-            .menuOptionList(menuOptionList)
+            .menuOptionDtoList(menuOptionDtoList)
             .build();
     }
 

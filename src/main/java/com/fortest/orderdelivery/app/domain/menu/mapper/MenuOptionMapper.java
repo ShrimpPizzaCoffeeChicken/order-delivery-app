@@ -6,6 +6,9 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionsSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 //추후에 Security Filter 생성 후, createBy 등 사용자 정보 넣어주기
 public class MenuOptionMapper {
@@ -44,5 +47,12 @@ public class MenuOptionMapper {
             .price(menuoption.getPrice())
             .exposeStatus(menuoption.getExposeStatus())
             .build();
+    }
+
+    public static List<MenuOptionDto> toMenuOptionDtoList(List<MenuOption> menuOptionList) {
+
+        return menuOptionList.stream()
+            .map(MenuOptionMapper::toMenuOptionDto)
+            .collect(Collectors.toList());
     }
 }
