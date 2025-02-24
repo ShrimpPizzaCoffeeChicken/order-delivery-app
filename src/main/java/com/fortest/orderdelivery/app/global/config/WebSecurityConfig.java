@@ -80,6 +80,8 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/app/menus/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/orders/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/stores/{storeId}").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/app/stores/{storeId}/menus/valid").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/app/menus/options/valid").permitAll()
 //                   .requestMatchers("/api/service/users/refresh").permitAll()
                     .requestMatchers(HttpMethod.DELETE, "/api/service/users/{userId}").authenticated()
                     .anyRequest().authenticated() // 그 외 요청은 인증 필요

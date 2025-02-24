@@ -1,6 +1,5 @@
 package com.fortest.orderdelivery.app.domain.menu.service;
 
-import com.amazonaws.util.CollectionUtils;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidRequestDto.MenuList;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidRequestDto.MenuList.OptionList;
@@ -10,14 +9,13 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
-import com.fortest.orderdelivery.app.domain.menu.repository.MenuOptionQueryRepository;
 import com.fortest.orderdelivery.app.domain.menu.repository.MenuQueryRepository;
-import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +37,10 @@ public class MenuAppService {
 
     public MenuAndOptionValidResponseDto validateMenuAndOption(MenuAndOptionValidRequestDto menuAndOptionValidRequestDto) {
         boolean result = true;
+        List<MenuList> menuLists = menuAndOptionValidRequestDto.getMenuList();
 
         //request menuList 없는 경우 함수 return
-        if (CollectionUtils.isNullOrEmpty(menuAndOptionValidRequestDto.getMenuList())) {
+        if (CollectionUtils.isEmpty(menuLists)) {
             result = false;
             return MenuMapper.toMenuAndOptionValidResponseDto(null, result);
         }
@@ -49,7 +48,7 @@ public class MenuAppService {
         List<MenuAndOptionValidResponseDto.MenuList> resultMenuList = new ArrayList<>();
 
         //List에 있는 메뉴들을 하나씩 꺼내서 for문 돌기
-        for (MenuList menu : menuAndOptionValidRequestDto.getMenuList()) {
+        for (MenuList menu : menuLists) {
             String menuId = menu.getId();
             List<OptionList> optionLists = menu.getOptionList();
             Menu savedMenu = menuQueryRepository.getMenuWithMenuOption(menuId);
@@ -57,7 +56,7 @@ public class MenuAppService {
             List<MenuOption> menuOptionList = savedMenu.getMenuOptionList();
             List<MenuAndOptionValidResponseDto.MenuList.OptionList> resultOptionList = new ArrayList<>();
 
-            if (CollectionUtils.isNullOrEmpty(optionLists)) {
+            if (CollectionUtils.isEmpty(optionLists)) {
                 resultMenuList.add(MenuAndOptionValidResponseDto.MenuList.builder()
                     .id(menuId)
                     .price(savedMenu.getPrice())
@@ -78,8 +77,13 @@ public class MenuAppService {
                             .price(menuOption.getPrice())
                             .name(menuOption.getName())
                             .build());
+                        break;
                     }
                 }
+            }
+
+            if(resultOptionList.size() != optionLists.size()) {
+                return MenuMapper.toMenuAndOptionValidResponseDto(null, false);
             }
 
             resultMenuList.add(MenuAndOptionValidResponseDto.MenuList.builder()
@@ -88,6 +92,11 @@ public class MenuAppService {
                 .name(savedMenu.getName())
                 .optionList(resultOptionList)
                 .build());
+        }
+
+        if(resultMenuList.size() != menuLists.size()) {
+            resultMenuList = null;
+            result = false;
         }
 
         return MenuMapper.toMenuAndOptionValidResponseDto(resultMenuList, result);
