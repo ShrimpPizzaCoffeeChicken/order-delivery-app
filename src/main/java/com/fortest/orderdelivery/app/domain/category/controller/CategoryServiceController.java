@@ -23,7 +23,7 @@ public class CategoryServiceController {
     private final MessageUtil messageUtil;
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasRole('OWNER')")
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER')")
     @PostMapping("/categories")
     public ResponseEntity<CommonDto<CategorySaveResponseDto>> saveCategory(@Valid @RequestBody CategorySaveRequestDto categorySaveRequestDto,
                                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -59,7 +59,7 @@ public class CategoryServiceController {
         );
     }
 
-    @PreAuthorize("hasRole('OWNER')")
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER')")
     @PatchMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryUpdateResponseDto>> updateCategory(@PathVariable String categoryId,
                                                                                @RequestBody CategoryUpdateRequestDto categoryUpdateRequestDto,
@@ -75,7 +75,7 @@ public class CategoryServiceController {
         );
     }
 
-    @PreAuthorize("hasRole('OWNER')")
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER')")
     @DeleteMapping("/categories/{categoryId}")
     public ResponseEntity<CommonDto<CategoryDeleteResponseDto>> deleteCategory(@PathVariable String categoryId,
                                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
