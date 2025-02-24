@@ -89,15 +89,18 @@ public class StoreMapper {
 
         if(CollectionUtils.isEmpty(beforeMenuDtoList)) {
             return StoreMenuValidResponseDto.builder()
+                .result(menuOptionValidReponseDto.getResult())
                 .storeId(store.getId())
                 .storeName(store.getName())
-                .menuList(null)
+                .menuList(new ArrayList<>())
                 .build();
         }
         for (MenuOptionValidReponseDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
             List<StoreMenuValidResponseDto.OptionDto> afterOptionList = new ArrayList<>();
             StoreMenuValidResponseDto.MenuDto afterMenuDto = StoreMenuValidResponseDto.MenuDto.builder()
                     .id(beforeMenuDto.getId())
+                    .price(beforeMenuDto.getPrice())
+                    .name(beforeMenuDto.getName())
                     .optionList(afterOptionList)
                     .build();
             afterMenuDtoList.add(afterMenuDto);
@@ -105,11 +108,14 @@ public class StoreMapper {
             for (MenuOptionValidReponseDto.OptionDto beforeOptionDto : beforeOptionDtoList) {
                 StoreMenuValidResponseDto.OptionDto afterOption = StoreMenuValidResponseDto.OptionDto.builder()
                         .id(beforeOptionDto.getId())
+                        .price(beforeMenuDto.getPrice())
+                        .name(beforeMenuDto.getName())
                         .build();
                 afterOptionList.add(afterOption);
             }
         }
         return StoreMenuValidResponseDto.builder()
+                .result(menuOptionValidReponseDto.getResult())
                 .storeId(store.getId())
                 .storeName(store.getName())
                 .menuList(afterMenuDtoList)
