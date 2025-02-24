@@ -78,7 +78,7 @@ public class ReviewServiceController {
 
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/reviews/{reviewId}")
-    public ResponseEntity<CommonDto<ReviewGetResponseDto>> getReview(@PathVariable String reviewId) {
+    public ResponseEntity<CommonDto<ReviewGetResponseDto>> getReview(@PathVariable("reviewId") String reviewId) {
         ReviewGetResponseDto reviewGetResponseDto = reviewService.getReview(reviewId);
 
         return ResponseEntity.ok(

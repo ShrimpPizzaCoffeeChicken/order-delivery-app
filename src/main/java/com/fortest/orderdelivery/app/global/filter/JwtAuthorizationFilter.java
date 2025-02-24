@@ -59,7 +59,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(accessToken)) {
             if (!jwtUtil.validateToken(accessToken)) {
-                log.error("Access Token이 만료됨");
 
                 sendJsonResponse(res, HttpStatus.UNAUTHORIZED, "access.token.expired", null);
 
@@ -73,11 +72,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                         targetUrl
                 );
 
-                log.info("isFindRepositoryUrl : {}", isFindRepositoryUrl);
-
                 setAuthenticationFromToken(accessToken, isFindRepositoryUrl);
             } catch (Exception e) {
-                log.error("인증 실패: ", e);
                 sendJsonResponse(res, HttpStatus.UNAUTHORIZED, "authentication.failed", null);
                 return;
             }
@@ -85,12 +81,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             int i = requestURI.lastIndexOf(REPOSITORY_FIND_URL+APP_URL_SUFFIX);
             //  URL: /api/api 로 시작하지 않는 경우
             if (i == -1) {
-                log.error("Access Token이 요청 헤더에 없음 : requestURI = {}", requestURI);
                 sendJsonResponse(res, HttpStatus.UNAUTHORIZED, "access.token.missing", null);
                 return;
             }
         }
-        log.info("다음 필터 실행");
         // 다음 필터 실행
         filterChain.doFilter(req, res);
     }
@@ -149,7 +143,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             substring = substring.replace(SERVICE_URL_SUFFIX, "");
         }
 
-        log.info("targetUrlSubString: {}", substring);
         return substring.startsWith(USER_API_SUFFIX);
     }
 }
