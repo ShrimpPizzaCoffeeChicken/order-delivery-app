@@ -14,7 +14,9 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 
 //추후에 Security Filter 생성 후, createBy 등 사용자 정보 넣어주기
@@ -39,7 +41,7 @@ public class MenuMapper {
             .storeId(menuDto.getStoreId())
             .menuOptionList(menuDto.getMenuOptionList().stream()
                 .map(MenuOptionMapper::toMenuOption)
-                .toList())
+                .collect(Collectors.toList()))
             .exposeStatus(menuDto.getExposeStatus())
             .build();
     }
@@ -107,7 +109,7 @@ public class MenuMapper {
             .storeId(menu.getStoreId())
             .menuOptionList(menu.getMenuOptionList().stream()
                 .map(MenuOptionMapper::toMenuOptionDto)
-                .toList())
+                .collect(Collectors.toList()))
             .exposeStatus(menu.getExposeStatus())
             .build();
     }

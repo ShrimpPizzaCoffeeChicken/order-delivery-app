@@ -48,6 +48,7 @@ public class MenuOptionService {
     private final MessageUtil messageUtil;
     private final MenuOptionRepository menuOptionRepository;
 
+    @Transactional
     public MenuOptionResponseDto saveMenuOption(
         MenuOptionsSaveRequestDto menuOptionsSaveRequestDto, String menuId, User user) {
         Long userId = user.getId();
