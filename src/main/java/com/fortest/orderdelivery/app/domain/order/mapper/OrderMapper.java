@@ -148,6 +148,7 @@ public class OrderMapper {
         return OrderGetDataDto.builder()
                 .orderId(order.getId())
                 .orderStatus(order.getOrderStatus().name())
+                .orderType(order.getOrderType().name())
                 .customerName(order.getCustomerName())
                 .storeId(order.getStoreId())
                 .storeName(order.getStoreName())
