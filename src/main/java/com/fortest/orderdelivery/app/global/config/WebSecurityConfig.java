@@ -77,6 +77,7 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/service/users/protected-resource").authenticated()
                     .requestMatchers("/api/service/areas/**").authenticated()
                     .requestMatchers("/api/app/users/*").permitAll()
+                    .requestMatchers("/api/app/menus/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/orders/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/stores/{storeId}").permitAll()
 //                   .requestMatchers("/api/service/users/refresh").permitAll()
