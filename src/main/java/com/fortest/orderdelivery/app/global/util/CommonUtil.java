@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j(topic = "CommonUtil")
 public class CommonUtil {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -18,6 +21,9 @@ public class CommonUtil {
     }
 
     public static LocalDateTime stringToLDT (String ldtString) {
+        if(Objects.isNull(ldtString) || ldtString.isBlank()) {
+            return null;
+        }
         return LocalDateTime.parse(ldtString, formatter);
     }
 

@@ -2,21 +2,21 @@ package com.fortest.orderdelivery.app.domain.store.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
+@ToString // 로깅을 위해 추가
 @Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class StoreMenuValidRequestDto {
+
     @JsonProperty("menu-list")
     private List<MenuDto> menuList;
 
+    @ToString // 로깅을 위해 추가
     @Builder
     @Getter
     @AllArgsConstructor

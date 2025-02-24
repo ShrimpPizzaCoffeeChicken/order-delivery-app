@@ -1,6 +1,8 @@
 package com.fortest.orderdelivery.app.domain.review.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,9 +19,10 @@ public class ReviewSaveRequestDto {
     @JsonProperty("order-id")
     private String orderId;
 
-    @Size(min = 1, max = 5)
+    @Min(1)
+    @Max(5)
     @JsonProperty("rate")
-    private Long rate;
+    private Integer rate;
 
     @JsonProperty("contents")
     private String contents;

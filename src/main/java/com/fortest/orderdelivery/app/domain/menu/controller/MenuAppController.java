@@ -5,13 +5,13 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidResponseD
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.service.MenuAppService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
-import java.util.List;
-
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,11 +37,11 @@ public class MenuAppController {
             .build());
     }
 
-    @GetMapping("/options/valid")
+    @PostMapping("/options/valid")
     public ResponseEntity<CommonDto<MenuAndOptionValidResponseDto>> validateMenuAndOption(
-        @RequestParam(name= "data") String data
+        @RequestBody MenuAndOptionValidRequestDto menuAndOptionValidRequestDto
     ) {
-        MenuAndOptionValidResponseDto responseDto = menuAppService.validateMenuAndOption(data);
+        MenuAndOptionValidResponseDto responseDto = menuAppService.validateMenuAndOption(menuAndOptionValidRequestDto);
 
         return ResponseEntity.ok(CommonDto.<MenuAndOptionValidResponseDto>builder()
             .message(messageUtil.getSuccessMessage())

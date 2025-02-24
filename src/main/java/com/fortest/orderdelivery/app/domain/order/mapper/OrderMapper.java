@@ -1,18 +1,23 @@
 package com.fortest.orderdelivery.app.domain.order.mapper;
 
-import com.fortest.orderdelivery.app.domain.order.dto.*;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDataDto;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailDataResponseDto;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetDetailResponseDto;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListResponseDto;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderSaveRequestDto;
+import com.fortest.orderdelivery.app.domain.order.dto.OrderStatusUpdateResponseDto;
+import com.fortest.orderdelivery.app.domain.order.dto.StoreMenuValidResponseDto;
 import com.fortest.orderdelivery.app.domain.order.entity.MenuOptionMenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.MenuOrder;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.global.util.CommonUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 
 @Slf4j
 public class OrderMapper {
@@ -24,7 +29,6 @@ public class OrderMapper {
      * @return order, menuOrder, MenuOptionMenuOrder 가 바인딩 된 Entity 반환
      */
     public static Order saveDtoToEntity(MessageUtil messageUtil, OrderSaveRequestDto saveDto, StoreMenuValidResponseDto validDto, Long userId, String userName) {
-
         // 가격 정보 세팅
         HashMap<String, StoreMenuValidResponseDto.MenuDto> menuValidMap = new HashMap<>();
         HashMap<String, StoreMenuValidResponseDto.OptionDto> optionValidMap = new HashMap<>();
@@ -148,6 +152,7 @@ public class OrderMapper {
         return OrderGetDataDto.builder()
                 .orderId(order.getId())
                 .orderStatus(order.getOrderStatus().name())
+                .orderType(order.getOrderType().name())
                 .customerName(order.getCustomerName())
                 .storeId(order.getStoreId())
                 .storeName(order.getStoreName())

@@ -10,25 +10,26 @@ import org.springframework.data.domain.Page;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 public class StoreMapper {
 
-    public static Store storeSaveRequestDtoToEntity(StoreSaveRequestDto storeSaveRequestDto, Area area) {
+    public static Store storeSaveRequestDtoToEntity(StoreSaveRequestDto storeSaveRequestDto, Area area, String userName) {
         return Store.builder()
                 .name(storeSaveRequestDto.getStoreName())
                 .area(area)
                 .detailAddress(storeSaveRequestDto.getDetailAddress())
-                .ownerName(storeSaveRequestDto.getOwnerName())
+                .ownerName(userName)
                 .build();
     }
 
-    public static StoreSaveResponseDto entityToStoreSaveResponseDto(Store store, Area area) {
+    public static StoreSaveResponseDto entityToStoreSaveResponseDto(Store store, Area area, String userName) {
         return StoreSaveResponseDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
                 .areaId(area.getId())
                 .detailAddress(store.getDetailAddress())
-                .ownerName(store.getOwnerName())
+                .ownerName(userName)
                 .build();
     }
 
@@ -58,7 +59,7 @@ public class StoreMapper {
                 .build();
     }
 
-    public static MenuOptionValidRequestDto storeValidRequestDtoToMenuValidRedDto(StoreMenuValidRequestDto storeMenuValidRequestDto) {
+    public static MenuOptionValidRequestDto storeValidRequestDtoToMenuValidRedDto(String storeId, StoreMenuValidRequestDto storeMenuValidRequestDto) {
         List<MenuOptionValidRequestDto.MenuDto> afterMenuDtoList = new ArrayList<>();
         List<StoreMenuValidRequestDto.MenuDto> beforeMenuDtoList = storeMenuValidRequestDto.getMenuList();
         for (StoreMenuValidRequestDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
@@ -76,16 +77,30 @@ public class StoreMapper {
                 afterOptionList.add(afterOption);
             }
         }
-        return MenuOptionValidRequestDto.builder().menuList(afterMenuDtoList).build();
+        return MenuOptionValidRequestDto.builder()
+            .menuList(afterMenuDtoList)
+            .storeId(storeId)
+            .build();
     }
 
     public static StoreMenuValidResponseDto menuOptionResponseDtoToStoreValidResDto(Store store, MenuOptionValidReponseDto menuOptionValidReponseDto) {
         List<StoreMenuValidResponseDto.MenuDto> afterMenuDtoList = new ArrayList<>();
         List<MenuOptionValidReponseDto.MenuDto> beforeMenuDtoList = menuOptionValidReponseDto.getMenuList();
+
+        if(CollectionUtils.isEmpty(beforeMenuDtoList)) {
+            return StoreMenuValidResponseDto.builder()
+                .result(menuOptionValidReponseDto.getResult())
+                .storeId(store.getId())
+                .storeName(store.getName())
+                .menuList(new ArrayList<>())
+                .build();
+        }
         for (MenuOptionValidReponseDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
             List<StoreMenuValidResponseDto.OptionDto> afterOptionList = new ArrayList<>();
             StoreMenuValidResponseDto.MenuDto afterMenuDto = StoreMenuValidResponseDto.MenuDto.builder()
                     .id(beforeMenuDto.getId())
+                    .price(beforeMenuDto.getPrice())
+                    .name(beforeMenuDto.getName())
                     .optionList(afterOptionList)
                     .build();
             afterMenuDtoList.add(afterMenuDto);
@@ -93,15 +108,20 @@ public class StoreMapper {
             for (MenuOptionValidReponseDto.OptionDto beforeOptionDto : beforeOptionDtoList) {
                 StoreMenuValidResponseDto.OptionDto afterOption = StoreMenuValidResponseDto.OptionDto.builder()
                         .id(beforeOptionDto.getId())
+                        .price(beforeMenuDto.getPrice())
+                        .name(beforeMenuDto.getName())
                         .build();
                 afterOptionList.add(afterOption);
             }
         }
-        return StoreMenuValidResponseDto.builder()
+         StoreMenuValidResponseDto storeMenuValidResponseDto = StoreMenuValidResponseDto.builder()
+                .result(menuOptionValidReponseDto.getResult())
                 .storeId(store.getId())
                 .storeName(store.getName())
                 .menuList(afterMenuDtoList)
                 .build();
+
+        return storeMenuValidResponseDto;
     }
 
     public static StoreSearchResponseDto pageToSearchResponseDto (Page<Store> page, String search) {

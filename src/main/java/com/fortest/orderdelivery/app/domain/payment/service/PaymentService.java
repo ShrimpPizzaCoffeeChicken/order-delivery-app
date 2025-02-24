@@ -10,6 +10,7 @@ import com.fortest.orderdelivery.app.domain.payment.repository.PaymentQueryRepos
 import com.fortest.orderdelivery.app.domain.payment.repository.PaymentRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
+import com.fortest.orderdelivery.app.global.exception.AlreadyExistException;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -78,13 +81,18 @@ public class PaymentService {
     @Transactional
     public PaymentSaveResponseDto savePayment(PaymentSaveRequestDto saveRequestDto, User user) {
 
-        OrderValidResponseDto validOrder = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId());
+        OrderValidResponseDto validOrder = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId(), user);
         PaymentAgent paymentAgent = paymentAgentRepository.findByName(saveRequestDto.getPaymentAgent())
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("app.payment.agent.not-found")));
 
         // 주문 유효성 검사
-        if ( ! Order.OrderStatus.WAIT.name().equals(validOrder.getOrderStatus()) ) {
+        if (!Order.OrderStatus.WAIT.name().equals(validOrder.getOrderStatus()) ) {
             throw new BusinessLogicException(messageUtil.getMessage("app.payment.invalid-order"));
+        }
+
+        Optional<Payment> existPayment = paymentRepository.findByOrderId(validOrder.getOrderId());
+        if (existPayment.isPresent()) {
+            throw new AlreadyExistException(messageUtil.getMessage("app.payment.already-exist"));
         }
 
         Payment payment = PaymentMapper.saveDtoToEntity(

@@ -16,6 +16,9 @@ import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
+import com.fortest.orderdelivery.app.domain.menu.mapper.MenuMapper;
+import com.fortest.orderdelivery.app.domain.menu.mapper.MenuOptionMapper;
+import com.fortest.orderdelivery.app.domain.menu.repository.MenuOptionQueryRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
@@ -44,13 +47,12 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    private static final String MENU_OPTION_APP_URL = "http://{url}:{port}/api/app/menus/options";
-
     private final ApiGateway apiGateway;
     private final AmazonS3 amazonS3;
     private final MessageUtil messageUtil;
     private final ImageRepository imageRepository;
     private final ImageQueryRepository imageQueryRepository;
+    private final MenuOptionQueryRepository menuOptionQueryRepository;
 
     // TODO : multipart upload로 업로드 중간에 실패할 때의 데이터 불일치 문제 해결하기
     @Transactional
@@ -75,10 +77,10 @@ public class ImageService {
             int maxImageSequence = imageQueryRepository.getMaxMenuImageSequence(menuId);
             AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
 
-            MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId));
+            MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId), user);
 
             uploadImageToS3(multipartFileList, imageIdList, sequence,
-                menuDto.getMenuList().get(0), null, user);
+                MenuMapper.toMenu(menuDto.getMenuList().get(0)), null, user);
         }
 
         return ImageMapper.toImageResponseDto(imageIdList);
@@ -93,10 +95,11 @@ public class ImageService {
             int maxImageSequence = imageQueryRepository.getMaxMenuOptionImageSequence(menuOptionId);
             AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
 
-            MenuOptionAppResponseDto menuOptionDto = apiGateway.getMenuOptionFromApp(
-                List.of(menuOptionId));
+//            MenuOptionAppResponseDto menuOptionDto = apiGateway.getMenuOptionFromApp(
+//                List.of(menuOptionId), user);
+//            MenuOption menuOption = MenuOptionMapper.toMenuOption(menuOptionDto.getMenuOptionDtoList().get(0));
 
-            MenuOption menuOption = menuOptionDto.getMenuOptionList().get(0);
+            MenuOption menuOption = menuOptionQueryRepository.getMenuOptionsAndMenusByMenuOptionIds(List.of(menuOptionId)).get(0);
 
             uploadImageToS3(multipartFileList, imageIdList, sequence,
                 menuOption.getMenu(), menuOption, user);

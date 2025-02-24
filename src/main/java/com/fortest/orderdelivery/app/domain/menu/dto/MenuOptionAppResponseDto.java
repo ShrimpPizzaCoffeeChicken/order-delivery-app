@@ -1,6 +1,5 @@
 package com.fortest.orderdelivery.app.domain.menu.dto;
 
-import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MenuOptionAppResponseDto {
-    private List<MenuOption> menuOptionList;
+    private List<MenuOptionDto> menuOptionDtoList;
 }

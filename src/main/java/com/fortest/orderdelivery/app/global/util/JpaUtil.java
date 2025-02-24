@@ -5,6 +5,8 @@ import lombok.Getter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.util.Locale;
+
 public class JpaUtil {
 
     /**
@@ -18,6 +20,7 @@ public class JpaUtil {
     public static PageRequest getNormalPageable(Integer page, Integer size, String orderby, String sort) {
 
         Sort sortAndOrderBy = Sort.by(OrderBy.from(orderby).fieldName);
+        sort = sort.toUpperCase();
         sortAndOrderBy = "ASC".equals(sort) ? sortAndOrderBy.ascending() : sortAndOrderBy.descending() ;
 
         return PageRequest.of(page - 1 , getUsableSize(size), sortAndOrderBy);
@@ -40,8 +43,8 @@ public class JpaUtil {
     @Getter
     @AllArgsConstructor
     public enum OrderBy {
-        CREATED("createdBy"),
-        UPDATED("updatedBy");
+        CREATED("createdAt"),
+        UPDATED("updatedAt");
 
         private final String fieldName;
 

@@ -2,21 +2,23 @@ package com.fortest.orderdelivery.app.domain.menu.mapper;
 
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAndOptionValidResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetQueryDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto.MenuListDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionAppResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuOptionResponseDto;
-import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuResponseDto;
+import com.fortest.orderdelivery.app.domain.menu.dto.MenuSaveRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.entity.ExposeStatus;
 import com.fortest.orderdelivery.app.domain.menu.entity.Menu;
 import com.fortest.orderdelivery.app.domain.menu.entity.MenuOption;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 
-//추후에 Security Filter 생성 후, createBy 등 사용자 정보 넣어주기
 public class MenuMapper {
 
     public static Menu toMenu(MenuSaveRequestDto menuSaveRequestDto) {
@@ -26,6 +28,20 @@ public class MenuMapper {
             .exposeStatus(ExposeStatus.valueOf(menuSaveRequestDto.getExposeStatus()))
             .description(menuSaveRequestDto.getDescription())
             .storeId(menuSaveRequestDto.getStoreId())
+            .build();
+    }
+
+    public static Menu toMenu(MenuDto menuDto) {
+        return Menu.builder()
+            .id(menuDto.getId())
+            .name(menuDto.getName())
+            .description(menuDto.getDescription())
+            .price(menuDto.getPrice())
+            .storeId(menuDto.getStoreId())
+            .menuOptionList(menuDto.getMenuOptionList().stream()
+                .map(MenuOptionMapper::toMenuOption)
+                .collect(Collectors.toList()))
+            .exposeStatus(menuDto.getExposeStatus())
             .build();
     }
 
@@ -44,15 +60,15 @@ public class MenuMapper {
             .build();
     }
 
-    public static MenuAppResponseDto toMenuAppResponseDto(List<Menu> menuList) {
+    public static MenuAppResponseDto toMenuAppResponseDto(List<MenuDto> menuList) {
         return MenuAppResponseDto.builder()
             .menuList(menuList)
             .build();
     }
 
-    public static MenuOptionAppResponseDto toMenuOptionAppResponseDto(List<MenuOption> menuOptionList) {
+    public static MenuOptionAppResponseDto toMenuOptionAppResponseDto(List<MenuOptionDto> menuOptionDtoList) {
         return MenuOptionAppResponseDto.builder()
-            .menuOptionList(menuOptionList)
+            .menuOptionDtoList(menuOptionDtoList)
             .build();
     }
 
@@ -80,6 +96,20 @@ public class MenuMapper {
         return MenuAndOptionValidResponseDto.builder()
             .result(result)
             .menuList(menuLists)
+            .build();
+    }
+
+    public static MenuDto toMenuDto(Menu menu) {
+        return MenuDto.builder()
+            .id(menu.getId())
+            .name(menu.getName())
+            .description(menu.getDescription())
+            .price(menu.getPrice())
+            .storeId(menu.getStoreId())
+            .menuOptionList(menu.getMenuOptionList().stream()
+                .map(MenuOptionMapper::toMenuOptionDto)
+                .collect(Collectors.toList()))
+            .exposeStatus(menu.getExposeStatus())
             .build();
     }
 }

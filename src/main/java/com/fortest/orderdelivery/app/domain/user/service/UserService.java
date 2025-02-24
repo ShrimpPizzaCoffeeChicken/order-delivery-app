@@ -10,8 +10,8 @@ import com.fortest.orderdelivery.app.domain.user.repository.UserQueryRepository;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
-import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.jwt.JwtUtil;
+import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -19,13 +19,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -51,11 +52,17 @@ public class UserService {
     // 유저 권한 업데이트
     @Transactional
     public UserUpdateRollResponseDto updateRoll(Long targetUserId, String toRollString, User user) {
+
+        if (toRollString == null || toRollString.trim().isEmpty()) {
+            throw new BusinessLogicException("toRoll 값이 null 또는 비어 있습니다.");
+        }
+
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-user")));
         String fromRoll = targetUser.getRoleType().getRoleName().name();
 
         RoleType.RoleName toRoleName = RoleType.RoleName.getByString(messageUtil, toRollString);
+
         RoleType newRoleType = roleTypeRepository.findByRoleName(toRoleName)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("app.user.not-found-role-name")));
         String toRoll = newRoleType.getRoleName().name();
@@ -68,7 +75,7 @@ public class UserService {
 
     // 로그인 관련 기능 (토큰 재발급)
     @Transactional
-    public CommonDto<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public CommonDto<Object> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         if (refreshToken == null || !jwtUtil.validateToken(refreshToken)) {
             return new CommonDto<>("Invalid Refresh Token", HttpStatus.UNAUTHORIZED.value(), null);
@@ -77,9 +84,6 @@ public class UserService {
         Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
         String username = claims.getSubject();
 
-       // User user = userRepository.findByUsername(username)
-       //         .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
-
         User user = userRepository.findByUsernameWithRole(username)
                 .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
@@ -87,15 +91,19 @@ public class UserService {
 
         jwtUtil.addAccessTokenToHeader(newAccessToken, response);
 
-        return CommonDto.<LoginResponseDto>builder()
+        return CommonDto.<Object>builder()
                 .message("새로운 Access Token 발급")
                 .code(HttpStatus.OK.value())
-                .data(new LoginResponseDto(newAccessToken, refreshToken))
+                .data(null)
                 .build();
     }
 
     @Transactional
     public UserSignupResponseDto signup(SignupRequestDto requestDto) {
+
+        validateUsername(requestDto.getUsername());
+        validatePassword(requestDto.getPassword());
+
         RoleType roleType = roleTypeRepository.findByRoleName(RoleType.RoleName.CUSTOMER)
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("not-found.role")));
 
@@ -105,14 +113,14 @@ public class UserService {
                 .email(requestDto.getEmail())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
                 .roleType(roleType)
+                .isPublic(true)
                 .build();
 
         userRepository.save(user);
+        userRepository.flush();
 
-        // createdBy 자동 반영
-        user.isCreatedBy(user.getId());
+        userQueryRepository.insertUpdatedAt(user);
 
-        // User -> UserSignupResponseDto 변환 후 반환
         return UserMapper.fromUserToUserSignupResponseDto(user);
     }
 
@@ -125,13 +133,6 @@ public class UserService {
         return UserMapper.toUserGetDetailResponseDto(user);
     }
 
-    @Transactional
-    public void isCreatedBy(User user){
-      //  User findUser = userRepository.findById(user.getId()).get();
-        user.isCreatedBy(user.getId());
-        userRepository.save(user);
-    }
-
     @Transactional(readOnly = true)
     public CommonDto<Map<String, Object>> checkUsernameAvailability(String username) {
         //존재하는 아이디이면 false, 존재하지 않으면 true
@@ -141,7 +142,7 @@ public class UserService {
         responseData.put("username", username);
         responseData.put("is-available", isAvailable);
 
-        String messageKey = isAvailable ? "username.available" : "username.taken";
+        String messageKey = isAvailable ? "user.username.available" : "user.username.not-available";
 
         //응답 객체 생성 및 반환
         return new CommonDto<>(messageUtil.getMessage(messageKey),
@@ -151,14 +152,13 @@ public class UserService {
 
     @Transactional
     public CommonDto<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        // 현재 쿠키에서 Refresh Token 가져오기
+
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
 
         if (refreshToken == null) {
             return new CommonDto<>("Refresh Token이 존재하지 않습니다.", HttpStatus.BAD_REQUEST.value(), null);
         }
 
-        // Refresh Token 삭제 (쿠키에서 제거)
         removeRefreshTokenCookie(response);
 
         return new CommonDto<>("로그아웃 완료", HttpStatus.OK.value(), "로그아웃 성공");
@@ -166,7 +166,6 @@ public class UserService {
 
     @Transactional
     public void updateUser(Long userId, UserUpdateRequestDto requestDto, String loggedInUsername) {
-        log.info("회원 정보 수정 요청 - userId: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("not-found.user"));
 
@@ -190,12 +189,6 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(targetUserId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
 
-        //요청한 유저가 본인이 맞는지 다시 검증 (이중 체크)
-//        if (!user.getId().equals(requesterUserId)) {
-//            throw new UnauthorizedException("본인 계정만 탈퇴할 수 있습니다.");
-//        }
-
-        //소프트 삭제 처리 (삭제한 userId 기록)
         user.softDelete(requesterUserId);
     }
 
@@ -209,14 +202,47 @@ public class UserService {
         response.addCookie(cookie);
     }
 
-    public List<UserResponseDto> searchUsers(String username, String nickname, String roleName) {
-        if (username == null && nickname == null && roleName == null) {
-            throw new NotValidRequestException("검색 조건을 하나 이상 입력하세요.");
-        }
+    @Transactional
+    public UserGetListResponseDto searchUsers(Integer page, Integer size, String orderby, String sort, String search) {
 
-        return userQueryRepository.findUsersByFilters(username, nickname, roleName);
+        PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
+        Page<User> userPage = userQueryRepository.findUserList(pageable, search);
+
+        return UserMapper.pageToGetUserListDto(userPage, search);
     }
 
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserDetailMe(Long userId) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new NotFoundException("not-found.user"));
+
+        return UserResponseDto.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .role(user.getRoleType().getRoleName().name())
+                .isPublic(user.getIsPublic())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
+                .createdBy(user.getCreatedBy())
+                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
+                .updatedBy(user.getUpdatedBy())
+                .build();
+    }
+
+    private void validateUsername(String username) {
+        String usernameRegex = "^[a-z0-9]{4,10}$";
+        if (!username.matches(usernameRegex)) {
+            throw new BusinessLogicException(messageUtil.getMessage("invalid.username"));
+        }
+    }
+
+    private void validatePassword(String password) {
+        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,15}$";
+        if (!password.matches(passwordRegex)) {
+            throw new BusinessLogicException(messageUtil.getMessage("invalid.password"));
+        }
+    }
 
 
 }

@@ -48,6 +48,10 @@ public class StoreService {
             }
         }
 
+        if (!user.getUsername().equals(store.getOwnerName())) {
+            throw new SecurityException(messageUtil.getMessage("update.store.category,forbidden"));
+        }
+
         List<String> deleteCategoryIdList = requestDto.getDeleteCategoryIdList();
         List<CategoryStore> deleteTargetList = store.getCategoryStoreList().stream()
                 .filter(categoryStore -> deleteCategoryIdList.contains(categoryStore.getCategory().getId()))
@@ -86,11 +90,11 @@ public class StoreService {
         Area area = areaRepository.findById(areaId)
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
-        Store newStore = StoreMapper.storeSaveRequestDtoToEntity(storeSaveRequestDto, area);
+        Store newStore = StoreMapper.storeSaveRequestDtoToEntity(storeSaveRequestDto, area, user.getUsername());
         newStore.isCreatedBy(user.getId());
         Store savedStore = storeRepository.save(newStore);
 
-        return StoreMapper.entityToStoreSaveResponseDto(savedStore, area);
+        return StoreMapper.entityToStoreSaveResponseDto(savedStore, area, user.getUsername());
     }
 
     public StoreGetDetailResponseDto getStoreDetail(String storeId, User user) {
@@ -122,6 +126,10 @@ public class StoreService {
         Store store = storeRepository.findById(storeId).orElseThrow(()->
                 new BusinessLogicException(messageUtil.getMessage( "api.call.client-error")));
 
+        if (!user.getUsername().equals(store.getOwnerName())) {
+            throw new SecurityException(messageUtil.getMessage("update.store.forbidden"));
+        }
+
         store.update(storeName, area, detailAddress, ownerName);
 
         store.isUpdatedNow(user.getId());
@@ -134,6 +142,10 @@ public class StoreService {
 
         Store store = storeRepository.findById(storeId).orElseThrow(()->
                 new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
+
+        if (!user.getUsername().equals(store.getOwnerName())) {
+            throw new SecurityException(messageUtil.getMessage("delete.store.forbidden"));
+        }
 
         store.isDeletedNow(user.getId());
 

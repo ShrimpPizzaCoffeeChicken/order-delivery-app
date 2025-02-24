@@ -2,6 +2,7 @@ package com.fortest.orderdelivery.app.domain.delivery.repository;
 
 import com.fortest.orderdelivery.app.domain.delivery.entity.Delivery;
 import com.fortest.orderdelivery.app.global.util.CommonUtil;
+import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import com.fortest.orderdelivery.app.global.util.QueryDslUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -23,6 +24,7 @@ import static com.fortest.orderdelivery.app.domain.order.entity.QOrder.order;
 @Repository
 public class DeliveryQueryRepository {
 
+    private final MessageUtil messageUtil;
     private final JPAQueryFactory jpaQueryFactory;
 
     // 사용자의 베송 목록 조회 (검색어 X )
@@ -58,9 +60,9 @@ public class DeliveryQueryRepository {
         OrderSpecifier<?>[] orderSpecifiers = QueryDslUtil.getAllOrderSpecifierArr(pageable, delivery);
 
         BooleanBuilder booleanBuilder = new BooleanBuilder();
-        // 검색 키워드가 있으면 가게 이름으로 사용
+        // 검색 키워드가 있으면 배달의 상태 일치 조건으로 검색
         if (!CommonUtil.checkStringIsEmpty(searchKeyword)) {
-            booleanBuilder.and(delivery.status.eq(Delivery.Status.valueOf(searchKeyword)));
+            booleanBuilder.and(delivery.status.eq(Delivery.Status.getByString(messageUtil, searchKeyword)));
         }
         // 유저 이름이 있으면 해당 유저의 주문 기록만 조회
         if (!CommonUtil.checkStringIsEmpty(userName)) {
@@ -89,14 +91,13 @@ public class DeliveryQueryRepository {
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
 
-    public Optional<Delivery> findDeliveryDetail (String deliveryId, String userName) {
+    public Optional<Delivery> findDeliveryDetail (String deliveryId) {
         return Optional.ofNullable(
                 jpaQueryFactory
                         .selectFrom(delivery)
                         .where(
                                 delivery.id.eq(deliveryId),
-                                delivery.deletedAt.isNull(),
-                                delivery.customerName.eq(userName)
+                                delivery.deletedAt.isNull()
                         )
                         .fetchOne()
         );

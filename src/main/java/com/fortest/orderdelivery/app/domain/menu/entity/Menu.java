@@ -11,7 +11,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter
 @Builder
 @AllArgsConstructor
@@ -50,5 +52,13 @@ public class Menu extends BaseDataEntity {
         this.description = description;
         this.price = price;
         this.exposeStatus = exposeStatus;
+    }
+
+    public void updateMenuOption(MenuOption menuOption) {
+        log.info("menuOptionList : {} ",this.menuOptionList);
+        log.info("menuOption : {} ",menuOption);
+
+        this.menuOptionList.add(menuOption);
+        menuOption.updateMenu(this);
     }
 }

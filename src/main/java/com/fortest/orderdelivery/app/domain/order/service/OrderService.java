@@ -133,6 +133,7 @@ public class OrderService {
         return OrderMapper.entityToGetDetailDto(order);
     }
 
+    @Transactional
     public String deleteEntry (String orderId, User user) {
         try {
             return deleteOrder(orderId, user);

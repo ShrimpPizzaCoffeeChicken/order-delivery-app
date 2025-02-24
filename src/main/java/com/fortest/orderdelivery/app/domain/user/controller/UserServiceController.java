@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.user.controller;
 
+import com.fortest.orderdelivery.app.domain.order.dto.OrderGetListRequestDto;
 import com.fortest.orderdelivery.app.domain.user.dto.*;
 import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
@@ -8,6 +9,7 @@ import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,7 +35,7 @@ public class UserServiceController {
     @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
     @PatchMapping("/users/{userId}/rolls")
     public ResponseEntity<CommonDto<UserUpdateRollResponseDto>> updateRoll(@PathVariable("userId") Long userId,
-                                                                           @RequestBody UserUpdateRollRequestDto requestDto,
+                                                                           @Valid @RequestBody UserUpdateRollRequestDto requestDto,
                                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         UserUpdateRollResponseDto responseDto = userService.updateRoll(userId, requestDto.getToRoll(), userDetails.getUser());
         return ResponseEntity.ok(
@@ -47,13 +49,13 @@ public class UserServiceController {
 
     // 토큰 재발급
     @PostMapping("/users/refresh")
-    public ResponseEntity<CommonDto<LoginResponseDto>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<CommonDto<Object>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok(userService.refreshToken(request, response));
     }
 
     // 회원가입
     @PostMapping("/users/signup")
-    public ResponseEntity<CommonDto<UserSignupResponseDto>> signup(@RequestBody SignupRequestDto requestDto) {
+    public ResponseEntity<CommonDto<UserSignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         UserSignupResponseDto responseDto = userService.signup(requestDto);
 
         return ResponseEntity.ok(
@@ -67,8 +69,10 @@ public class UserServiceController {
     }
 
     //사용자 정보 조회
+    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/users/{userId}")
-    public ResponseEntity<CommonDto<UserGetDetailResponseDto>> getUserDetail (@PathVariable("userId") Long userId) {
+    public ResponseEntity<CommonDto<UserGetDetailResponseDto>> getUserDetail (@PathVariable("userId") Long userId,
+                                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
         UserGetDetailResponseDto userDetailResponseDto = userService.getUserDetail(userId);
 
         return ResponseEntity.ok(
@@ -80,6 +84,7 @@ public class UserServiceController {
         );
     }
 
+    //아이디 중복체크
     @GetMapping("/users/check-username")
     public ResponseEntity<CommonDto<Map<String, Object>>> checkUsername(@RequestParam(name = "username") String username) {
         return ResponseEntity.ok(userService.checkUsernameAvailability(username));
@@ -90,16 +95,16 @@ public class UserServiceController {
         return ResponseEntity.ok(userService.logout(request, response));
     }
 
+    //회원정보 수정
     @PatchMapping("/users/{userId}")
     public ResponseEntity<CommonDto<Void>> updateUser(
             @PathVariable("userId") Long userId,
-            @RequestBody UserUpdateRequestDto requestDto,
+            @Valid @RequestBody UserUpdateRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
-        log.info("회원 정보 수정 요청 - userId: {}", userId);
         // JWT에서 가져온 username
-        //String loggedInUsername = userDetails.getUsername();
+        String loggedInUsername = userDetails.getUsername();
 
-        userService.updateUser(userId, requestDto, userDetails.getUsername());
+        userService.updateUser(userId, requestDto, loggedInUsername);
 
         return ResponseEntity.ok(
                 CommonDto.<Void>builder()
@@ -115,10 +120,6 @@ public class UserServiceController {
             @PathVariable("userId") Long userId, // 탈퇴할 대상 userId
             @AuthenticationPrincipal UserDetailsImpl userDetails // 현재 로그인한 사용자 정보 가져오기
     ) {
-//        // 본인이 맞는지 검증
-//        if (!targetUserId.equals(requesterUserId.toString())) {
-//            throw new BusinessLogicException("본인 계정만 탈퇴할 수 있습니다.");
-//        }
         // 본인 확인 후 탈퇴 수행
         if (!userId.equals(userDetails.getUserId())) {
             throw new BusinessLogicException(messageUtil.getMessage("delete.user.forbidden"));
@@ -134,25 +135,41 @@ public class UserServiceController {
                 .build());
     }
 
+    //관리자 회원정보 조회
+    @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')" )
     @GetMapping("/users/search")
-    public ResponseEntity<CommonDto<List<UserResponseDto>>> searchUsers(
-            @RequestParam(name = "username", required = false) String username,
-            @RequestParam(name = "nickname", required = false) String nickname,
-            @RequestParam(name = "role", required = false) String role) {
+    public ResponseEntity<CommonDto<UserGetListResponseDto>> searchUsers(
+            @Valid OrderGetListRequestDto requestDto) {
 
-        log.info("회원 검색 요청 - username: {}, nickname: {}, role: {}", username, nickname, role);
-
-        List<UserResponseDto> users = userService.searchUsers(username, nickname, role);
-
-//        if (users.isEmpty()) {
-//            throw new NotFoundException("해당 조건에 맞는 회원이 없습니다.");
-//        }
+        UserGetListResponseDto userList = userService.searchUsers(
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getOrderby(),
+                requestDto.getSort(),
+                requestDto.getSearch()
+        );
 
         return ResponseEntity.ok(
-                CommonDto.<List<UserResponseDto>>builder()
+                CommonDto.<UserGetListResponseDto>builder()
+                        .code(HttpStatus.OK.value())
+                        .message(messageUtil.getSuccessMessage())
+                        .data(userList)
+                        .build()
+        );
+    }
+
+    //사용자 본인 정보 조회
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
+    @GetMapping("/users/search-me")
+    public ResponseEntity<CommonDto<UserResponseDto>> getMyInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        UserResponseDto userInfo = userService.getUserDetailMe(userDetails.getUserId());
+
+        return ResponseEntity.ok(
+                CommonDto.<UserResponseDto>builder()
                         .message(messageUtil.getSuccessMessage())
                         .code(HttpStatus.OK.value())
-                        .data(users)
+                        .data(userInfo)
                         .build()
         );
     }

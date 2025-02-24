@@ -7,9 +7,9 @@ import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryQueryRep
 import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryRepository;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
-import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
+import com.fortest.orderdelivery.app.global.exception.AlreadyExistException;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
@@ -64,10 +64,14 @@ public class DeliveryService {
         return new DeliveryStatusUpdateResponseDto(beforeStatus.name(), toStatus.name());
     }
 
+    @Transactional
     public DeliverySaveResponseDto saveEntry(DeliverySaveRequestDto saveRequestDto, User user) {
         try {
             return saveDelivery(saveRequestDto, user);
         } catch (Exception e) {
+            if ( e instanceof AlreadyExistException ) {
+                throw e;
+            }
             log.error("Fail Save Delivery : {}", saveRequestDto, e);
             apiGateway.updateOrderStatusFromApp(saveRequestDto.getOrderId(), ORDER_DELIVERY_FAIL_STATUS, user);
             if (e instanceof BusinessLogicException) {
@@ -81,10 +85,16 @@ public class DeliveryService {
     @Transactional
     public DeliverySaveResponseDto saveDelivery(DeliverySaveRequestDto saveRequestDto, User user) {
 
-        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId());
+        Optional<Delivery> deliveryOptional = deliveryRepository.findByOrderId(saveRequestDto.getOrderId());
+        if (deliveryOptional.isPresent()){
+            throw new AlreadyExistException(messageUtil.getMessage("app.delivery.already-exist"));
+        };
+
+        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId(), user);
 
         // 주문 유효성 검사
-        if ( ! Order.OrderStatus.PAYED.name().equals(orderValidDto.getOrderStatus()) ) {
+        if ( ! Order.OrderStatus.PAYED.name().equals(orderValidDto.getOrderStatus())
+                || !Order.OrderType.DELIVERY.name().equals(orderValidDto.getOrderType())) {
             throw new BusinessLogicException(messageUtil.getMessage("app.delivery.invalid-order"));
         }
 
@@ -99,10 +109,19 @@ public class DeliveryService {
     @Transactional
     public DeliveryGetDetailResponseDto getDeliveryDetail(String deliveryId, User user) {
 
-        Delivery delivery = deliveryQueryRepository.findDeliveryDetail(deliveryId, user.getUsername())
-                .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
+        Optional<Delivery> deliveryOptional = deliveryQueryRepository.findDeliveryDetail(deliveryId);
+        if (deliveryOptional.isEmpty()) {
+            throw new NotFoundException(messageUtil.getMessage("not-found.delivery"));
+        }
+        Delivery delivery = deliveryOptional.get();
+        if (!user.getUsername().equals(delivery.getCustomerName())) {
+            if (!RoleType.RoleName.MASTER.name().equals(user.getRoleType().getRoleName().name())
+                    && !RoleType.RoleName.MANAGER.name().equals(user.getRoleType().getRoleName().name())) {
+                throw new NotFoundException(messageUtil.getMessage("app.delivery.not-valid-user"));
+            }
+        }
 
-        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(delivery.getOrderId());
+        OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(delivery.getOrderId(), user);
 
         return DeliveryMapper.entityToGetDetailDto(delivery, orderValidDto);
     }
@@ -120,12 +139,14 @@ public class DeliveryService {
     @Transactional
     public DeliveryGetListReponseDto getDeliveryList (Integer page, Integer size, String orderby, String sort, String search, User user) {
         PageRequest pageable = JpaUtil.getNormalPageable(page, size, orderby, sort);
-        Page<Delivery> deliveryPage;
-        if (search == null || search.isBlank() || search.isEmpty()) {
-            deliveryPage = deliveryQueryRepository.findDeliveryList(pageable, user.getUsername());
-        } else {
-            deliveryPage = deliveryQueryRepository.findDeliveryListUsingSearch(pageable, search, user.getUsername());
+
+        String userName = user.getUsername();
+        if (RoleType.RoleName.MASTER.name().equals(user.getRoleType().getRoleName().name())
+                || RoleType.RoleName.MANAGER.name().equals(user.getRoleType().getRoleName().name())) {
+            userName = null;
         }
+        Page<Delivery> deliveryPage = deliveryQueryRepository.findDeliveryListUsingSearch(pageable, search, userName);
+
         return DeliveryMapper.entityToGetListDto(deliveryPage, search);
     }
 
@@ -135,11 +156,12 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new NotFoundException(messageUtil.getMessage("not-found.delivery")));
 
-        if (! delivery.getCustomerName().equals(user.getUsername())) {
+        if (user.getRoleType().getRoleName() != RoleType.RoleName.MANAGER
+                && user.getRoleType().getRoleName() != RoleType.RoleName.MASTER) {
             throw new NotValidRequestException(messageUtil.getMessage("app.delivery.not-valid-user"));
         }
-
         delivery.isDeletedNow(user.getId());
+
         return delivery.getId();
     }
 }

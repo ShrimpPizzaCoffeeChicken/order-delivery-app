@@ -43,8 +43,7 @@ public class MenuService {
     public MenuResponseDto saveMenu(MenuSaveRequestDto menuSaveRequestDto, User user) {
         String storeId = menuSaveRequestDto.getStoreId();
 
-        // 가게 DB 존재 여부 확인
-        apiGateway.getValidStoreFromApp(storeId);
+        apiGateway.getValidStoreFromApp(storeId, user);
 
         Menu newMenu = MenuMapper.toMenu(menuSaveRequestDto);
         newMenu.isCreatedBy(user.getId());
@@ -55,7 +54,7 @@ public class MenuService {
         if (!Objects.isNull(imageIdList)) {
             MenuImageMappingRequestDto menuImageRequestDto = MenuImageMappingRequestDto.builder()
                 .imageIdList(imageIdList)
-                .menu(savedMenu)
+                .menuDto(MenuMapper.toMenuDto(savedMenu))
                 .build();
 
             MenuImageMappingResponseDto commonDto = apiGateway.saveMenuIdToImage(

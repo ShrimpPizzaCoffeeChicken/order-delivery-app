@@ -21,7 +21,7 @@ public class ReviewGetResponseDto {
 
     private String contents;
 
-    private Long rate;
+    private Integer rate;
 
     @JsonProperty("created-at")
     private String createdAt;
