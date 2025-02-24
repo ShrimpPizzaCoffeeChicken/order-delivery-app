@@ -39,7 +39,7 @@ public class UserMapper {
 
     public static UserSignupResponseDto fromUserToUserSignupResponseDto(User user) {
         return UserSignupResponseDto.builder()
-                .id(user.getId())
+            //    .id(user.getId())
                 .username(user.getUsername())
                 .nickname(user.getNickname())
                 .email(user.getEmail())

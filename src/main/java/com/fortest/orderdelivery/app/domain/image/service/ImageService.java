@@ -75,7 +75,7 @@ public class ImageService {
             int maxImageSequence = imageQueryRepository.getMaxMenuImageSequence(menuId);
             AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
 
-            MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId));
+            MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId), user);
 
             uploadImageToS3(multipartFileList, imageIdList, sequence,
                 menuDto.getMenuList().get(0), null, user);
@@ -94,7 +94,7 @@ public class ImageService {
             AtomicInteger sequence = new AtomicInteger(maxImageSequence + 10);
 
             MenuOptionAppResponseDto menuOptionDto = apiGateway.getMenuOptionFromApp(
-                List.of(menuOptionId));
+                List.of(menuOptionId), user);
 
             MenuOption menuOption = menuOptionDto.getMenuOptionList().get(0);
 

@@ -71,9 +71,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         jwtUtil.addAccessTokenToHeader(accessToken, response);
         jwtUtil.addRefreshTokenToCookie(refreshToken, response);
 
-        LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
+        //LoginResponseDto responseDto = new LoginResponseDto(accessToken, refreshToken);
         CommonDto<LoginResponseDto> success = new CommonDto<>(
-                STATUS_SUCCESS, HttpStatus.OK.value(), responseDto);
+                STATUS_SUCCESS, HttpStatus.OK.value(),null);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResponse = objectMapper.writeValueAsString(success);

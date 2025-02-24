@@ -40,8 +40,8 @@ public class JpaUtil {
     @Getter
     @AllArgsConstructor
     public enum OrderBy {
-        CREATED("createdBy"),
-        UPDATED("updatedBy");
+        CREATED("createdAt"),
+        UPDATED("updatedAt");
 
         private final String fieldName;
 

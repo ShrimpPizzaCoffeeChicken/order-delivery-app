@@ -128,4 +128,18 @@ public class GlobalExceptionAdvice {
             .data(null)
             .build();
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CommonDto<Object> handleException(Exception e) {
+        log.info("ClobalExceptionAdvice ==============");
+        log.error("Exception : ",e);
+        String message = e.getMessage();
+
+        return CommonDto.builder()
+            .message(message)
+            .code(HttpStatus.BAD_REQUEST.value())
+            .data(null)
+            .build();
+    }
 }

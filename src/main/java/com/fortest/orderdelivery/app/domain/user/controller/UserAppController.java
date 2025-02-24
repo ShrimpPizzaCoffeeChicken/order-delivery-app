@@ -5,6 +5,7 @@ import com.fortest.orderdelivery.app.domain.user.service.UserService;
 import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j(topic = "UserAppController")
 @RequiredArgsConstructor
 @RequestMapping("/api/app")
 @RestController
@@ -21,8 +23,10 @@ public class UserAppController {
     private final UserService userService;
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<CommonDto<UserResponseDto>> getUserData (@PathVariable Long userId) {
-        
+    public ResponseEntity<CommonDto<UserResponseDto>> getUserData (@PathVariable("userId") Long userId) {
+
+        log.info("userId : {}", userId);
+
         UserResponseDto userData = userService.getUserData(userId);
 
         return ResponseEntity.ok(
