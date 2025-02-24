@@ -7,9 +7,9 @@ import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryQueryRep
 import com.fortest.orderdelivery.app.domain.delivery.repository.DeliveryRepository;
 import com.fortest.orderdelivery.app.domain.order.entity.Order;
 import com.fortest.orderdelivery.app.domain.payment.dto.OrderValidResponseDto;
-import com.fortest.orderdelivery.app.domain.payment.entity.Payment;
 import com.fortest.orderdelivery.app.domain.user.entity.RoleType;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
+import com.fortest.orderdelivery.app.global.exception.AlreadyExistException;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
 import com.fortest.orderdelivery.app.global.exception.NotFoundException;
 import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
@@ -68,6 +68,9 @@ public class DeliveryService {
         try {
             return saveDelivery(saveRequestDto, user);
         } catch (Exception e) {
+            if ( e instanceof AlreadyExistException ) {
+                throw e;
+            }
             log.error("Fail Save Delivery : {}", saveRequestDto, e);
             apiGateway.updateOrderStatusFromApp(saveRequestDto.getOrderId(), ORDER_DELIVERY_FAIL_STATUS, user);
             if (e instanceof BusinessLogicException) {
@@ -81,10 +84,16 @@ public class DeliveryService {
     @Transactional
     public DeliverySaveResponseDto saveDelivery(DeliverySaveRequestDto saveRequestDto, User user) {
 
+        Optional<Delivery> deliveryOptional = deliveryRepository.findByOrderId(saveRequestDto.getOrderId());
+        if (deliveryOptional.isPresent()){
+            throw new AlreadyExistException(messageUtil.getMessage("app.delivery.already-exist"));
+        };
+
         OrderValidResponseDto orderValidDto = apiGateway.getValidOrderFromApp(saveRequestDto.getOrderId());
 
         // 주문 유효성 검사
-        if ( ! Order.OrderStatus.PAYED.name().equals(orderValidDto.getOrderStatus()) ) {
+        if ( ! Order.OrderStatus.PAYED.name().equals(orderValidDto.getOrderStatus())
+                || !Order.OrderType.DELIVERY.name().equals(orderValidDto.getOrderType())) {
             throw new BusinessLogicException(messageUtil.getMessage("app.delivery.invalid-order"));
         }
 

@@ -77,10 +77,11 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/service/users/protected-resource").authenticated()
                     .requestMatchers("/api/service/areas/**").authenticated()
                     .requestMatchers("/api/app/users/*").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/app/orders/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/stores/{storeId}").permitAll()
-//                              .requestMatchers("/api/service/users/refresh").permitAll()
-                                .requestMatchers(HttpMethod.DELETE, "/api/service/users/{userId}").authenticated()
-                                .anyRequest().authenticated() // 그 외 요청은 인증 필요
+//                   .requestMatchers("/api/service/users/refresh").permitAll()
+                    .requestMatchers(HttpMethod.DELETE, "/api/service/users/{userId}").authenticated()
+                    .anyRequest().authenticated() // 그 외 요청은 인증 필요
 
        //                       .requestMatchers("/api/service/**").permitAll()
         );

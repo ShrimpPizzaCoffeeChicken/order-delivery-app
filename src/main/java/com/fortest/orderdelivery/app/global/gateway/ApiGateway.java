@@ -57,7 +57,7 @@ public class ApiGateway {
     private static final String IMAGE_OPTION_DELETE_APP_URL = "http://{host}:{port}/api/app/images/options/{optionId}";
     private static final String ORDER_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
     private static final String ORDER_DETAILS_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}/details";
-    private static final String ORDER_UPDATE_STATUS_APP_URL = "http://{host}:{port}/api/app/orders/{orderId}";
+    private static final String ORDER_UPDATE_STATUS_APP_URL = "http://{host}:{port}/api/service/orders/{orderId}";
     private static final String DELIVERY_GET_ID_APP_URL = "http://{host}:{port}/api/app/deliveries/orders/{orderId}";
     private static final String DELIVERY_UPDATE_STATUS_APP_URL = "http://{host}:{port}/api/app/deliveries/{deliveryId}";
 
@@ -80,7 +80,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : url = {}", targetUrl, throwable);
                 return Mono.empty();
@@ -111,7 +111,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<DeliveryGetDataResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : url = {}", targetUrl, throwable);
                 return Mono.empty();
@@ -153,7 +153,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderStatusUpdateResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : url = {}", targetUrl, throwable);
                 return Mono.empty();
@@ -184,7 +184,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderDetailsResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
@@ -215,7 +215,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<OrderValidResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
@@ -252,7 +252,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
@@ -288,7 +288,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<StoreMenuValidResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}, {}", targetUrl, validReqDto, throwable);
                 return Mono.empty();
@@ -328,7 +328,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionAppResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", finalUri, throwable);
                 return Mono.empty();
@@ -365,7 +365,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuAppResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", finalUri, throwable);
                 return Mono.empty();
@@ -399,7 +399,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuOptionValidReponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
@@ -438,7 +438,7 @@ public class ApiGateway {
             .bodyToMono(
                 new ParameterizedTypeReference<CommonDto<MenuOptionImageMappingResponseDto>>() {
                 })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
@@ -470,7 +470,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
@@ -504,7 +504,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<MenuImageMappingResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) //에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
@@ -536,7 +536,7 @@ public class ApiGateway {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<CommonDto<ImageResponseDto>>() {
             })
-            .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
+            //.retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2))) // 에러 발생 시 2초 간격으로 최대 3회 재시도
             .onErrorResume(throwable -> {
                 log.error("Fail : {}", targetUrl, throwable);
                 return Mono.empty();
