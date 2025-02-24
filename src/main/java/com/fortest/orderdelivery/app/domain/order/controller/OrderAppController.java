@@ -22,7 +22,7 @@ public class OrderAppController {
     private final MessageUtil messageUtil;
     private final OrderService orderService;
 
-    @PatchMapping("/orders/{orderId}")
+    @GetMapping("/orders/{orderId}")
     public ResponseEntity<CommonDto<OrderGetDataDto>> getOrderData(
             @Valid @Size(min = 1, max = 50) @PathVariable("orderId") String orderId) {
 
