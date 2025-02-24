@@ -86,11 +86,11 @@ public class StoreService {
         Area area = areaRepository.findById(areaId)
                 .orElseThrow(() -> new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
 
-        Store newStore = StoreMapper.storeSaveRequestDtoToEntity(storeSaveRequestDto, area);
+        Store newStore = StoreMapper.storeSaveRequestDtoToEntity(storeSaveRequestDto, area, user.getUsername());
         newStore.isCreatedBy(user.getId());
         Store savedStore = storeRepository.save(newStore);
 
-        return StoreMapper.entityToStoreSaveResponseDto(savedStore, area);
+        return StoreMapper.entityToStoreSaveResponseDto(savedStore, area, user.getUsername());
     }
 
     public StoreGetDetailResponseDto getStoreDetail(String storeId, User user) {
