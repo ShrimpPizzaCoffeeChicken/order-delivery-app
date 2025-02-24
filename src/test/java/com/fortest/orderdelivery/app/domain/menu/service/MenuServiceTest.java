@@ -24,30 +24,29 @@ public class MenuServiceTest {
     @Test
     @DisplayName("메뉴 옵션 검증 테스트")
     void 메뉴는있고삭제된옵션의경우테스트() {
-        //메뉴 + 삭제된 옵션으로 request 날렸을 때 false를 줘야할지 ??
 
         OptionList option1 = MenuList.OptionList.builder()
-            .id("953af5e8-7c41-47af-96a3-c46a491a1618")
+            .id("c2841816-f9f7-462b-a563-835fe6104021")
             .build();
 
         OptionList option2 = MenuList.OptionList.builder()
-            .id("fd467c98-c648-4001-a49e-598d3fb54cbc")
+            .id("241fbae4-c39d-4b9e-9aa5-2bc1e92c6ee2")
             .build();
 
         OptionList option3 = MenuList.OptionList.builder()
-            .id("0b5f10ca-89c4-47dc-b5c5-1931f8a2857d")
+            .id("97eb6f9a-8e66-4b73-b092-681bc8a08583")
             .build();
 
         List<OptionList> optionLists1 = List.of(option1, option2);
         List<OptionList> optionLists2 = List.of(option3);
 
         MenuList menuList1 = MenuList.builder()
-            .id("af4bdca5-e979-4b0c-b7ad-9c52fccd1a05")
+            .id("4818be43-4c2b-4df1-b8af-56a58addee46")
             .optionList(optionLists1)
             .build();
 
         MenuList menuList2 = MenuList.builder()
-            .id("dbf805d9-30c0-4d12-aa82-f2536285fdf0")
+            .id("1110273b-9a64-42b9-8d56-cb0aeb32aac1")
             .optionList(optionLists2)
             .build();
 

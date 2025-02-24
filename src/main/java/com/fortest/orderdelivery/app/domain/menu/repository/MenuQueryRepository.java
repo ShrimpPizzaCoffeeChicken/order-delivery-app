@@ -156,4 +156,17 @@ public class MenuQueryRepository {
         }
         return null;
     }
+
+    public Menu getMenuWithMenuOption(String menuId) {
+        return queryFactory
+            .selectFrom(menu)
+            .leftJoin(menu.menuOptionList, menuOption)
+            .fetchJoin()
+            .where(
+                menu.id.eq(menuId),
+                menu.deletedAt.isNull(),
+                menuOption.deletedAt.isNull()
+            )
+            .fetchOne();
+    }
 }
