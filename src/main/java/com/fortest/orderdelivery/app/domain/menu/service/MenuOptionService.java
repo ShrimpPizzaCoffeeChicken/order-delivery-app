@@ -48,6 +48,7 @@ public class MenuOptionService {
     private final MessageUtil messageUtil;
     private final MenuOptionRepository menuOptionRepository;
 
+    @Transactional
     public MenuOptionResponseDto saveMenuOption(
         MenuOptionsSaveRequestDto menuOptionsSaveRequestDto, String menuId, User user) {
         Long userId = user.getId();
@@ -55,7 +56,7 @@ public class MenuOptionService {
         //메뉴 유효한지 확인 후 객체 가져오기
         MenuAppResponseDto menuDto = apiGateway.getMenuFromApp(List.of(menuId), user);
 
-        Menu menu = menuDto.getMenuList().get(0);
+        Menu menu = MenuMapper.toMenu(menuDto.getMenuList().get(0));
 
         MenuOption newMenuOption = MenuOptionMapper.toMenuOption(menuOptionsSaveRequestDto, menu);
         newMenuOption.isCreatedBy(userId);
@@ -67,8 +68,8 @@ public class MenuOptionService {
         if (!Objects.isNull(imageIdList)) {
             MenuOptionImageMappingRequestDto menuOptionImageRequestDto = MenuOptionImageMappingRequestDto.builder()
                 .imageIdList(imageIdList)
-                .menu(menu)
-                .menuOption(savedMenuOption)
+                .menuDto(MenuMapper.toMenuDto(menu))
+                .menuOptionDto(MenuOptionMapper.toMenuOptionDto(savedMenuOption))
                 .build();
 
             MenuOptionImageMappingResponseDto ImagecommonDto =

@@ -58,7 +58,7 @@ public class StoreMapper {
                 .build();
     }
 
-    public static MenuOptionValidRequestDto storeValidRequestDtoToMenuValidRedDto(StoreMenuValidRequestDto storeMenuValidRequestDto) {
+    public static MenuOptionValidRequestDto storeValidRequestDtoToMenuValidRedDto(String storeId, StoreMenuValidRequestDto storeMenuValidRequestDto) {
         List<MenuOptionValidRequestDto.MenuDto> afterMenuDtoList = new ArrayList<>();
         List<StoreMenuValidRequestDto.MenuDto> beforeMenuDtoList = storeMenuValidRequestDto.getMenuList();
         for (StoreMenuValidRequestDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
@@ -76,7 +76,10 @@ public class StoreMapper {
                 afterOptionList.add(afterOption);
             }
         }
-        return MenuOptionValidRequestDto.builder().menuList(afterMenuDtoList).build();
+        return MenuOptionValidRequestDto.builder()
+            .menuList(afterMenuDtoList)
+            .storeId(storeId)
+            .build();
     }
 
     public static StoreMenuValidResponseDto menuOptionResponseDtoToStoreValidResDto(Store store, MenuOptionValidReponseDto menuOptionValidReponseDto) {
