@@ -39,7 +39,6 @@ public class StoreServiceController {
         );
     }
 
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/search")
     public ResponseEntity<CommonDto<StoreSearchResponseDto>> searchStore(
             @Valid StoreSearchRequestDto requestDto
@@ -80,7 +79,6 @@ public class StoreServiceController {
         );
     }
 
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/stores/{storeId}/detail")
     public ResponseEntity<CommonDto<StoreGetDetailResponseDto>> getStoreDetail (@PathVariable("storeId") String storeId,
                                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {

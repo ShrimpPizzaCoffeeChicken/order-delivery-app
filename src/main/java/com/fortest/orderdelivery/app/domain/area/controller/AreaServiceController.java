@@ -33,7 +33,6 @@ public class AreaServiceController {
     public ResponseEntity<CommonDto<AreaSaveResponseDto>> saveArea(@Valid @RequestBody AreaSaveRequestDto createDto,
                                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        // TODO : 회원 ID 획득 해야함
         Area area = areaService.saveArea(createDto, userDetails.getUser());
         AreaSaveResponseDto responseDto = AreaSaveResponseDto.builder()
                 .id(area.getId())
@@ -69,7 +68,6 @@ public class AreaServiceController {
     @DeleteMapping("/areas/{areaId}")
     public ResponseEntity<CommonDto<Map<String, String>>> deleteArea(@PathVariable("areaId") String areaId,
                                                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        // TODO : 회원 아이디 획득해야함
         String deletedAreaId = areaService.deleteArea(areaId, userDetails.getUser());
         Map<String, String> data = Map.of("area-id", deletedAreaId);
 

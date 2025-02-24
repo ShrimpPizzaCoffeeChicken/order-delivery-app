@@ -7,6 +7,7 @@ import com.fortest.orderdelivery.app.domain.review.repository.ReviewQueryReposit
 import com.fortest.orderdelivery.app.domain.review.repository.ReviewRepository;
 import com.fortest.orderdelivery.app.domain.user.entity.User;
 import com.fortest.orderdelivery.app.global.exception.BusinessLogicException;
+import com.fortest.orderdelivery.app.global.exception.NotValidRequestException;
 import com.fortest.orderdelivery.app.global.gateway.ApiGateway;
 import com.fortest.orderdelivery.app.global.util.JpaUtil;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
@@ -50,6 +51,9 @@ public class ReviewService {
     public ReviewDeleteResponseDto deleteReview(String reviewId, User user){
         Review review = reviewRepository.findById(reviewId).orElseThrow(()->
                 new BusinessLogicException(messageUtil.getMessage("api.call.client-error")));
+        if (!review.getWriterId().equals(user.getId())) {
+            throw new NotValidRequestException(messageUtil.getMessage("app.review.not-valid-user"));
+        }
         review.isDeletedNow(user.getId());
 
         return ReviewMapper.entityToReviewDeleteResponseDto(review);
