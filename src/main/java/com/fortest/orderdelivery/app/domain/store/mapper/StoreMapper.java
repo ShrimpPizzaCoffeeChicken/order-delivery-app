@@ -6,6 +6,7 @@ import com.fortest.orderdelivery.app.domain.category.entity.CategoryStore;
 import com.fortest.orderdelivery.app.domain.store.dto.*;
 import com.fortest.orderdelivery.app.domain.store.entity.Store;
 import org.springframework.data.domain.Page;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,22 +86,26 @@ public class StoreMapper {
     public static StoreMenuValidResponseDto menuOptionResponseDtoToStoreValidResDto(Store store, MenuOptionValidReponseDto menuOptionValidReponseDto) {
         List<StoreMenuValidResponseDto.MenuDto> afterMenuDtoList = new ArrayList<>();
         List<MenuOptionValidReponseDto.MenuDto> beforeMenuDtoList = menuOptionValidReponseDto.getMenuList();
-        for (MenuOptionValidReponseDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
-            List<StoreMenuValidResponseDto.OptionDto> afterOptionList = new ArrayList<>();
-            StoreMenuValidResponseDto.MenuDto afterMenuDto = StoreMenuValidResponseDto.MenuDto.builder()
-                    .id(beforeMenuDto.getId())
-                    .optionList(afterOptionList)
-                    .build();
-            afterMenuDtoList.add(afterMenuDto);
-            List<MenuOptionValidReponseDto.OptionDto> beforeOptionDtoList = beforeMenuDto.getOptionList();
-            for (MenuOptionValidReponseDto.OptionDto beforeOptionDto : beforeOptionDtoList) {
-                StoreMenuValidResponseDto.OptionDto afterOption = StoreMenuValidResponseDto.OptionDto.builder()
-                        .id(beforeOptionDto.getId())
+        if (!CollectionUtils.isEmpty(beforeMenuDtoList)) {
+            for (MenuOptionValidReponseDto.MenuDto beforeMenuDto : beforeMenuDtoList) {
+                List<StoreMenuValidResponseDto.OptionDto> afterOptionList = new ArrayList<>();
+                StoreMenuValidResponseDto.MenuDto afterMenuDto = StoreMenuValidResponseDto.MenuDto.builder()
+                        .id(beforeMenuDto.getId())
+                        .optionList(afterOptionList)
                         .build();
-                afterOptionList.add(afterOption);
+                afterMenuDtoList.add(afterMenuDto);
+                List<MenuOptionValidReponseDto.OptionDto> beforeOptionDtoList = beforeMenuDto.getOptionList();
+                for (MenuOptionValidReponseDto.OptionDto beforeOptionDto : beforeOptionDtoList) {
+                    StoreMenuValidResponseDto.OptionDto afterOption = StoreMenuValidResponseDto.OptionDto.builder()
+                            .id(beforeOptionDto.getId())
+                            .build();
+                    afterOptionList.add(afterOption);
+                }
             }
         }
+
         return StoreMenuValidResponseDto.builder()
+                .result(menuOptionValidReponseDto.getResult()) // 누락
                 .storeId(store.getId())
                 .storeName(store.getName())
                 .menuList(afterMenuDtoList)
