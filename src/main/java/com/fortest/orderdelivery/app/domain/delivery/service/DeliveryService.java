@@ -64,6 +64,7 @@ public class DeliveryService {
         return new DeliveryStatusUpdateResponseDto(beforeStatus.name(), toStatus.name());
     }
 
+    @Transactional
     public DeliverySaveResponseDto saveEntry(DeliverySaveRequestDto saveRequestDto, User user) {
         try {
             return saveDelivery(saveRequestDto, user);

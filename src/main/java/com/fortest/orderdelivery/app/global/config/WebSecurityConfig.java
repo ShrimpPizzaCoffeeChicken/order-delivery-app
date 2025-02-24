@@ -79,6 +79,7 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/app/users/*").permitAll()
                     .requestMatchers("/api/app/menus/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/orders/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/app/deliveries/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/stores/{storeId}").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/app/stores/{storeId}/menus/valid").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/app/menus/options/valid").permitAll()
