@@ -40,14 +40,15 @@ public class AiRequestServiceController {
         );
     }
 
-    @PreAuthorize("hasRole('OWNER')")
+    @PreAuthorize("hasRole('OWNER') or hasRole('MANAGER') or hasRole('MASTER')")
     @GetMapping("/ai-requests")
     public ResponseEntity<CommonDto<AiRequestGetListResponseDto>> getAiRequestList(
+            @RequestParam("store-id") String storeId,
             @Valid AiRequestGetListRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         AiRequestGetListResponseDto AiRequestList = aiRequestService.getAiRequestList(
-            requestDto.getStoreId(),
+            storeId,
             requestDto.getPage(),
             requestDto.getSize(),
             requestDto.getOrderby(),
