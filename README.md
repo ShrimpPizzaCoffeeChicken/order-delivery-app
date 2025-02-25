@@ -74,6 +74,21 @@
 
 <br />
 
+# ⚙️ 실행 방법 <br />
+- **서버:** Spring Boot 3.x
+- **데이터베이스:** PostgreSQL
+- **빌드 툴:**  Gradle
+- **추가 해야 할 파일:** application-dev, message.properties
+
+ <br />
+
+  **java jar 파일 실행 명령어** <br />
+  `nohup java -Xms256M -Xmx256M -jar orderdelivery-1.0.0.jar --spring.profiles.active=prod > order.log 2>&1 &`
+
+
+
+<br />
+
 ## 📜 ERD
 <a href="https://dbdiagram.io/d/delivery-platform-MSA-67ada54c263d6cf9a00276cf" target="_blank">👉🏻클릭 !  [ERD] </a>
 ![Image](https://github.com/user-attachments/assets/8d24131c-3420-40a8-83de-3f0cae4a4897)
