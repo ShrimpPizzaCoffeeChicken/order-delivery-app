@@ -72,9 +72,16 @@
 |[전진우]|[권수연]|[김도원]|[양수영]|
 |주문/배달/결제 담당|메뉴/옵션/이미지 담당|유저 담당|가게/카테고리/지역/리뷰 담당|
 
-## ERD
-👉🏻 [ERD] https://dbdiagram.io/d/delivery-platform-MSA-67ada54c263d6cf9a00276cf
+<br />
+
+## 📜 ERD
+<a href="https://dbdiagram.io/d/delivery-platform-MSA-67ada54c263d6cf9a00276cf" target="_blank">👉🏻클릭 !  [ERD] </a>
 ![Image](https://github.com/user-attachments/assets/8d24131c-3420-40a8-83de-3f0cae4a4897)
+
+<br />
+
+## 👨‍👩‍👧‍👦 팀 Notion (테이블 명세서 / API 명세서 / ERD 명세서 / 인프라 설계)
+<a href="https://equable-editorial-3a0.notion.site/Order-Delivery-App-1a5e417ae47880e6909fc317d5d7aa27" target="_blank">👉🏻클릭 !  [팀노션] </a>
 
 <br />
 
