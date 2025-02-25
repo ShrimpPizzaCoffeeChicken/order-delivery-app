@@ -83,6 +83,7 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/service/areas/**").authenticated()
                     .requestMatchers("/api/app/users/*").permitAll()
                     .requestMatchers("/api/app/menus/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/service/stores/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/service/categories").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/orders/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/app/deliveries/**").permitAll()

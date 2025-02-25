@@ -20,9 +20,14 @@ public class JpaUtil {
     public static PageRequest getNormalPageable(Integer page, Integer size, String orderby, String sort) {
 
         Sort sortAndOrderBy = Sort.by(OrderBy.from(orderby).fieldName);
-        sort = sort.toUpperCase();
+        sort = sort != null ? sort.toUpperCase() : "DESC";
         sortAndOrderBy = "ASC".equals(sort) ? sortAndOrderBy.ascending() : sortAndOrderBy.descending() ;
-
+        if (page == null) {
+            page = 1;
+        }
+        if (size == null) {
+            size = 10;
+        }
         return PageRequest.of(page - 1 , getUsableSize(size), sortAndOrderBy);
     }
 
