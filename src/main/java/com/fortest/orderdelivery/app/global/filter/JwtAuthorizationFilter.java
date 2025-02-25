@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -78,11 +79,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 return;
             }
         } else {
-            int i = requestURI.lastIndexOf(REPOSITORY_FIND_URL+APP_URL_SUFFIX);
-            //  URL: /api/api 로 시작하지 않는 경우
-            if (i == -1) {
-                sendJsonResponse(res, HttpStatus.UNAUTHORIZED, "access.token.missing", null);
-                return;
+            if (!HttpMethod.GET.name().equals(req.getMethod())) {
+                int i = requestURI.lastIndexOf(REPOSITORY_FIND_URL+APP_URL_SUFFIX);
+                //  URL: /api/api 로 시작하지 않는 경우
+                if (i == -1) {
+                    sendJsonResponse(res, HttpStatus.UNAUTHORIZED, "access.token.missing", null);
+                    return;
+                }
             }
         }
         // 다음 필터 실행
