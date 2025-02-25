@@ -74,6 +74,7 @@
 
 ## ERD
 👉🏻 [ERD] https://dbdiagram.io/d/delivery-platform-MSA-67ada54c263d6cf9a00276cf
+![Image](https://github.com/user-attachments/assets/8d24131c-3420-40a8-83de-3f0cae4a4897)
 
 <br />
 
@@ -107,8 +108,4 @@
 <br />
 
 ## 🛠️ 프로젝트 아키텍쳐
-
-<br />
-
-## 🤔 기술적 이슈와 해결 과정
-
+![Image](https://github.com/user-attachments/assets/4cebee88-0c48-487b-9358-1db56a36d649)
