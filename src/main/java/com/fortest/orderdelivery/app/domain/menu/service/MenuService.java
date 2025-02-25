@@ -121,7 +121,7 @@ public class MenuService {
         return menuGetResponseDto;
     }
 
-    public MenuListGetResponseDto searchMenuList(MenuListSearchRequestDto menuListSearchRequestDto) {
+    public MenuListGetResponseDto searchMenuList(String storeId, MenuListSearchRequestDto menuListSearchRequestDto) {
         PageRequest pageRequest = JpaUtil.getNormalPageable(
             menuListSearchRequestDto.getPage(),
             menuListSearchRequestDto.getSize(),
@@ -130,7 +130,7 @@ public class MenuService {
         );
         Page<MenuListDto> menuListPage = menuQueryRepository.searchMenuListPage(
             pageRequest,
-            menuListSearchRequestDto.getStoreId(),
+            storeId,
             menuListSearchRequestDto.getSearch()
         );
 

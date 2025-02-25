@@ -1,5 +1,6 @@
 package com.fortest.orderdelivery.app.domain.menu.controller;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuGetResponseDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetRequestDto;
 import com.fortest.orderdelivery.app.domain.menu.dto.MenuListGetResponseDto;
@@ -12,7 +13,9 @@ import com.fortest.orderdelivery.app.global.dto.CommonDto;
 import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -81,9 +85,10 @@ public class MenuServiceController {
 
     @GetMapping("/search")
     public ResponseEntity<CommonDto<MenuListGetResponseDto>> searchMenuList(
+        @Size(min = 1, max = 50, message = "store-id 는 필수 입력값입니다.") @RequestParam String storeId,
         @Valid MenuListSearchRequestDto menuListSearchRequestDto
     ) {
-        MenuListGetResponseDto responseDto = menuService.searchMenuList(menuListSearchRequestDto);
+        MenuListGetResponseDto responseDto = menuService.searchMenuList(storeId, menuListSearchRequestDto);
 
         return ResponseEntity.ok(CommonDto.<MenuListGetResponseDto>builder()
             .message(messageUtil.getSuccessMessage())

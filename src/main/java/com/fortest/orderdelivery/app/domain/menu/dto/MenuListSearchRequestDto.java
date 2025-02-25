@@ -14,9 +14,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MenuListSearchRequestDto {
-    @Size(min = 1, max = 50, message = "store-id 는 필수 입력값입니다.")
-    @JsonProperty("store-id")
-    String storeId;
 
     @Positive(message = "page 값은 음수일 수 없습니다.")
     private Integer page;
