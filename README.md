@@ -78,7 +78,7 @@
 - **서버:** Spring Boot 3.x
 - **데이터베이스:** PostgreSQL
 - **빌드 툴:**  Gradle
-- **추가 해야 할 파일:** application-prod, message.properties
+- **추가 해야 할 파일:** application-prod, messages.properties
 
  <br />
 
