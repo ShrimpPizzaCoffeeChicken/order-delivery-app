@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionAdvice {
+
+    private static final String FORBIDDEN_MESSAGE = "권한이 없습니다.";
 
     // 유효성 검사 실패 : MethodArgumentNotValidException
     @ExceptionHandler
@@ -127,6 +130,18 @@ public class GlobalExceptionAdvice {
             .code(HttpStatus.BAD_REQUEST.value())
             .data(null)
             .build();
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public CommonDto<Object> handleAccessDeniedException(AccessDeniedException e) {
+        log.info("AccessDeniedException 예외 캐치", e);
+
+        return CommonDto.builder()
+                .message(FORBIDDEN_MESSAGE)
+                .code(HttpStatus.FORBIDDEN.value())
+                .data(null)
+                .build();
     }
 
     @ExceptionHandler
