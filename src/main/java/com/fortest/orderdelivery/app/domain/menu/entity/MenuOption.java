@@ -28,11 +28,22 @@ public class MenuOption extends BaseDataEntity {
 
     private Integer price;
 
-    @JoinColumn(name = "menu_id")
-    @ManyToOne
+    @JoinColumn(name = "p_menu_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private Menu menu;
 
     @Column(length = 30, nullable = false)
     @Enumerated(value = EnumType.STRING)
     private ExposeStatus exposeStatus = ExposeStatus.ONSALE;
+
+    public void updateMenuOption(String name, String description, Integer price, ExposeStatus exposeStatus) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.exposeStatus = exposeStatus;
+    }
+
+    public void updateMenu(Menu menu) {
+        this.menu = menu;
+    }
 }

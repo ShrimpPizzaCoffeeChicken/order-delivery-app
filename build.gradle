@@ -26,6 +26,12 @@ repositories {
 dependencies {
 
 	// JWT
+	compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
+	// Json 처리
+	implementation 'org.json:json:20230227'
 
 	// Query DSL
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
@@ -33,6 +39,7 @@ dependencies {
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -44,8 +51,32 @@ dependencies {
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+//querydsl 추가 시작
+def querydslDir = rootProject.layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+sourceSets {
+	main {
+		java {
+			srcDirs += querydslDir
+		}
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
+}
+
+clean {
+	delete file(querydslDir)
+}
+//querydsl 추가 끝

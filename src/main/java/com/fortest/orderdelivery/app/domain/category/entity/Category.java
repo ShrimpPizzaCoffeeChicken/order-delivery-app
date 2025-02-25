@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -22,4 +25,12 @@ public class Category extends BaseDataEntity {
 
     @Column(length = 100, unique = true, nullable = false)
     private String name;
+
+    @OneToMany(mappedBy = "category")
+    private List<CategoryStore> categoryStoreList = new ArrayList<>();
+
+    public void update(String categoryName) {
+        this.name = categoryName;
+    }
+
 }

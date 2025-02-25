@@ -1,12 +1,13 @@
 package com.fortest.orderdelivery.app.domain.store.entity;
 
 import com.fortest.orderdelivery.app.domain.area.entity.Area;
+import com.fortest.orderdelivery.app.domain.category.entity.CategoryStore;
 import com.fortest.orderdelivery.app.global.entity.BaseDataEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -25,7 +26,7 @@ public class Store extends BaseDataEntity {
     private String name;
 
     @JoinColumn(name = "area_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Area area;
 
     @Column(length = 200)
@@ -33,4 +34,14 @@ public class Store extends BaseDataEntity {
 
     @Column(length = 100)
     private String ownerName;
+
+    @OneToMany(mappedBy = "store", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<CategoryStore> categoryStoreList = new ArrayList<>();
+
+    public void update(String storeName, Area area, String detailAddress, String ownerName) {
+        this.name = storeName;
+        this.area = area;
+        this.detailAddress = detailAddress;
+        this.ownerName = ownerName;
+    }
 }

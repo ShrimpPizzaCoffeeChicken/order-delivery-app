@@ -28,4 +28,16 @@ public class Area extends BaseDataEntity {
 
     @Column(length = 50)
     private String street;
+
+    public String getPlainAreaName() {
+        String space = "";
+        StringBuilder sb = new StringBuilder();
+        return sb
+                .append(this.city)
+                .append(space)
+                .append(this.district)
+                .append(space)
+                .append(this.street)
+                .toString();
+    }
 }
