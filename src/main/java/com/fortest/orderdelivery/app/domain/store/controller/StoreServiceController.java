@@ -7,14 +7,16 @@ import com.fortest.orderdelivery.app.global.security.UserDetailsImpl;
 import com.fortest.orderdelivery.app.global.util.MessageUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-
+@Slf4j
 @RestController
 @Validated
 @RequestMapping("/api/service")
@@ -41,6 +43,7 @@ public class StoreServiceController {
 
     @GetMapping("/stores/search")
     public ResponseEntity<CommonDto<StoreSearchResponseDto>> searchStore(
+            @Nullable @RequestParam("category-id") String categoryId,
             @Valid StoreSearchRequestDto requestDto
     ) {
         StoreSearchResponseDto storeSearchResponseDto = storeService.searchStore(
@@ -49,7 +52,7 @@ public class StoreServiceController {
                 requestDto.getOrderby(),
                 requestDto.getSort(),
                 requestDto.getSearch(),
-                requestDto.getCategoryId(),
+                categoryId,
                 requestDto.getCity(),
                 requestDto.getDistrict(),
                 requestDto.getStreet()
