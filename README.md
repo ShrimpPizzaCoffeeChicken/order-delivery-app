@@ -74,7 +74,7 @@
 |주문/배달/결제 담당|메뉴/옵션/이미지 담당|유저 담당|가게/카테고리/지역/리뷰 담당|
 
 ## ERD
-👉🏻 [ERD 바로보기](/https://dbdiagram.io/d/delivery-platform-MSA-67ada54c263d6cf9a00276cf)
+👉🏻 [ERD] https://dbdiagram.io/d/delivery-platform-MSA-67ada54c263d6cf9a00276cf
 
 <br />
 
